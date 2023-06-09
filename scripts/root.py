@@ -18,3 +18,15 @@ class ReportWriter(ctk.CTk):
         self.geometry(f"{GEOMETRY}+{x}+{y}")
         self.title(WINDOW_TITLE)
         self.iconbitmap(default=os.path.join(os.getcwd(), "images/app-logo.ico"))
+
+        self.frames = {}
+
+    def __setup_frames(self):
+        current_frame_list = []
+        for frame in current_frame_list:
+            new_frame = frame()
+            self.frames[frame] = new_frame
+
+    def show_frame(self, frame_to_show):
+        frame = self.frames[frame_to_show]
+        frame.tkraise()
