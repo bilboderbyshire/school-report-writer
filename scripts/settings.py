@@ -1,3 +1,7 @@
+# Database settings
+
+URL = 'https://report-writer.pockethost.io'
+
 # Root settings
 
 WIDTH = 1000
