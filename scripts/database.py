@@ -2,6 +2,7 @@ import pocketbase
 from settings import *
 from containers import *
 
+
 class Pb(pocketbase.PocketBase):
     def __init__(self):
         super().__init__(URL)
@@ -136,12 +137,35 @@ class Pb(pocketbase.PocketBase):
             return ({"response": False,
                      "message": "Getting individual reports failed"}, [])
 
+    def check_if_user_exists(self, email_to_check) -> tuple[Response, bool]:
+        self.refresh_auth()
+        if self.user_is_valid:
+            try:
+                results = self.collection("users").get_full_list(query_params={
+                    "filter": f'email="{email_to_check}"'
+                })
+                if results:
+                    return ({"response": True,
+                             "message": "Search successful"}, True)
+                else:
+                    return ({"response": True,
+                             "message": "Search successful"}, False)
+
+            except pocketbase.client.ClientResponseError as e:
+                print("Error finding user email:", repr(e))
+                print(e.data)
+
+                return ({"response": False,
+                         "message": "Search for user email failed"}, [])
+        else:
+            return ({"response": False,
+                     "message": "Search for user email failed"}, [])
+
 
 RUNNING_DB = Pb()
 RUNNING_DB.login("iris@higgins.com", "password123")
-response, values = RUNNING_DB.get_set_reports()
-report_reponse, report_values = RUNNING_DB.get_reports_from_set(values[0].id)
-print(repr(report_values[0]))
+_, values = RUNNING_DB.check_if_user_exists("bob@bollins.com")
+print(values)
 # results = RUNNING_DB.collection("report_pieces").get_full_list(query_params={
 #     "expand": "template",
 #     "filter": 'template = "22xo1dtgrjmcw9s"',
