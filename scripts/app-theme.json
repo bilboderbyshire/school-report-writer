@@ -1,6 +1,6 @@
 {
   "CTk": {
-    "fg_color": ["#ff0000", "#ff0000"]
+    "fg_color": ["gray95", "gray10"]
   },
   "CTkToplevel": {
     "fg_color": ["gray95", "gray10"]
@@ -24,7 +24,7 @@
   "CTkLabel": {
     "corner_radius": 0,
     "fg_color": "transparent",
-    "text_color": ["gray14", "gray84"]
+    "text_color": ["gray14", "#D6D6D6"]
   },
   "CTkEntry": {
     "corner_radius": 6,
