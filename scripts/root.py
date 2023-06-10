@@ -1,6 +1,7 @@
 import customtkinter as ctk
 from .settings import *
 import os
+from .main_menu import main_menu_scene as mm_scene
 
 
 class ReportWriter(ctk.CTk):
@@ -28,7 +29,7 @@ class ReportWriter(ctk.CTk):
         # self.show_frame()
 
     def __setup_frames(self):
-        current_frame_list = []
+        current_frame_list = [mm_scene.MainMenuScene]
         for frame in current_frame_list:
             new_frame = frame(self)
             self.frames[frame] = new_frame
