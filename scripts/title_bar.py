@@ -47,8 +47,10 @@ class TitleBar(ctk.CTkFrame):
             image=self.theme_image,
             command=change_theme,
             text="",
-            width=30,
-            hover_color="#969696"
+            width=45,
+            height=45,
+            hover_color="#969696",
+            corner_radius=8
         )
 
         self.theme_button.grid(row=0, column=1, sticky="e", **DEFAULT_PAD_COMPLETE)
