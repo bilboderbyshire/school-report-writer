@@ -26,6 +26,7 @@ class User:
             'updated': self.updated
         })
 
+
 class ReportTemplate:
     def __init__(self, record):
         self.response_object = record
@@ -84,3 +85,32 @@ class SingleReportSet:
         })
 
 
+class IndividualReport:
+    def __init__(self, record):
+        self.response_object = record
+        self.id = record.id
+        self.report_text = record.report_text
+        self.completed = record.completed
+        self.created = record.created
+        self.updated = record.updated
+
+        if "user" in record.expand.keys():
+            self.user = User(record.expand["user"])
+        else:
+            self.user = None
+
+        if "report_set" in record.expand.keys():
+            self.report_set = SingleReportSet(record.expand["report_set"])
+        else:
+            self.report_set = None
+
+    def __repr__(self):
+        return str({
+            "id": self.id,
+            "report_text": self.report_text,
+            "completed": self.completed,
+            "user": repr(self.user),
+            "report_set": repr(self.report_set),
+            "created": self.created,
+            "updated": self.updated
+        })

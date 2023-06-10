@@ -108,13 +108,40 @@ class Pb(pocketbase.PocketBase):
 
                 return ({"response": False,
                          "message": "Getting set reports failed"}, [])
+        else:
+            return ({"response": False,
+                     "message": "Getting set reports failed"}, [])
 
+    def get_reports_from_set(self, set_id) -> tuple[Response, list[IndividualReport]]:
+        self.refresh_auth()
+        if self.user_is_valid:
+            try:
+                results = self.collection("individual_reports").get_full_list(query_params={
+                    "filter": f'report_set.id = "{set_id}"',
+                    "expand": "report_set, report_set.template, user",
+                    "sort": "+pupil_name"
+                })
 
+                return_list = [IndividualReport(i) for i in results]
+
+                return {"response": True,
+                        "message": "success"}, return_list
+            except pocketbase.client.ClientResponseError as e:
+                print("Error collecting individual reports:", repr(e))
+                print(e.data)
+
+                return ({"response": False,
+                         "message": "Getting individual reports failed"}, [])
+        else:
+            return ({"response": False,
+                     "message": "Getting individual reports failed"}, [])
 
 
 RUNNING_DB = Pb()
 RUNNING_DB.login("iris@higgins.com", "password123")
-
+response, values = RUNNING_DB.get_set_reports()
+report_reponse, report_values = RUNNING_DB.get_reports_from_set(values[0].id)
+print(repr(report_values[0]))
 # results = RUNNING_DB.collection("report_pieces").get_full_list(query_params={
 #     "expand": "template",
 #     "filter": 'template = "22xo1dtgrjmcw9s"',
