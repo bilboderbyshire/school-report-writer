@@ -161,11 +161,36 @@ class Pb(pocketbase.PocketBase):
             return ({"response": False,
                      "message": "Search for user email failed"}, [])
 
+    def get_available_templates(self) -> tuple[Response, list[ReportTemplate]]:
+        self.refresh_auth()
+        if self.user_is_valid:
+            try:
+                results = self.collection("templates").get_full_list(query_params={
+                    "expand": "owner",
+                    "sort": "-created"
+                })
+
+                return_list = [ReportTemplate(i) for i in results]
+
+                return ({"response": True,
+                         "message": "success"}, return_list)
+
+            except pocketbase.client.ClientResponseError as e:
+                print("Error collecting available templates:", repr(e))
+                print(e.data)
+
+                return ({"response": False,
+                         "message": "Available template collection failed"}, [])
+        else:
+            return ({"response": False,
+                     "message": "Available template collection failed"}, [])
+
 
 RUNNING_DB = Pb()
 RUNNING_DB.login("iris@higgins.com", "password123")
-_, values = RUNNING_DB.check_if_user_exists("bob@bollins.com")
-print(values)
+response, values = RUNNING_DB.get_available_templates()
+print(response)
+print(repr(values))
 # results = RUNNING_DB.collection("report_pieces").get_full_list(query_params={
 #     "expand": "template",
 #     "filter": 'template = "22xo1dtgrjmcw9s"',
