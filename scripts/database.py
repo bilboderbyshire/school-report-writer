@@ -71,14 +71,31 @@ class Pb(pocketbase.PocketBase):
 
     def get_users_forename(self) -> tuple[Response, None | str]:
         if self.user_is_valid:
-            return {"response": False,
-                    "message": "Success",
-                    "value": self.user_model.forename}
+            return ({"response": False,
+                    "message": "Success"}, self.user_model.forename.capitalize())
 
         else:
-            return {"response": False,
-                    "message": "No user",
-                    "value": None}
+            return ({"response": False,
+                    "message": "No user"}, None)
+
+    def get_users_surname(self) -> tuple[Response, None | str]:
+        if self.user_is_valid:
+            return ({"response": False,
+                     "message": "Success"}, self.user_model.surname.capitalize())
+
+        else:
+            return ({"response": False,
+                     "message": "No user"}, None)
+
+    def get_users_fullname(self) -> tuple[Response, None | str]:
+        if self.user_is_valid:
+            return ({"response": False,
+                     "message": "Success"}, f"{self.user_model.forename.capitalize()} " +
+                                            f"{self.user_model.surname.capitalize()}")
+
+        else:
+            return ({"response": False,
+                     "message": "No user"}, None)
 
     def get_users_email(self) -> tuple[Response, None | str]:
         if self.user_is_valid:
@@ -187,15 +204,3 @@ class Pb(pocketbase.PocketBase):
 
 
 RUNNING_DB = Pb()
-RUNNING_DB.login("iris@higgins.com", "password123")
-response, values = RUNNING_DB.get_available_templates()
-print(response)
-print(repr(values))
-# results = RUNNING_DB.collection("report_pieces").get_full_list(query_params={
-#     "expand": "template",
-#     "filter": 'template = "22xo1dtgrjmcw9s"',
-#     "sort": "-piece_position"
-# })
-#
-# for i in results:
-#     print(i.piece_text, i.piece_position, i.expand)
