@@ -24,4 +24,4 @@ TITLE_FONT = {"family": "Segoe UI",
 
 # Colours
 
-ROOT_BG = ("#F2F2F2", "#23272D")
+ROOT_BG = ("#EAEBEB", "#23272D")

@@ -5,7 +5,7 @@ from ..settings import *
 
 class MainMenuScene(ctk.CTkFrame):
     def __init__(self, master):
-        super().__init__(master)
+        super().__init__(master, fg_color=ROOT_BG)
 
         self.title_bar = tbar.TitleBar(self, "Report Writer")
         self.title_bar.grid(row=0, column=0, columnspan=3, sticky="nsew")
