@@ -20,6 +20,7 @@ class RegisterFrame(ctk.CTkFrame):
         self.__build_frame()
 
     def __build_frame(self) -> None:
+        """Private function keeps all build code in the same place"""
 
         # Title of the frame
         self.title_bar = TitleLabel(self,
@@ -33,7 +34,7 @@ class RegisterFrame(ctk.CTkFrame):
                                             command=self.back_button_pressed)
         self.back_button.grid(row=1, column=0, sticky="w", pady=(5, 0), padx=DEFAULT_PAD-5)
 
-        # Name entry
+        # Name entry frame
         # ==========
 
         self.name_frame = ctk.CTkFrame(self,
@@ -74,7 +75,7 @@ class RegisterFrame(ctk.CTkFrame):
         self.email_entry.grid(row=4, column=0, columnspan=3, sticky="new", pady=(0, DEFAULT_PAD + 20),
                               padx=DEFAULT_PAD)
 
-        # Password entry
+        # Password entry frame
         # ==========
 
         self.password_frame = ctk.CTkFrame(self,
@@ -126,7 +127,7 @@ class RegisterFrame(ctk.CTkFrame):
 
         # Cancel button
         self.cancel_button = ctk.CTkButton(self,
-                                           text="Cancel",
+                                           text="Back",
                                            font=ctk.CTkFont(**NORMAL_LABEL_FONT),
                                            border_spacing=5,
                                            command=self.back_button_pressed)
@@ -137,9 +138,20 @@ class RegisterFrame(ctk.CTkFrame):
         self.columnconfigure([0, 1, 2], weight=1, uniform="columns")
 
     def back_button_pressed(self) -> None:
+        """
+        When either back button is pressed, the login frame is displayed
+        :return: None
+        """
         self.master.show_frame("login")
 
     def register_account(self) -> None:
+        """
+        A record is created based off of all the data inputs, a basic input validation is performed on the relevant
+        pieces of data. If a validation fails, an appropriate error message is displayed and the user continues to edit.
+        If the validations pass, a create request is made to the database. If the request is successful, the login top
+        level self-destructs, and the main menu is displayed. If the request fails, a relevant error message is provided
+        :return: None
+        """
         data = {
             "forename": self.forename_entry.get().capitalize(),
             "surname": self.surname_entry.get().capitalize(),
@@ -149,7 +161,7 @@ class RegisterFrame(ctk.CTkFrame):
             "passwordConfirm": self.password_confirm_entry.get()
         }
 
-        # Presence check
+        # Presence check for all inputs
         for key, value in data.items():
             if key != "emailVisibility" and len(value) == 0:
                 if key != "passwordConfirm":
@@ -171,7 +183,7 @@ class RegisterFrame(ctk.CTkFrame):
             self.error_label_sv.set("Invalid email")
             return
 
-        # Length check for password
+        # Length check for password, based off of what is required by the database
         if len(data["password"]) < 8 or len(data["password"]) > 72:
             self.error_label_sv.set("Password must be between 8 and 72 characters")
             return
@@ -181,8 +193,11 @@ class RegisterFrame(ctk.CTkFrame):
             self.error_label_sv.set("Passwords don't match")
             return
 
+        # A request is sent to the database
         response = RUNNING_DB.register_account(data)
 
+        # If the database response is successful, the login top level self-destructs. Otherwise, the response error
+        #  message is given to the user, and they are given another chance
         if response["response"]:
             self.user_accepted.set(True)
             self.master.destroy()
