@@ -14,6 +14,11 @@ DEFAULT_PAD_COMPLETE = {
     "pady": DEFAULT_PAD
 }
 
+# Login toplevel settings
+LOGIN_WIDTH = 300
+LOGIN_HEIGHT = 500
+LOGIN_GEOMETRY = f"{LOGIN_WIDTH}x{LOGIN_HEIGHT}"
+
 
 # Fonts
 
@@ -22,12 +27,18 @@ TITLE_FONT = {"family": "Segoe UI",
               "weight": "bold"}
 
 ENTRY_FONT = {"family": "Segoe UI",
-              "size": 17}
+              "size": 17,
+              "slant": "italic"}
 
 NORMAL_LABEL_FONT = {"family": "Segoe UI",
                      "size": 17,
                      "weight": "bold"}
 
+SMALL_LABEL_FONT = {"family": "Segoe UI",
+                    "size": 13}
+
 # Colours
 
 ROOT_BG = ("#EAEBEB", "#23272D")
+BUTTON_HOVER_COLOR = "#969696"
+LABEL_BUTTON_TEXT_COLOR = "#202EC8"

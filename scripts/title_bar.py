@@ -46,7 +46,7 @@ class TitleBar(ctk.CTkFrame):
             text="",
             width=45,
             height=45,
-            hover_color="#969696",
+            hover_color=BUTTON_HOVER_COLOR,
             corner_radius=8
         )
 
