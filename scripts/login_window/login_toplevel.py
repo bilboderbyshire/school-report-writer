@@ -23,6 +23,9 @@ class LoginWindow(ctk.CTkToplevel):
         self.__setup_frames()
         self.show_frame(LoginFrame)
 
+        self.columnconfigure(0, weight=1)
+        self.rowconfigure(0, weight=1)
+
         self.focus_force()
         self.wait_window()
 
