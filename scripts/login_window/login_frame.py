@@ -1,5 +1,5 @@
 import customtkinter as ctk
-from ..components import TitleLabel, SingleLineEntry, NormalLabel
+from ..components import TitleLabel, SingleLineEntry, NormalLabel, SmallLabelButton
 from ..settings import *
 
 
@@ -31,5 +31,11 @@ class LoginFrame(ctk.CTkFrame):
                                               show="•")
         self.password_entry.grid(row=4, column=0, columnspan=3, sticky="nsew", pady=(0, DEFAULT_PAD), padx=DEFAULT_PAD)
 
-        self.rowconfigure([0, 1, 2, 3, 4], weight=0)
+        self.register_button = SmallLabelButton(self,
+                                                text="Register account",
+                                                width=5)
+        self.register_button.grid(row=5, column=2, sticky="e", pady=(0, DEFAULT_PAD), padx=DEFAULT_PAD)
+
+        self.rowconfigure([0, 1, 2, 3, 4, 5], weight=0)
         self.columnconfigure([0, 1, 2], weight=1)
+
