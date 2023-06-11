@@ -1,5 +1,5 @@
 import customtkinter as ctk
-from ..components import TitleLabel, SingleLineEntry, NormalLabel, SmallLabelButton, SmallLabel
+from ..components import TitleLabel, SingleLineEntry, NormalLabel, SmallLabelButton, SmallLabel, SecondaryButton
 from ..settings import *
 from ..database import RUNNING_DB
 
@@ -70,11 +70,11 @@ class LoginFrame(ctk.CTkFrame):
         self.login_button.grid(row=7, column=1, sticky="ew", pady=(0, DEFAULT_PAD), padx=(0, DEFAULT_PAD))
 
         # Cancel button
-        self.cancel_button = ctk.CTkButton(self,
-                                           text="Cancel",
-                                           font=ctk.CTkFont(**NORMAL_LABEL_FONT),
-                                           border_spacing=5,
-                                           command=self.cancel_login)
+        self.cancel_button = SecondaryButton(self,
+                                             text="Cancel",
+                                             font=ctk.CTkFont(**NORMAL_LABEL_FONT),
+                                             border_spacing=5,
+                                             command=self.cancel_login)
         self.cancel_button.grid(row=7, column=2, sticky="ew", pady=(0, DEFAULT_PAD), padx=(0, DEFAULT_PAD))
 
         self.rowconfigure([0, 1, 2, 3, 4, 5, 7], weight=0)
