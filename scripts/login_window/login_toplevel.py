@@ -6,11 +6,12 @@ from .login_frame import LoginFrame
 
 
 class LoginWindow(ctk.CTkToplevel):
-    def __init__(self, master):
+    def __init__(self, master, user_accepted: ctk.BooleanVar):
         super().__init__(master, fg_color=ROOT_BG)
         self.geometry(f"{LOGIN_GEOMETRY}")
 
-        self.user_accepted = ctk.BooleanVar(value=False)
+        self.user_accepted = user_accepted
+        self.resizable(False, False)
 
         self.title("Login")
 
@@ -39,6 +40,3 @@ class LoginWindow(ctk.CTkToplevel):
     def show_frame(self, frame_to_show):
         frame = self.frames[frame_to_show]
         frame.tkraise()
-
-    def login(self):
-        self.destroy()
