@@ -2,6 +2,7 @@ import customtkinter as ctk
 from .settings import *
 from PIL import Image
 import os
+from .components import TitleLabel
 
 
 def change_theme():
@@ -24,12 +25,8 @@ class TitleBar(ctk.CTkFrame):
                          fg_color="transparent")
 
         # The label containing the text that explains what the current scene is showing
-        self.title_label = ctk.CTkLabel(
-            self,
-            text=title_text,
-            font=ctk.CTkFont(**TITLE_FONT),
-            anchor="w",
-        )
+        self.title_label = TitleLabel(self,
+                                      title_text)
 
         self.title_label.grid(row=0, column=0, sticky="nsew", **DEFAULT_PAD_COMPLETE)
 
