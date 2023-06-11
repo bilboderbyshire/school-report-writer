@@ -2,6 +2,7 @@ import customtkinter as ctk
 from ..settings import *
 from ..database import RUNNING_DB
 import os
+from .login_frame import LoginFrame
 
 
 class LoginWindow(ctk.CTkToplevel):
@@ -19,16 +20,22 @@ class LoginWindow(ctk.CTkToplevel):
         self.after(250, lambda: self.iconbitmap(os.path.join(os.getcwd(), "images/app-logo.ico")))
 
         self.frames = {}
+        self.__setup_frames()
+        self.show_frame(LoginFrame)
 
         self.focus_force()
         self.wait_window()
 
     def __setup_frames(self):
-        current_frame_list = []
+        current_frame_list = [LoginFrame]
         for frame in current_frame_list:
             new_frame = frame(self, self.user_accepted)
             self.frames[frame] = new_frame
             new_frame.grid(row=0, column=0, sticky="nsew")
+
+    def show_frame(self, frame_to_show):
+        frame = self.frames[frame_to_show]
+        frame.tkraise()
 
     def login(self):
         self.destroy()
