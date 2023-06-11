@@ -1,6 +1,7 @@
 import customtkinter as ctk
 from .settings import *
 import os
+from .login_window import LoginWindow
 from .main_menu import main_menu_scene as mm_scene
 
 
@@ -26,7 +27,11 @@ class ReportWriter(ctk.CTk):
 
         self.frames = {}
         self.__setup_frames()
-        # self.show_frame()
+        self.__login()
+
+    def __login(self):
+        LoginWindow(self)
+        self.show_frame(mm_scene.MainMenuScene)
 
     def __setup_frames(self):
         current_frame_list = [mm_scene.MainMenuScene]

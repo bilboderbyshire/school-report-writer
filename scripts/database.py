@@ -1,6 +1,6 @@
 import pocketbase
-from settings import *
-from containers import *
+from .settings import *
+from .containers import *
 
 
 class Pb(pocketbase.PocketBase):
