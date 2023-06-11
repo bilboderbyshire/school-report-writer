@@ -30,8 +30,12 @@ class ReportWriter(ctk.CTk):
         self.__login()
 
     def __login(self):
-        LoginWindow(self)
-        self.show_frame(mm_scene.MainMenuScene)
+        user_accepted = ctk.BooleanVar(value=False)
+        LoginWindow(self, user_accepted)
+        if user_accepted.get():
+            self.show_frame(mm_scene.MainMenuScene)
+        else:
+            self.destroy()
 
     def __setup_frames(self):
         current_frame_list = [mm_scene.MainMenuScene]
