@@ -16,7 +16,7 @@ DEFAULT_PAD_COMPLETE = {
 
 # Login toplevel settings
 LOGIN_WIDTH = 300
-LOGIN_HEIGHT = 500
+LOGIN_HEIGHT = 450
 LOGIN_GEOMETRY = f"{LOGIN_WIDTH}x{LOGIN_HEIGHT}"
 
 
@@ -27,8 +27,7 @@ TITLE_FONT = {"family": "Segoe UI",
               "weight": "bold"}
 
 ENTRY_FONT = {"family": "Segoe UI",
-              "size": 17,
-              "slant": "italic"}
+              "size": 17}
 
 NORMAL_LABEL_FONT = {"family": "Segoe UI",
                      "size": 17,

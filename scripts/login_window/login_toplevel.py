@@ -11,6 +11,7 @@ class LoginWindow(ctk.CTkToplevel):
         self.geometry(f"{LOGIN_GEOMETRY}")
 
         self.user_accepted = ctk.BooleanVar(value=False)
+        self.resizable(False, False)
 
         self.title("Login")
 

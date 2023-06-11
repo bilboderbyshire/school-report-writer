@@ -10,26 +10,26 @@ class LoginFrame(ctk.CTkFrame):
 
         self.title_bar = TitleLabel(self,
                                     "Login")
-        self.title_bar.grid(row=0, column=0, columnspan=3, sticky="w", **DEFAULT_PAD_COMPLETE)
+        self.title_bar.grid(row=0, column=0, columnspan=3, sticky="w", pady=(DEFAULT_PAD, 30), padx=DEFAULT_PAD)
 
         self.username_label = NormalLabel(self,
                                           text="Username",
-                                          anchor="w")
-        self.username_label.grid(row=1, column=0, columnspan=3, sticky="nsew", pady=(30, DEFAULT_PAD), padx=DEFAULT_PAD)
+                                          anchor="sw")
+        self.username_label.grid(row=1, column=0, columnspan=3, sticky="nsew", pady=(0, DEFAULT_PAD), padx=DEFAULT_PAD)
 
         self.username_entry = SingleLineEntry(self,
                                               placeholder_text="Type username here...")
-        self.username_entry.grid(row=2, column=0, columnspan=3, sticky="nsew", pady=(0, DEFAULT_PAD), padx=DEFAULT_PAD)
+        self.username_entry.grid(row=2, column=0, columnspan=3, sticky="ew", pady=(0, DEFAULT_PAD), padx=DEFAULT_PAD)
 
         self.password_label = NormalLabel(self,
                                           text="Password",
-                                          anchor="w")
-        self.password_label.grid(row=3, column=0, columnspan=3, sticky="nsew", pady=(30, DEFAULT_PAD), padx=DEFAULT_PAD)
+                                          anchor="sw")
+        self.password_label.grid(row=3, column=0, columnspan=3, sticky="sew", pady=(0, DEFAULT_PAD), padx=DEFAULT_PAD)
 
         self.password_entry = SingleLineEntry(self,
                                               placeholder_text="Type password here...",
                                               show="•")
-        self.password_entry.grid(row=4, column=0, columnspan=3, sticky="nsew", pady=(0, DEFAULT_PAD), padx=DEFAULT_PAD)
+        self.password_entry.grid(row=4, column=0, columnspan=3, sticky="ew", pady=(0, DEFAULT_PAD), padx=DEFAULT_PAD)
 
         self.register_button = SmallLabelButton(self,
                                                 text="Register account",
