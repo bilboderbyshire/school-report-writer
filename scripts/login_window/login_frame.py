@@ -101,18 +101,9 @@ class LoginFrame(ctk.CTkFrame):
         else:
             self.error_label_sv.set("")
 
-        # A request is made to the database
-        response = RUNNING_DB.login(current_email, current_password)
+        self.configure(cursor="watch")
 
-        # Depending on the type of response, the login window self-destructs (successful login), or updates the error
-        #  label and allows the user to try again
-        if response["response"]:
-            self.user_accepted.set(True)
-            self.master.destroy()
-        else:
-            self.user_accepted.set(False)
-            self.error_label_sv.set(response["message"])
-            return
+        self.after(500, lambda: self.make_db_request(current_email, current_password))
 
     def cancel_login(self) -> None:
         """
@@ -124,3 +115,18 @@ class LoginFrame(ctk.CTkFrame):
 
     def register_account(self) -> None:
         self.master.show_frame("register")
+
+    def make_db_request(self, email, password) -> None:
+        # A request is made to the database
+        response = RUNNING_DB.login(email, password)
+
+        # Depending on the type of response, the login window self-destructs (successful login), or updates the error
+        #  label and allows the user to try again
+        if response["response"]:
+            self.user_accepted.set(True)
+            self.master.destroy()
+        else:
+            self.user_accepted.set(False)
+            self.error_label_sv.set(response["message"])
+
+        self.configure(cursor="arrow")
