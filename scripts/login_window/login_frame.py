@@ -101,6 +101,9 @@ class LoginFrame(ctk.CTkFrame):
         else:
             self.error_label_sv.set("")
 
+        if len(current_password) < 0 or len(current_password) > 72:
+            self.error_label_sv.set("Your password should be between 8 and 72 characters long")
+
         self.configure(cursor="watch")
 
         self.after(500, lambda: self.make_db_request(current_email, current_password))
