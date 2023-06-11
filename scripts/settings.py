@@ -34,7 +34,7 @@ NORMAL_LABEL_FONT = {"family": "Segoe UI",
                      "weight": "bold"}
 
 SMALL_LABEL_FONT = {"family": "Segoe UI",
-                    "size": 13}
+                    "size": 14}
 
 # Colours
 
