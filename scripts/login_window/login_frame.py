@@ -104,8 +104,10 @@ class LoginFrame(ctk.CTkFrame):
         if len(current_password) < 0 or len(current_password) > 72:
             self.error_label_sv.set("Your password should be between 8 and 72 characters long")
 
+        # While waiting for database, set cursor to watch to make clear work is happening behind the scenes
         self.configure(cursor="watch")
 
+        # Run request function in after() to allow cursor change to render
         self.after(500, lambda: self.make_db_request(current_email, current_password))
 
     def cancel_login(self) -> None:
@@ -123,6 +125,9 @@ class LoginFrame(ctk.CTkFrame):
         # A request is made to the database
         response = RUNNING_DB.login(email, password)
 
+        # After response is received, reset cursor
+        self.configure(cursor="arrow")
+
         # Depending on the type of response, the login window self-destructs (successful login), or updates the error
         #  label and allows the user to try again
         if response["response"]:
@@ -131,5 +136,3 @@ class LoginFrame(ctk.CTkFrame):
         else:
             self.user_accepted.set(False)
             self.error_label_sv.set(response["message"])
-
-        self.configure(cursor="arrow")

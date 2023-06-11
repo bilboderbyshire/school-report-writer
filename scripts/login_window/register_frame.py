@@ -193,13 +193,17 @@ class RegisterFrame(ctk.CTkFrame):
             self.error_label_sv.set("Passwords don't match")
             return
 
+        # Cursor set to watch to make clear work is happening in the background
         self.configure(cursor="watch")
 
-        # A request is sent to the database
+        # A request is sent to the database. An after is used to allow cursor to change while waiting
         self.after(500, lambda: self.make_db_request(data))
 
     def make_db_request(self, data) -> None:
         response = RUNNING_DB.register_account(data)
+
+        # After response is received, reset cursor
+        self.configure(cursor="arrow")
 
         # If the database response is successful, the login top level self-destructs. Otherwise, the response error
         #  message is given to the user, and they are given another chance
@@ -209,5 +213,3 @@ class RegisterFrame(ctk.CTkFrame):
         else:
             self.user_accepted.set(False)
             self.error_label_sv.set(response["message"])
-
-        self.configure(cursor="arrow")
