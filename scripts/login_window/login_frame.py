@@ -21,7 +21,7 @@ class LoginFrame(ctk.CTkFrame):
         # Title of the frame
         self.title_bar = TitleLabel(self,
                                     "Login")
-        self.title_bar.grid(row=0, column=0, columnspan=3, sticky="w", pady=(DEFAULT_PAD, 30), padx=DEFAULT_PAD)
+        self.title_bar.grid(row=0, column=0, columnspan=3, sticky="w", pady=(DEFAULT_PAD, 35), padx=DEFAULT_PAD)
 
         # Email entry
         self.email_label = NormalLabel(self,
@@ -47,7 +47,8 @@ class LoginFrame(ctk.CTkFrame):
         # Register button
         self.register_button = SmallLabelButton(self,
                                                 text="Register account",
-                                                width=5)
+                                                width=5,
+                                                command=self.register_account)
         self.register_button.grid(row=5, column=1, columnspan=2, sticky="ne", pady=(0, DEFAULT_PAD), padx=DEFAULT_PAD)
 
         # Error display label
@@ -100,8 +101,24 @@ class LoginFrame(ctk.CTkFrame):
         else:
             self.error_label_sv.set("")
 
+        self.configure(cursor="watch")
+
+        self.after(500, lambda: self.make_db_request(current_email, current_password))
+
+    def cancel_login(self) -> None:
+        """
+        If the cancel button is clicked, the login window self-destructs
+        :return: None
+        """
+        self.user_accepted.set(False)
+        self.master.destroy()
+
+    def register_account(self) -> None:
+        self.master.show_frame("register")
+
+    def make_db_request(self, email, password) -> None:
         # A request is made to the database
-        response = RUNNING_DB.login(current_email, current_password)
+        response = RUNNING_DB.login(email, password)
 
         # Depending on the type of response, the login window self-destructs (successful login), or updates the error
         #  label and allows the user to try again
@@ -111,12 +128,5 @@ class LoginFrame(ctk.CTkFrame):
         else:
             self.user_accepted.set(False)
             self.error_label_sv.set(response["message"])
-            return
 
-    def cancel_login(self) -> None:
-        """
-        If the cancel button is clicked, the login window self-destructs
-        :return: None
-        """
-        self.user_accepted.set(False)
-        self.master.destroy()
+        self.configure(cursor="arrow")
