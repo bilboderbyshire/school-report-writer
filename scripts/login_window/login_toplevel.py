@@ -9,7 +9,15 @@ from .register_frame import RegisterFrame
 class LoginWindow(ctk.CTkToplevel):
     def __init__(self, master, user_accepted: ctk.BooleanVar):
         super().__init__(master, fg_color=ROOT_BG)
-        self.geometry(f"{LOGIN_GEOMETRY}")
+
+        self.update_idletasks()
+        ws = self.winfo_screenwidth()
+        hs = self.winfo_screenheight()
+
+        x = int((ws / 2) - (LOGIN_WIDTH / 2))
+        y = int((hs / 2) - (LOGIN_HEIGHT / 2)) - 100
+
+        self.geometry(f"{LOGIN_GEOMETRY}+{x}+{y}")
 
         self.user_accepted = user_accepted
         self.resizable(False, False)
