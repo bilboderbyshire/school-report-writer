@@ -21,6 +21,9 @@ TITLE_FONT = {"family": "Segoe UI",
               "size": 30,
               "weight": "bold"}
 
+ENTRY_FONT = {"family": "Segoe UI",
+              "size": 17}
+
 
 # Colours
 
