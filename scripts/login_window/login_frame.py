@@ -46,8 +46,9 @@ class LoginFrame(ctk.CTkFrame):
         self.login_button = ctk.CTkButton(self,
                                           text="Login",
                                           font=ctk.CTkFont(**NORMAL_LABEL_FONT),
-                                          border_spacing=5)
-        self.login_button.grid(row=7, column=1, sticky="ew", padx=(0, DEFAULT_PAD))
+                                          border_spacing=5,
+                                          command=self.login_request)
+        self.login_button.grid(row=7, column=1, sticky="ew", pady=(0, DEFAULT_PAD), padx=(0, DEFAULT_PAD))
 
         self.cancel_button = ctk.CTkButton(self,
                                            text="Cancel",
@@ -59,3 +60,22 @@ class LoginFrame(ctk.CTkFrame):
         self.rowconfigure([1, 2, 3, 4, 5, 6, 7], weight=1, uniform="rows")
         self.columnconfigure([0, 1, 2], weight=1, uniform="columns")
 
+    def login_request(self):
+        current_email = self.email_entry.get()
+        current_password = self.password_entry.get()
+
+        if "@" not in current_email or "." not in current_email:
+            self.error_label_sv.set("Not a valid email address")
+            return
+        else:
+            self.error_label_sv.set("")
+
+        response = RUNNING_DB.login(current_email, current_password)
+
+        if response["response"]:
+            self.user_accepted.set(True)
+            self.master.destroy()
+        else:
+            self.user_accepted.set(False)
+            self.error_label_sv.set(response["message"])
+            return

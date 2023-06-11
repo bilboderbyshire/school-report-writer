@@ -11,7 +11,7 @@ class Pb(pocketbase.PocketBase):
         self.user_token = None
         self.user_is_valid = False
 
-    def login(self, email, password) -> tuple[Response, None | str]:
+    def login(self, email, password) -> Response:
         try:
             self.user_data = self.collection("users").auth_with_password(email, password)
             self.user_model = self.auth_store.model
@@ -19,7 +19,7 @@ class Pb(pocketbase.PocketBase):
             self.user_is_valid = True
 
             return {"response": True,
-                    "message": "Success"}, None
+                    "message": "Success"}
 
         except pocketbase.client.ClientResponseError as e:
             print("Error with getting username:", repr(e))
@@ -36,7 +36,7 @@ class Pb(pocketbase.PocketBase):
                 error_string += f" Password {e.data['data']['password']['message']}"
 
             return {"response": False,
-                    "message": error_string}, e.data["code"]
+                    "message": f"Error code: {e.data['code']} - {error_string}"}
 
     def logout(self) -> None:
         self.auth_store.clear()
