@@ -3,6 +3,7 @@ from ..settings import *
 from ..database import RUNNING_DB
 import os
 from .login_frame import LoginFrame
+from .register_frame import RegisterFrame
 
 
 class LoginWindow(ctk.CTkToplevel):
@@ -22,7 +23,7 @@ class LoginWindow(ctk.CTkToplevel):
 
         self.frames = {}
         self.__setup_frames()
-        self.show_frame(LoginFrame)
+        self.show_frame("login")
 
         self.columnconfigure(0, weight=1)
         self.rowconfigure(0, weight=1)
@@ -31,10 +32,11 @@ class LoginWindow(ctk.CTkToplevel):
         self.wait_window()
 
     def __setup_frames(self):
-        current_frame_list = [LoginFrame]
-        for frame in current_frame_list:
+        current_frame_list = {"login": LoginFrame,
+                              "register": RegisterFrame}
+        for name, frame in current_frame_list.items():
             new_frame = frame(self, self.user_accepted)
-            self.frames[frame] = new_frame
+            self.frames[name] = new_frame
             new_frame.grid(row=0, column=0, sticky="nsew")
 
     def show_frame(self, frame_to_show):
