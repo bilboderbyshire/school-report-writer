@@ -58,7 +58,8 @@ class LoginFrame(ctk.CTkFrame):
         self.cancel_button = ctk.CTkButton(self,
                                            text="Cancel",
                                            font=ctk.CTkFont(**NORMAL_LABEL_FONT),
-                                           border_spacing=5)
+                                           border_spacing=5,
+                                           command=self.cancel_login)
         self.cancel_button.grid(row=7, column=2, sticky="ew", pady=(0, DEFAULT_PAD), padx=(0, DEFAULT_PAD))
 
         self.rowconfigure([0, 1, 2, 3, 4, 5, 7], weight=0)
@@ -84,3 +85,7 @@ class LoginFrame(ctk.CTkFrame):
             self.user_accepted.set(False)
             self.error_label_sv.set(response["message"])
             return
+
+    def cancel_login(self):
+        self.user_accepted.set(False)
+        self.master.destroy()
