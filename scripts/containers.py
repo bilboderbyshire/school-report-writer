@@ -6,6 +6,15 @@ class Response(TypedDict):
     message: str
 
 
+class UserCreation(TypedDict):
+    forename: str
+    surname: str
+    email: str
+    emailVisibility: bool
+    password: str
+    passwordConfirm: str
+
+
 class User:
     def __init__(self, record):
         self.response_object = record

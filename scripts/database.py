@@ -1,6 +1,6 @@
 import pocketbase
-from settings import *
-from containers import *
+from .settings import *
+from .containers import *
 
 
 class Pb(pocketbase.PocketBase):
@@ -11,7 +11,7 @@ class Pb(pocketbase.PocketBase):
         self.user_token = None
         self.user_is_valid = False
 
-    def login(self, email, password) -> tuple[Response, None | str]:
+    def login(self, email, password) -> Response:
         try:
             self.user_data = self.collection("users").auth_with_password(email, password)
             self.user_model = self.auth_store.model
@@ -19,10 +19,10 @@ class Pb(pocketbase.PocketBase):
             self.user_is_valid = True
 
             return {"response": True,
-                    "message": "Success"}, None
+                    "message": "Success"}
 
         except pocketbase.client.ClientResponseError as e:
-            print("Error with getting username:", repr(e))
+            print("Error with logging in:", repr(e))
             print(e.data)
 
             if e.data["message"] == "Failed to authenticate.":
@@ -31,12 +31,36 @@ class Pb(pocketbase.PocketBase):
                 error_string = e.data["message"] + ":"
 
             if "identity" in e.data["data"].keys():
-                error_string += f" Username {e.data['data']['identity']['message']}"
+                error_string += f" Email {e.data['data']['identity']['message']}"
             elif "password" in e.data["data"].keys():
                 error_string += f" Password {e.data['data']['password']['message']}"
 
             return {"response": False,
-                    "message": error_string}, e.data["code"]
+                    "message": f"Error code: {e.data['code']} - {error_string}"}
+
+    def register_account(self, data: UserCreation) -> Response:
+        try:
+            self.user_data = self.collection("users").create(data)
+            self.user_model = self.auth_store.model
+            self.user_token = self.auth_store.token
+            self.user_is_valid = True
+
+            return {"response": True,
+                    "message": "Success"}
+
+        except pocketbase.client.ClientResponseError as e:
+            print("Error with registering account:", repr(e))
+            print(e.data)
+
+            error_string = f"Error code: {e.data['code']} -  {e.data['message']} "
+
+            if "email" in e.data["data"].keys():
+                error_string += f"(email) {e.data['data']['email']['message']}"
+            elif "passwordConfirm" in e.data["data"].keys():
+                error_string += f"(password) {e.data['data']['passwordConfirm']['message']}"
+
+            return {"response": False,
+                    "message": error_string}
 
     def logout(self) -> None:
         self.auth_store.clear()

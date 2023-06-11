@@ -1,6 +1,7 @@
 import customtkinter as ctk
 from .settings import *
 import os
+from .login_window import LoginWindow
 from .main_menu import main_menu_scene as mm_scene
 
 
@@ -11,11 +12,13 @@ class ReportWriter(ctk.CTk):
         ctk.set_default_color_theme(os.path.join(os.getcwd(), "scripts/app-theme.json"))
         ctk.set_appearance_mode("dark")
 
+        self.update_idletasks()
+
         ws = self.winfo_screenwidth()
         hs = self.winfo_screenheight()
 
         x = int((ws / 2) - (WIDTH / 2))
-        y = int((hs / 2) - (HEIGHT / 2))
+        y = int((hs / 2) - (HEIGHT / 2)) - 100
 
         self.geometry(f"{GEOMETRY}+{x}+{y}")
         self.title(WINDOW_TITLE)
@@ -26,7 +29,15 @@ class ReportWriter(ctk.CTk):
 
         self.frames = {}
         self.__setup_frames()
-        # self.show_frame()
+        self.__login()
+
+    def __login(self):
+        user_accepted = ctk.BooleanVar(value=False)
+        LoginWindow(self, user_accepted)
+        if user_accepted.get():
+            self.show_frame(mm_scene.MainMenuScene)
+        else:
+            self.destroy()
 
     def __setup_frames(self):
         current_frame_list = [mm_scene.MainMenuScene]
