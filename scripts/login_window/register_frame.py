@@ -137,6 +137,12 @@ class RegisterFrame(ctk.CTkFrame):
         self.rowconfigure(6, weight=1)
         self.columnconfigure([0, 1, 2], weight=1, uniform="columns")
 
+        all_entries = [self.forename_entry, self.surname_entry, self.email_entry,
+                       self.password_entry, self.password_confirm_entry]
+
+        for i in all_entries:
+            i.bind("<Return>", lambda event: self.register_account())
+
     def back_button_pressed(self) -> None:
         """
         When either back button is pressed, the login frame is displayed

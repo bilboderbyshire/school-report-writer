@@ -81,6 +81,9 @@ class LoginFrame(ctk.CTkFrame):
         self.rowconfigure([6], weight=1, uniform="rows")
         self.columnconfigure([0, 1, 2], weight=1, uniform="columns")
 
+        self.email_entry.bind("<Return>", lambda event: self.login_request())
+        self.password_entry.bind("<Return>", lambda event: self.login_request())
+
     def login_request(self) -> None:
         """
         Collects the input email and password, performs basic validation, and requests authorisation from the database.
