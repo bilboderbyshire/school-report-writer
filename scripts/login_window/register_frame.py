@@ -9,7 +9,7 @@ class RegisterFrame(ctk.CTkFrame):
     database. Basic local validation is performed to ensure all the information is good. If successful, the user is
     logged in, and the main menu is displayed. If not successful, an error label is updated with an appropriate
     message, and the user is given another chance"""
-    def __init__(self, master, user_accepted: ctk.BooleanVar):
+    def __init__(self, master, user_accepted: ctk.BooleanVar) -> None:
         super().__init__(master,
                          fg_color="transparent")
 
@@ -17,9 +17,9 @@ class RegisterFrame(ctk.CTkFrame):
         #  deiconify (registration successful)
         self.user_accepted = user_accepted
 
-        self.__build_app()
+        self.__build_frame()
 
-    def __build_app(self):
+    def __build_frame(self) -> None:
 
         # Title of the frame
         self.title_bar = TitleLabel(self,
@@ -121,7 +121,7 @@ class RegisterFrame(ctk.CTkFrame):
                                              text="Register",
                                              font=ctk.CTkFont(**NORMAL_LABEL_FONT),
                                              border_spacing=5,
-                                             )
+                                             command=self.register_account)
         self.register_button.grid(row=7, column=1, sticky="ew", pady=(0, DEFAULT_PAD), padx=(0, DEFAULT_PAD))
 
         # Cancel button
@@ -136,5 +136,57 @@ class RegisterFrame(ctk.CTkFrame):
         self.rowconfigure(6, weight=1)
         self.columnconfigure([0, 1, 2], weight=1, uniform="columns")
 
-    def back_button_pressed(self):
+    def back_button_pressed(self) -> None:
         self.master.show_frame("login")
+
+    def register_account(self) -> None:
+        data = {
+            "forename": self.forename_entry.get().capitalize(),
+            "surname": self.surname_entry.get().capitalize(),
+            "email": self.email_entry.get().lower(),
+            "emailVisibility": True,
+            "password": self.password_entry.get(),
+            "passwordConfirm": self.password_confirm_entry.get()
+        }
+
+        # Presence check
+        for key, value in data.items():
+            if key != "emailVisibility" and len(value) == 0:
+                if key != "passwordConfirm":
+                    self.error_label_sv.set(f"{key.capitalize()} cannot be empty")
+                else:
+                    self.error_label_sv.set("Password confirm cannot be empty")
+                return
+
+        # Type check for names
+        acceptable_name_chars = "abcdefghijklmnopqrstuvwxyz -'"
+        for i in ["forename", "surname"]:
+            for j in data[i].lower():
+                if j not in acceptable_name_chars:
+                    self.error_label_sv.set(f"{i.capitalize()} cannot contain illegal characters: {j}")
+                    return
+
+        # Format check for email
+        if "@" not in data["email"] or "." not in data["email"]:
+            self.error_label_sv.set("Invalid email")
+            return
+
+        # Length check for password
+        if len(data["password"]) < 8 or len(data["password"]) > 72:
+            self.error_label_sv.set("Password must be between 8 and 72 characters")
+            return
+
+        # Match check for passwords
+        if data["password"] != data["passwordConfirm"]:
+            self.error_label_sv.set("Passwords don't match")
+            return
+
+        response = RUNNING_DB.register_account(data)
+
+        if response["response"]:
+            self.user_accepted.set(True)
+            self.master.destroy()
+        else:
+            self.user_accepted.set(False)
+            self.error_label_sv.set(response["message"])
+            return

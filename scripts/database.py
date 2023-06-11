@@ -38,16 +38,8 @@ class Pb(pocketbase.PocketBase):
             return {"response": False,
                     "message": f"Error code: {e.data['code']} - {error_string}"}
 
-    def register_account(self, forename, surname, email, password, password_confirm) -> Response:
+    def register_account(self, data: UserCreation) -> Response:
         try:
-            data = {
-                "forename": forename,
-                "surname": surname,
-                "email": email,
-                "emailVisibility": True,
-                "password": password,
-                "passwordConfirm": password_confirm
-            }
             self.user_data = self.collection("users").create(data)
             self.user_model = self.auth_store.model
             self.user_token = self.auth_store.token
