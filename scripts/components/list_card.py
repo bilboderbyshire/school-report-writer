@@ -4,7 +4,7 @@ from ..containers import SingleReportSet
 
 
 class ListCard(ctk.CTkFrame):
-    def __init__(self, master, report_set: SingleReportSet,
+    def __init__(self, master,
                  fg_color=LABEL_CARD_COLOR, text_color=STANDARD_TEXT_COLOR,
                  hover_color=LABEL_CARD_HOVER_COLOR,
                  command=None):
