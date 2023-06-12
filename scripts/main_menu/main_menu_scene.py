@@ -10,7 +10,7 @@ class MainMenuScene(ctk.CTkFrame):
         super().__init__(master, fg_color=ROOT_BG)
 
         self.title_bar = tbar.TitleBar(self, "Report Writer")
-        self.title_bar.grid(row=0, column=0, columnspan=3, sticky="nsew")
+        self.title_bar.grid(row=0, column=0, columnspan=3, sticky="nsew", **DEFAULT_PAD_COMPLETE)
 
         self.report_frame = ReportsScrollableFrame(
             self, None
