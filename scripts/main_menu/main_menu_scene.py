@@ -10,7 +10,7 @@ class MainMenuScene(ctk.CTkFrame):
     def __init__(self, master):
         super().__init__(master, fg_color=ROOT_BG)
 
-        self.title_bar = tbar.TitleBar(self, "Report Writer")
+        self.title_bar = tbar.TitleBar(self, "Report Writer", refresh_command=self.refresh_frames)
         self.title_bar.grid(row=0, column=0, columnspan=3, sticky="nsew", **DEFAULT_PAD_COMPLETE)
 
         self.report_frame = ReportsScrollableFrame(self)
@@ -48,3 +48,7 @@ class MainMenuScene(ctk.CTkFrame):
 
     def check_if_scroll_needed(self):
         self.report_frame.check_scrollbar_needed()
+
+    def refresh_frames(self):
+        # TODO create refresh frame method
+        print("refreshed")
