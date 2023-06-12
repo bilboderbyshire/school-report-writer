@@ -15,6 +15,8 @@ class AutohidingScrollableAndLoadingFrame(ctk.CTkScrollableFrame):
 
         self.scrollbar_color = scrollbar_button_color
         self.scrollbar_hover_color = scrollbar_button_hover_color
+        self._label.configure(padx=0, anchor="nw")
+        self._label.grid_configure(**DEFAULT_PAD_COMPLETE)
 
         self.loading_label = ctk.CTkLabel(self,
                                           fg_color="transparent",
