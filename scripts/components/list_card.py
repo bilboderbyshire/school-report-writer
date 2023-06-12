@@ -9,7 +9,7 @@ class ListCard(ctk.CTkFrame):
                  hover_color=LABEL_CARD_HOVER_COLOR,
                  command=None):
         super().__init__(master,
-                         height=80,
+                         height=98,
                          fg_color=fg_color)
 
         # When griding widgets into the list card, the card will not propagate and stay the same fixed size
