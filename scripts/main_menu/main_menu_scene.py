@@ -9,10 +9,6 @@ class MainMenuScene(ctk.CTkFrame):
     def __init__(self, master):
         super().__init__(master, fg_color=ROOT_BG)
 
-        self.__build_frame()
-
-    def __build_frame(self):
-
         self.title_bar = tbar.TitleBar(self, "Report Writer")
         self.title_bar.grid(row=0, column=0, columnspan=3, sticky="nsew")
 
@@ -40,7 +36,7 @@ class MainMenuScene(ctk.CTkFrame):
         # simulate long task fetching database values
         time.sleep(2)
 
-        self.report_frame.build_frame()
+        self.report_frame.build_frame(15)
 
         self.check_if_scroll_needed()
 
