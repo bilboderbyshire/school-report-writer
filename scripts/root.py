@@ -35,7 +35,9 @@ class ReportWriter(ctk.CTk):
         user_accepted = ctk.BooleanVar(value=False)
         LoginWindow(self, user_accepted)
         if user_accepted.get():
+            self.configure(cursor="watch")
             self.show_frame(mm_scene.MainMenuScene)
+            self.frames[mm_scene.MainMenuScene].fill_frames()
         else:
             self.destroy()
 

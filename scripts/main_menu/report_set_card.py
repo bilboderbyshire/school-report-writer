@@ -14,7 +14,7 @@ class ReportSetCard(ListCard):
         self.title_label = ctk.CTkLabel(self,
                                         fg_color="transparent",
                                         text=f"{self.report_data.report_title} - " +
-                                             f"Using: my first template",
+                                             f"Using: {self.report_data.template.template_title}",
                                         font=ctk.CTkFont(**NORMAL_LABEL_FONT),
                                         anchor="nw",
                                         padx=0,
