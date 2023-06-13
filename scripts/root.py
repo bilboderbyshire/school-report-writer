@@ -36,6 +36,7 @@ class ReportWriter(ctk.CTk):
         LoginWindow(self, user_accepted)
         if user_accepted.get():
             self.show_frame(mm_scene.MainMenuScene)
+            self.frames[mm_scene.MainMenuScene].refresh_frames()
         else:
             self.destroy()
 

@@ -124,19 +124,18 @@ class Pb(pocketbase.PocketBase):
     def get_users_email(self) -> tuple[Response, None | str]:
         if self.user_is_valid:
             return {"response": False,
-                    "message": "Success",
-                    "value": self.user_model.email}
+                    "message": "Success"}, self.user_model.email
         else:
             return {"response": False,
-                    "message": "No user",
-                    "value": None}
+                    "message": "No user"}, None
 
     def get_set_reports(self) -> tuple[Response, list[SingleReportSet]]:
         self.refresh_auth()
         if self.user_is_valid:
             try:
                 results = self.collection("report_set").get_full_list(query_params={
-                    "expand": "template, template.owner, user"
+                    "expand": "template, template.owner, user",
+                    "sort": "-created"
                 })
                 return_list = [SingleReportSet(i) for i in results]
                 return {
@@ -178,7 +177,7 @@ class Pb(pocketbase.PocketBase):
             return ({"response": False,
                      "message": "Getting individual reports failed"}, [])
 
-    def check_if_user_exists(self, email_to_check) -> tuple[Response, bool]:
+    def check_if_user_exists(self, email_to_check) -> tuple[Response, bool | None]:
         self.refresh_auth()
         if self.user_is_valid:
             try:
@@ -197,12 +196,12 @@ class Pb(pocketbase.PocketBase):
                 print(e.data)
 
                 return ({"response": False,
-                         "message": "Search for user email failed"}, [])
+                         "message": "Search for user email failed"}, None)
         else:
             return ({"response": False,
-                     "message": "Search for user email failed"}, [])
+                     "message": "Search for user email failed"}, None)
 
-    def get_available_templates(self) -> tuple[Response, list[ReportTemplate]]:
+    def get_available_templates(self) -> tuple[Response, list[ReportTemplate] | None]:
         self.refresh_auth()
         if self.user_is_valid:
             try:
@@ -221,10 +220,10 @@ class Pb(pocketbase.PocketBase):
                 print(e.data)
 
                 return ({"response": False,
-                         "message": "Available template collection failed"}, [])
+                         "message": "Available template collection failed"}, None)
         else:
             return ({"response": False,
-                     "message": "Available template collection failed"}, [])
+                     "message": "Available template collection failed"}, None)
 
 
 RUNNING_DB = Pb()
