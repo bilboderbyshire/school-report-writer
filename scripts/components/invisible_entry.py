@@ -18,11 +18,9 @@ class InvisibleEntry(ctk.CTkFrame):
             font=ctk.CTkFont(**SECONDARY_TITLE_FONT),
             fg_color=fg_color,
             text_color=text_color,
-            placeholder_text=placeholder_text,
-            placeholder_text_color=text_color,
             border_width=0,
             **kwargs)
-
+        self.text_entry.insert(0, placeholder_text)
         self.edit_image = ctk.CTkImage(
                 light_image=Image.open(os.path.join(os.getcwd(), "images/light-pencil.png")),
                 dark_image=Image.open(os.path.join(os.getcwd(), "images/dark-pencil.png")),
@@ -43,3 +41,5 @@ class InvisibleEntry(ctk.CTkFrame):
         self.rowconfigure(0, weight=1)
         self.columnconfigure(0, weight=0)
         self.columnconfigure(1, weight=1)
+
+        self.text_entry.bind("<Return>", lambda e: self.focus())
