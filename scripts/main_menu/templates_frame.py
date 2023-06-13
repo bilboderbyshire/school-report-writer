@@ -1,21 +1,21 @@
 import customtkinter as ctk
 from ..settings import *
-from ..containers import SingleReportSet
+from ..containers import ReportTemplate
 from ..components import AutohidingScrollableAndLoadingFrame
-from .report_set_card import ReportSetCard
+from .template_card import TemplateCard
 
 
-class ReportsScrollableFrame(AutohidingScrollableAndLoadingFrame):
+class TemplatesScrollableFrame(AutohidingScrollableAndLoadingFrame):
     def __init__(self, master, add_command=None):
         super().__init__(master,
                          label_font=ctk.CTkFont(**SECONDARY_TITLE_FONT),
                          label_anchor="w",
                          label_fg_color="transparent",
-                         label_text="Reports",
+                         label_text="Templates",
                          fg_color=ROOT_BG,
                          button_command=add_command)
 
-    def build_report_frame(self, reports_set: list[SingleReportSet]):
+    def build_template_frame(self, reports_set: list[ReportTemplate]):
 
         for i in self.winfo_children():
             i.destroy()
@@ -23,7 +23,7 @@ class ReportsScrollableFrame(AutohidingScrollableAndLoadingFrame):
         self.update_idletasks()
 
         for index, i in enumerate(reports_set):
-            new_card = ReportSetCard(self, i, command=self.card_command)
+            new_card = TemplateCard(self, i, command=self.card_command)
             if index == len(reports_set) - 1:
                 new_card.grid(row=index, column=0, sticky="ew", padx=DEFAULT_PAD - 7)
             else:
