@@ -1,8 +1,9 @@
+from tkinter import Misc
 import customtkinter as ctk
 from .settings import *
 import os
 from .login_window import LoginWindow
-from .main_menu import main_menu_scene as mm_scene
+from .main_menu import MainMenuScene
 
 
 class ReportWriter(ctk.CTk):
@@ -35,18 +36,19 @@ class ReportWriter(ctk.CTk):
         user_accepted = ctk.BooleanVar(value=False)
         LoginWindow(self, user_accepted)
         if user_accepted.get():
-            self.show_frame(mm_scene.MainMenuScene)
-            self.frames[mm_scene.MainMenuScene].refresh_frames()
+            self.show_frame("main-menu")
+            self.frames["main-menu"].refresh_frames()
         else:
             self.destroy()
 
     def __setup_frames(self):
-        current_frame_list = [mm_scene.MainMenuScene]
-        for frame in current_frame_list:
+        current_frame_list = {"main-menu": MainMenuScene}
+        for name, frame in current_frame_list.items():
             new_frame = frame(self)
-            self.frames[frame] = new_frame
+            self.frames[name] = new_frame
             new_frame.grid(row=0, column=0, sticky="nsew")
 
-    def show_frame(self, frame_to_show):
+    def show_frame(self, frame_to_show) -> Misc:
         frame = self.frames[frame_to_show]
         frame.tkraise()
+        return frame
