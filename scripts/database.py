@@ -102,6 +102,15 @@ class Pb(pocketbase.PocketBase):
             return ({"response": False,
                     "message": "No user"}, None)
 
+    def get_users_id(self) -> tuple[Response, None | str]:
+        if self.user_is_valid:
+            return ({"response": False,
+                    "message": "Success"}, self.user_model.id)
+
+        else:
+            return ({"response": False,
+                    "message": "No user"}, None)
+
     def get_users_surname(self) -> tuple[Response, None | str]:
         if self.user_is_valid:
             return ({"response": False,
