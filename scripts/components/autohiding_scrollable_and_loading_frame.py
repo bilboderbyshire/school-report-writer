@@ -22,7 +22,7 @@ class AutohidingScrollableAndLoadingFrame(ctk.CTkScrollableFrame):
 
         self._label.configure(anchor="w")
         self._label.winfo_children()[1].configure(pady=0, anchor="w")
-        self._label.winfo_children()[1].grid_configure(pady=0)
+        self._label.winfo_children()[1].grid_configure(pady=0, sticky="nw")
 
         if self.button_command is not None:
             self.plus_image = ctk.CTkImage(
