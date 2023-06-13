@@ -85,4 +85,5 @@ class MainMenuScene(ctk.CTkFrame):
     def add_template(self):
         template_scene = self.master.show_frame("template-scene")
         template_scene.previous_scene("main-menu")
+        template_scene.refresh_frames()
 
