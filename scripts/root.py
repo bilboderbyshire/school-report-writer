@@ -37,7 +37,7 @@ class ReportWriter(ctk.CTk):
         if user_accepted.get():
             self.configure(cursor="watch")
             self.show_frame(mm_scene.MainMenuScene)
-            self.frames[mm_scene.MainMenuScene].fill_frames()
+            self.frames[mm_scene.MainMenuScene].refresh_frames()
         else:
             self.destroy()
 

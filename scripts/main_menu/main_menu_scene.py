@@ -59,5 +59,7 @@ class MainMenuScene(ctk.CTkFrame):
         self.report_frame.check_scrollbar_needed()
 
     def refresh_frames(self):
-        # TODO create refresh frame method
-        print("refreshed")
+        self.configure(cursor="watch")
+
+        self.after(600, self.fill_frames)
+
