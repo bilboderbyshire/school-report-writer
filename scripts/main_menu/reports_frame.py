@@ -6,13 +6,14 @@ from .report_set_card import ReportSetCard
 
 
 class ReportsScrollableFrame(AutohidingScrollableAndLoadingFrame):
-    def __init__(self, master):
+    def __init__(self, master, add_command=None):
         super().__init__(master,
                          label_font=ctk.CTkFont(**SECONDARY_TITLE_FONT),
                          label_anchor="w",
                          label_fg_color="transparent",
                          label_text="Reports",
-                         fg_color=ROOT_BG)
+                         fg_color=ROOT_BG,
+                         button_command=add_command)
 
     def build_report_frame(self, reports_set: list[SingleReportSet]):
 
