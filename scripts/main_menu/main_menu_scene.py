@@ -60,6 +60,7 @@ class MainMenuScene(ctk.CTkFrame):
 
     def refresh_frames(self):
         self.change_cursor("watch")
+        self.report_frame.loading_frame()
 
         self.after(600, self.fill_frames)
 

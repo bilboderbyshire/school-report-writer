@@ -31,6 +31,8 @@ class AutohidingScrollableAndLoadingFrame(ctk.CTkScrollableFrame):
         self.columnconfigure(0, weight=1)
         self.rowconfigure(0, weight=1)
 
+        self.check_scrollbar_needed()
+
     def build_frame(self):
         self.update_idletasks()
 
