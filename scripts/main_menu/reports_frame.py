@@ -15,6 +15,8 @@ class ReportsScrollableFrame(AutohidingScrollableAndLoadingFrame):
                          fg_color=ROOT_BG)
 
     def build_report_frame(self, reports_set: list[SingleReportSet]):
+        self.loading_frame()
+
         for i in self.winfo_children():
             i.destroy()
 

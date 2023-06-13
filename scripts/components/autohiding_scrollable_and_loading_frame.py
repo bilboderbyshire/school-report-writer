@@ -16,21 +16,22 @@ class AutohidingScrollableAndLoadingFrame(ctk.CTkScrollableFrame):
         self.scrollbar_color = scrollbar_button_color
         self.scrollbar_hover_color = scrollbar_button_hover_color
         self._label.configure(padx=0, anchor="nw")
-        # self._label.grid_configure(**DEFAULT_PAD_COMPLETE)
 
-        self.loading_label = ctk.CTkLabel(self,
-                                          fg_color="transparent",
-                                          text="Loading...",
-                                          font=ctk.CTkFont(**TITLE_FONT),
-                                          anchor="center")
+    def loading_frame(self):
+        for i in self.winfo_children():
+            i.destroy()
 
-        self.loading_label.grid(row=0, column=0, sticky="nsew", pady=50)
+        loading_label = ctk.CTkLabel(self,
+                                     fg_color="transparent",
+                                     text="Loading...",
+                                     font=ctk.CTkFont(**TITLE_FONT),
+                                     anchor="center")
+        loading_label.grid(row=0, column=0, sticky="nsew", pady=50)
 
         self.columnconfigure(0, weight=1)
         self.rowconfigure(0, weight=1)
 
     def build_frame(self):
-        self.loading_label.destroy()
         self.update_idletasks()
 
         for i in range(6):

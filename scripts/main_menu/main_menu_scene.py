@@ -47,19 +47,23 @@ class MainMenuScene(ctk.CTkFrame):
 
             error_box.wait_window()
 
-            self.configure(cursor="arrow")
+            self.change_cursor("arrow")
             self.master.destroy()
             return
 
         self.check_if_scroll_needed()
 
-        self.configure(cursor="arrow")
+        self.change_cursor("arrow")
 
     def check_if_scroll_needed(self):
         self.report_frame.check_scrollbar_needed()
 
     def refresh_frames(self):
-        self.configure(cursor="watch")
+        self.change_cursor("watch")
 
         self.after(600, self.fill_frames)
+
+    def change_cursor(self, cursor: str) -> None:
+        for i in self.winfo_children():
+            i.configure(cursor=cursor)
 
