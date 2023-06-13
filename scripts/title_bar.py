@@ -28,7 +28,7 @@ class TitleBar(ctk.CTkFrame):
         self.title_label = TitleLabel(self,
                                       title_text)
 
-        self.title_label.grid(row=0, column=0, sticky="nsew", pady=DEFAULT_PAD)
+        self.title_label.grid(row=0, column=0, sticky="nsew", **DEFAULT_PAD_COMPLETE)
 
         # The image within the theme change button
         self.theme_image = ctk.CTkImage(

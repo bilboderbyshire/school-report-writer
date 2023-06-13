@@ -4,6 +4,7 @@ from ..settings import *
 from .reports_frame import ReportsScrollableFrame
 from ..database import RUNNING_DB
 import CTkMessagebox as ctkmb
+from ..components import Separator
 
 
 class MainMenuScene(ctk.CTkFrame):
@@ -11,17 +12,25 @@ class MainMenuScene(ctk.CTkFrame):
         super().__init__(master, fg_color=ROOT_BG)
 
         self.title_bar = tbar.TitleBar(self, "Report Writer", refresh_command=self.refresh_frames)
-        self.title_bar.grid(row=0, column=0, columnspan=3, sticky="nsew", **DEFAULT_PAD_COMPLETE)
+        self.title_bar.grid(row=0, column=0, columnspan=4, sticky="nsew", **DEFAULT_PAD_COMPLETE)
+
+        title_sep = Separator(self, "hor")
+        title_sep.grid(row=1, column=0, columnspan=4, sticky="nsew", padx=DEFAULT_PAD*3, pady=DEFAULT_PAD)
 
         self.report_frame = ReportsScrollableFrame(self)
-        self.report_frame.grid(row=1, column=0, columnspan=2, sticky="nsew", pady=(0, DEFAULT_PAD), padx=DEFAULT_PAD)
+        self.report_frame.grid(row=2, column=0, columnspan=2, sticky="nsew", pady=(0, DEFAULT_PAD),
+                               padx=(DEFAULT_PAD, 3))
 
-        self.template_frame = ctk.CTkFrame(self)
-        self.template_frame.grid(row=1, column=2, sticky="nsew", pady=(0, DEFAULT_PAD), padx=(0, DEFAULT_PAD))
+        frame_sep = Separator(self, "ver")
+        frame_sep.grid(row=2, column=2, sticky="nsew", pady=DEFAULT_PAD*3)
 
-        self.rowconfigure(0, weight=0)
-        self.rowconfigure(1, weight=1)
-        self.columnconfigure([0, 1, 2], weight=1)
+        self.template_frame = ctk.CTkFrame(self, fg_color="transparent")
+        self.template_frame.grid(row=2, column=3, sticky="nsew", pady=(0, DEFAULT_PAD), padx=(3, DEFAULT_PAD))
+
+        self.rowconfigure([0, 1], weight=0)
+        self.rowconfigure(2, weight=1)
+        self.columnconfigure([0, 1, 3], weight=1)
+        self.columnconfigure(2, weight=0)
 
         self.bind("<Configure>", lambda event: self.check_if_scroll_needed())
 
