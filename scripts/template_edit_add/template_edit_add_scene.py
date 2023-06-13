@@ -1,7 +1,7 @@
 import customtkinter as ctk
 from .. import title_bar as tbar
 from ..settings import *
-from ..components import Separator, SmallLabelButton
+from ..components import Separator, InvisibleEntry
 from ..database import RUNNING_DB
 
 
@@ -16,6 +16,9 @@ class TemplateScene(ctk.CTkFrame):
 
         title_sep = Separator(self, "hor")
         title_sep.grid(row=2, column=0, columnspan=4, sticky="nsew", padx=DEFAULT_PAD * 3, pady=DEFAULT_PAD)
+
+        self.name_entry = InvisibleEntry(self, placeholder_text="My new template")
+        self.name_entry.grid(row=3, column=0, columnspan=4, sticky="ew", padx=DEFAULT_PAD*2, pady=DEFAULT_PAD)
 
         self.rowconfigure([0, 1, 2], weight=0)
         # self.rowconfigure(2, weight=1)

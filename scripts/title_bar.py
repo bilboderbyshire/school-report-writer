@@ -65,7 +65,7 @@ class TitleBar(ctk.CTkFrame):
             hover_color=BUTTON_HOVER_COLOR,
             corner_radius=8
         )
-        self.theme_button.grid(row=0, rowspan=2, column=2, sticky="e", pady=DEFAULT_PAD)
+        self.theme_button.grid(row=0, rowspan=2, column=2, sticky="e", pady=DEFAULT_PAD, padx=(0, DEFAULT_PAD))
 
         self.command = refresh_command
 
