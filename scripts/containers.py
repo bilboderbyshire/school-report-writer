@@ -22,6 +22,7 @@ class User:
         self.username = record.username
         self.email = record.email
         self.forename = record.forename
+        self.surname = record.surname
         self.created = record.created
         self.updated = record.updated
 
