@@ -13,7 +13,7 @@ class MainMenuScene(ctk.CTkFrame):
         super().__init__(master, fg_color=ROOT_BG)
 
         self.title_bar = tbar.TitleBar(self, "Report Writer", refresh_command=self.refresh_frames)
-        self.title_bar.grid(row=0, column=0, columnspan=4, sticky="nsew", **DEFAULT_PAD_COMPLETE)
+        self.title_bar.grid(row=0, column=0, columnspan=4, sticky="nsew", pady=(DEFAULT_PAD, 0), padx=DEFAULT_PAD)
 
         title_sep = Separator(self, "hor")
         title_sep.grid(row=1, column=0, columnspan=4, sticky="nsew", padx=DEFAULT_PAD*3, pady=DEFAULT_PAD)
@@ -83,5 +83,6 @@ class MainMenuScene(ctk.CTkFrame):
         print("Adding report")
 
     def add_template(self):
-        print("Adding template")
+        template_scene = self.master.show_frame("template-scene")
+        template_scene.previous_scene("main-menu")
 

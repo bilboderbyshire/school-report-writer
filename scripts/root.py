@@ -4,6 +4,7 @@ from .settings import *
 import os
 from .login_window import LoginWindow
 from .main_menu import MainMenuScene
+from .template_edit_add import TemplateScene
 
 
 class ReportWriter(ctk.CTk):
@@ -42,7 +43,8 @@ class ReportWriter(ctk.CTk):
             self.destroy()
 
     def __setup_frames(self):
-        current_frame_list = {"main-menu": MainMenuScene}
+        current_frame_list = {"main-menu": MainMenuScene,
+                              "template-scene": TemplateScene}
         for name, frame in current_frame_list.items():
             new_frame = frame(self)
             self.frames[name] = new_frame
