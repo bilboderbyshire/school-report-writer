@@ -1,6 +1,24 @@
-import random
-from typing import TypedDict, Any
+from typing import TypedDict
 
+
+class NewPieceRecord:
+    def __init__(self, piece_id: str, section: int):
+        self.id = piece_id
+        self.piece_text = "New piece"
+        self.section = section
+        self.created = "Just now"
+        self.updated = "now"
+        self.expand = {}
+
+
+class NewTemplateRecord:
+    def __init__(self, template_id, template_title):
+        self.id = template_id
+        self.template_title = template_title
+        self.created = "Just now"
+        self.updated = "now"
+        self.owner = None
+        self.expand = {}
 
 
 class Response(TypedDict):
@@ -47,9 +65,12 @@ class ReportTemplate:
         self.created = record.created
         self.updated = record.updated
 
-        if "owner" in record.expand.keys():
-            self.owner = User(record.expand["owner"])
-        else:
+        try:
+            if "owner" in record.expand.keys():
+                self.owner = User(record.expand["owner"])
+            else:
+                self.owner = None
+        except AttributeError:
             self.owner = None
 
     def __repr__(self):
@@ -138,10 +159,13 @@ class IndividualPiece:
         self.updated = record.updated
         self.expand = {}
 
-        if "template" in record.expand.keys():
-            self.template = ReportTemplate(record.expand["template"])
-            self.expand["template"] = record.expand["template"]
-        else:
+        try:
+            if "template" in record.expand.keys():
+                self.template = ReportTemplate(record.expand["template"])
+                self.expand["template"] = record.expand["template"]
+            else:
+                self.template = None
+        except AttributeError:
             self.template = None
 
     @staticmethod
@@ -183,76 +207,3 @@ class IndividualPiece:
             "created": self.created,
             "updated": self.updated
         })
-
-
-class TemplateWithPieces:
-    def __init__(self, template: ReportTemplate | None, pieces_list: list[IndividualPiece]):
-        self.template = template
-        self.pieces_list = pieces_list
-
-        self.pieces_structured: dict[int, list[IndividualPiece]] = {}
-
-        for piece in self.pieces_list:
-            if piece.section in self.pieces_structured.keys():
-                self.pieces_structured[piece.section].append(piece)
-            else:
-                self.pieces_structured[piece.section] = [piece]
-
-        self.copy_of_pieces = self.make_copy_of_structured_pieces()
-
-        print(self.copy_of_pieces == self.pieces_structured)
-
-        self.copy_of_pieces[1][0].piece_text = "changed"
-
-        print(self.copy_of_pieces == self.pieces_structured)
-
-        print(self.pieces_structured)
-        print(self.copy_of_pieces)
-
-    def __repr__(self):
-        return_dict = {}
-        for key, value in self.pieces_structured.items():
-            return_dict[key] = [repr(i) for i in value]
-        return_string = ""
-        for key, value in return_dict.items():
-            return_string += f"{key}: "
-            for j in value:
-                return_string += f"{j}\n"
-        return return_string
-
-    def make_copy_of_structured_pieces(self):
-        return_dict = {}
-        for key, value in self.pieces_structured.items():
-            return_dict[key] = [i.copy() for i in value]
-
-        return return_dict
-
-
-class TestPieceRecord:
-    def __init__(self, section, piece_num):
-        self.id = "aegergadfgarg"
-        self.piece_text = f"piece {piece_num}"
-        self.section = section
-        self.created = "yesterday"
-        self.updated = "now"
-        self.expand = {}
-
-
-list_of_pieces = [IndividualPiece(TestPieceRecord(random.randint(1, 3), i)) for i in range(7)]
-copy_of_pieces = list_of_pieces.copy()
-
-
-newTest = TemplateWithPieces(None, list_of_pieces)
-
-
-# print(list_of_pieces == copy_of_pieces)
-#
-# copy_of_pieces[0].piece_text = "Changed"
-#
-# print(list_of_pieces == copy_of_pieces)
-#
-# print(list_of_pieces)
-# print(copy_of_pieces)
-
-
-

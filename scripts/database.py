@@ -234,5 +234,83 @@ class Pb(pocketbase.PocketBase):
             return ({"response": False,
                      "message": "Available template collection failed"}, None)
 
+    def create_new_template(self, template: ReportTemplate) -> tuple[Response, ReportTemplate | None]:
+        self.refresh_auth()
+        if self.user_is_valid:
+            try:
+                template_data = {
+                    "template_title": template.template_title,
+                    "owner": self.get_users_id()[1]
+                }
+
+                result = self.collection("templates").create(template_data)
+
+                return ({"response": True,
+                         "message": "success"}, ReportTemplate(result))
+
+            except pocketbase.client.ClientResponseError as e:
+                print("Error creating new template:", repr(e))
+                print(e.data)
+
+                return ({"response": False,
+                         "message": "Creating template failed"}, None)
+        else:
+            return ({"response": False,
+                     "message": "Creating template failed"}, None)
+
+    def create_new_piece(self,
+                         piece: IndividualPiece,
+                         template: ReportTemplate) -> tuple[Response, IndividualPiece | None]:
+        self.refresh_auth()
+        if self.user_is_valid:
+            try:
+                piece_data = {
+                    "piece_text": piece.piece_text,
+                    "section": piece.section,
+                    "template": template.id
+                }
+
+                result = self.collection("report_pieces").create(piece_data)
+
+                return ({"response": True,
+                         "message": "success"}, IndividualPiece(result))
+
+            except pocketbase.client.ClientResponseError as e:
+                print("Error creating piece:", repr(e))
+                print(e.data)
+
+                return ({"response": False,
+                         "message": "Creating piece failed"}, None)
+        else:
+            return ({"response": False,
+                     "message": "Creating piece failed"}, None)
+
+    def update_piece(self,
+                           piece: IndividualPiece,
+                           template: ReportTemplate) -> tuple[Response, IndividualPiece | None]:
+        self.refresh_auth()
+        if self.user_is_valid:
+            try:
+                piece_data = {
+                    "piece_text": piece.piece_text,
+                    "section": piece.section,
+                    "template": template.id
+                }
+
+                result = self.collection("report_pieces").update(piece.id, piece_data)
+
+                return ({"response": True,
+                         "message": "success"}, IndividualPiece(result))
+
+            except pocketbase.client.ClientResponseError as e:
+                print("Error updating piece:", repr(e))
+                print(e.data)
+
+                return ({"response": False,
+                         "message": "Updating piece failed"}, None)
+        else:
+            return ({"response": False,
+                     "message": "Updating piece failed"}, None)
+
 
 RUNNING_DB = Pb()
