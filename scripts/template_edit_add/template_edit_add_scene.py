@@ -4,6 +4,7 @@ from ..settings import *
 from ..components import Separator, InvisibleEntry
 from ..database import RUNNING_DB
 from .section_scrollframe import SectionScrollableFrame
+from .pieces_scrollframe import PiecesScrollableFrame
 
 
 class TemplateScene(ctk.CTkFrame):
@@ -27,15 +28,15 @@ class TemplateScene(ctk.CTkFrame):
         self.section_frame = SectionScrollableFrame(self)
         self.section_frame.grid(row=4, rowspan=2, column=0, sticky="nsew", padx=DEFAULT_PAD, pady=(0, DEFAULT_PAD))
 
-        self.pieces_frame = ctk.CTkFrame(self)
-        self.pieces_frame.grid(row=4, rowspan=2, column=1, sticky="nsew", padx=(0, DEFAULT_PAD),
-                               pady=(0, DEFAULT_PAD))
+        self.pieces_frame = PiecesScrollableFrame(self)
+        self.pieces_frame.grid(row=4, column=1, sticky="nsew", padx=(0, DEFAULT_PAD), pady=(0, DEFAULT_PAD))
 
         self.piece_info_frame = ctk.CTkFrame(self)
-        self.piece_info_frame.grid(row=4, column=2, sticky="nsew", padx=(0, DEFAULT_PAD), pady=(0, DEFAULT_PAD))
+        self.piece_info_frame.grid(row=5, column=1, sticky="nsew", padx=(0, DEFAULT_PAD), pady=(0, DEFAULT_PAD))
 
         self.edit_piece_frame = ctk.CTkFrame(self)
-        self.edit_piece_frame.grid(row=5, column=2, sticky="nsew", padx=(0, DEFAULT_PAD), pady=(0, DEFAULT_PAD))
+        self.edit_piece_frame.grid(row=4, rowspan=2, column=2, sticky="nsew", padx=(0, DEFAULT_PAD),
+                                   pady=(0, DEFAULT_PAD))
 
         self.rowconfigure([0, 1, 2, 3], weight=0)
         self.rowconfigure([4, 5], weight=1, uniform="rows")
@@ -44,17 +45,20 @@ class TemplateScene(ctk.CTkFrame):
 
     def fill_frames(self):
         self.section_frame.build_section_frame(4)
-        self.section_frame.check_scrollbar_needed()
+        self.check_if_scroll_needed()
+
         self.change_cursor("arrow")
 
     def refresh_frames(self):
         self.change_cursor("watch")
         self.section_frame.loading_frame()
+        self.pieces_frame.loading_frame()
 
         self.after(600, self.fill_frames)
 
     def check_if_scroll_needed(self):
         self.section_frame.check_scrollbar_needed()
+        self.pieces_frame.check_scrollbar_needed()
 
     def change_cursor(self, cursor: str) -> None:
         for i in self.winfo_children():

@@ -7,7 +7,8 @@ import random
 
 class SectionScrollableFrame(AutohidingScrollableAndLoadingFrame):
     def __init__(self, master):
-        super().__init__(master, fg_color=ROOT_BG,
+        super().__init__(master,
+                         fg_color=ROOT_BG,
                          label_font=ctk.CTkFont(**NORMAL_LABEL_FONT),
                          label_anchor="w",
                          label_fg_color="transparent",

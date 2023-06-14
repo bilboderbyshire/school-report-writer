@@ -1,8 +1,8 @@
 import customtkinter as ctk
 from .. import title_bar as tbar
 from ..settings import *
-from .reports_frame import ReportsScrollableFrame
-from .templates_frame import TemplatesScrollableFrame
+from .reports_scrollframe import ReportsScrollableFrame
+from .templates_scrollframe import TemplatesScrollableFrame
 from ..database import RUNNING_DB
 import CTkMessagebox as ctkmb
 from ..components import Separator
