@@ -4,11 +4,14 @@ from ..components import ListCard
 
 
 class SectionCard(ListCard):
-    def __init__(self, master, section_number: int, piece_count: int):
+    def __init__(self, master, section_number: int, piece_count: int, select_section_command):
         super().__init__(master,
                          fg_color="transparent",
                          hover_color=BUTTON_HOVER_COLOR,
-                         height=57)
+                         height=57,
+                         command=select_section_command)
+
+        self.card_data = section_number
 
         self.text_label = ctk.CTkLabel(
             self,
