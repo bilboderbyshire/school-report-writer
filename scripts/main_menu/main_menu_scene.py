@@ -6,6 +6,7 @@ from .templates_scrollframe import TemplatesScrollableFrame
 from ..database import RUNNING_DB
 import CTkMessagebox as ctkmb
 from ..components import Separator
+from ..containers import ReportTemplate
 
 
 class MainMenuScene(ctk.CTkFrame):
@@ -25,7 +26,9 @@ class MainMenuScene(ctk.CTkFrame):
         frame_sep = Separator(self, "ver")
         frame_sep.grid(row=2, column=2, sticky="nsew", pady=DEFAULT_PAD*3)
 
-        self.template_frame = TemplatesScrollableFrame(self, add_command=self.add_template)
+        self.template_frame = TemplatesScrollableFrame(self,
+                                                       select_template_command=self.open_template,
+                                                       add_command=self.add_template)
         self.template_frame.grid(row=2, column=3, sticky="nsew", pady=(0, DEFAULT_PAD), padx=(3, DEFAULT_PAD))
 
         self.rowconfigure([0, 1], weight=0)
@@ -84,6 +87,12 @@ class MainMenuScene(ctk.CTkFrame):
 
     def add_template(self):
         template_scene = self.master.show_frame("template-scene")
+        template_scene.change_cursor("watch")
         template_scene.previous_scene("main-menu")
-        template_scene.refresh_frames()
+        self.after(600, template_scene.refresh_frames())
 
+    def open_template(self, template: ReportTemplate):
+        template_scene = self.master.show_frame("template-scene")
+        template_scene.change_cursor("watch")
+        template_scene.previous_scene("main-menu")
+        self.after(600, template_scene.refresh_frames(template))

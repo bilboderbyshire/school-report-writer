@@ -138,6 +138,30 @@ class Pb(pocketbase.PocketBase):
             return {"response": False,
                     "message": "No user"}, None
 
+    def check_if_user_exists(self, email_to_check) -> tuple[Response, bool | None]:
+        self.refresh_auth()
+        if self.user_is_valid:
+            try:
+                results = self.collection("users").get_full_list(query_params={
+                    "filter": f'email="{email_to_check}"'
+                })
+                if results:
+                    return ({"response": True,
+                             "message": "Search successful"}, True)
+                else:
+                    return ({"response": True,
+                             "message": "Search successful"}, False)
+
+            except pocketbase.client.ClientResponseError as e:
+                print("Error finding user email:", repr(e))
+                print(e.data)
+
+                return ({"response": False,
+                         "message": "Search for user email failed"}, None)
+        else:
+            return ({"response": False,
+                     "message": "Search for user email failed"}, None)
+
     def get_set_reports(self) -> tuple[Response, list[SingleReportSet]]:
         self.refresh_auth()
         if self.user_is_valid:
@@ -185,30 +209,6 @@ class Pb(pocketbase.PocketBase):
         else:
             return ({"response": False,
                      "message": "Getting individual reports failed"}, [])
-
-    def check_if_user_exists(self, email_to_check) -> tuple[Response, bool | None]:
-        self.refresh_auth()
-        if self.user_is_valid:
-            try:
-                results = self.collection("users").get_full_list(query_params={
-                    "filter": f'email="{email_to_check}"'
-                })
-                if results:
-                    return ({"response": True,
-                             "message": "Search successful"}, True)
-                else:
-                    return ({"response": True,
-                             "message": "Search successful"}, False)
-
-            except pocketbase.client.ClientResponseError as e:
-                print("Error finding user email:", repr(e))
-                print(e.data)
-
-                return ({"response": False,
-                         "message": "Search for user email failed"}, None)
-        else:
-            return ({"response": False,
-                     "message": "Search for user email failed"}, None)
 
     def get_available_templates(self) -> tuple[Response, list[ReportTemplate] | None]:
         self.refresh_auth()
@@ -286,8 +286,8 @@ class Pb(pocketbase.PocketBase):
                      "message": "Creating piece failed"}, None)
 
     def update_piece(self,
-                           piece: IndividualPiece,
-                           template: ReportTemplate) -> tuple[Response, IndividualPiece | None]:
+                     piece: IndividualPiece,
+                     template: ReportTemplate) -> tuple[Response, IndividualPiece | None]:
         self.refresh_auth()
         if self.user_is_valid:
             try:
@@ -311,6 +311,31 @@ class Pb(pocketbase.PocketBase):
         else:
             return ({"response": False,
                      "message": "Updating piece failed"}, None)
+
+    def get_pieces_in_template(self, template_id: str) -> tuple[Response, list[IndividualPiece] | None]:
+        self.refresh_auth()
+        if self.user_is_valid:
+            try:
+                results = self.collection("report_pieces").get_full_list(query_params={
+                    "filter": f'template.id="{template_id}"',
+                    "expand": "template",
+                    "sort": "-created"
+                })
+
+                return_list = [IndividualPiece(i) for i in results]
+
+                return ({"response": True,
+                         "message": "success"}, return_list)
+
+            except pocketbase.client.ClientResponseError as e:
+                print("Error collecting pieces from template:", repr(e))
+                print(e.data)
+
+                return ({"response": False,
+                         "message": "Pieces from template collection failed"}, None)
+        else:
+            return ({"response": False,
+                     "message": "Pieces from template collection failed"}, None)
 
 
 RUNNING_DB = Pb()

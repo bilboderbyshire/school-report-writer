@@ -2,11 +2,11 @@ import customtkinter as ctk
 from ..settings import *
 from ..components import AutohidingScrollableAndLoadingFrame, ListCard
 from .section_list_card import SectionCard
-import random
+from .template_engine import TemplateEngine
 
 
 class SectionScrollableFrame(AutohidingScrollableAndLoadingFrame):
-    def __init__(self, master):
+    def __init__(self, master, engine: TemplateEngine, select_section_command):
         super().__init__(master,
                          fg_color=ROOT_BG,
                          label_font=ctk.CTkFont(**NORMAL_LABEL_FONT),
@@ -14,26 +14,25 @@ class SectionScrollableFrame(AutohidingScrollableAndLoadingFrame):
                          label_fg_color="transparent",
                          label_text="Sections")
 
-        self.given_section_number = 0
-        self.added_sections = 0
+        self.select_section_command = select_section_command
+        self.engine = engine
 
-    def build_section_frame(self, loopvalue):
-        self.given_section_number = loopvalue
+    def build_section_frame(self):
         for i in self.winfo_children():
             i.destroy()
 
         self.update_idletasks()
 
-        for i in range(loopvalue + self.added_sections):
+        working_dict = self.engine.get_working_template_dict()
+
+        for i in working_dict.keys():
             new_section_card = SectionCard(
-                self,
-                i+1,
-                random.randint(1, 7)
+                self, i, len(working_dict[i]), self.select_section_command
             )
             new_section_card.grid(row=i, column=0, sticky="ew", padx=DEFAULT_PAD)
 
         add_section = self.make_add_section_button()
-        add_section.grid(row=loopvalue+self.added_sections+1, column=0, sticky="ew", padx=DEFAULT_PAD,
+        add_section.grid(row=len(working_dict.keys()) + 1, column=0, sticky="ew", padx=DEFAULT_PAD,
                          pady=(0, DEFAULT_PAD))
 
         self.columnconfigure(0, weight=1)
@@ -64,8 +63,8 @@ class SectionScrollableFrame(AutohidingScrollableAndLoadingFrame):
 
         return add_section_button
 
-    def add_section(self):
-        self.added_sections += 1
-        self.build_section_frame(self.given_section_number)
+    def add_section(self, _):
+        new_section = self.engine.add_section()
+        self.build_section_frame()
         self.check_scrollbar_needed()
-
+        self.select_section_command(new_section)

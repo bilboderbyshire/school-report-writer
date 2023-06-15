@@ -16,7 +16,7 @@ class NewTemplateRecord:
         self.id = template_id
         self.template_title = template_title
         self.created = "Just now"
-        self.updated = "now"
+        self.updated = "Just now"
         self.owner = None
         self.expand = {}
 
@@ -46,6 +46,39 @@ class User:
         self.created = record.created
         self.updated = record.updated
 
+    @staticmethod
+    def _is_valid_operand(other):
+        return hasattr(other, "username") and \
+            hasattr(other, "email") and \
+            hasattr(other, "forename") and \
+            hasattr(other, "surname") and \
+            hasattr(other, "created") and \
+            hasattr(other, "updated") and \
+            hasattr(other, "id")
+
+    def copy(self):
+        return User(self)
+
+    def __eq__(self, other):
+        if not self._is_valid_operand(other):
+            return NotImplemented
+
+        return ((self.id,
+                 self.username,
+                 self.email,
+                 self.forename,
+                 self.surname,
+                 self.created,
+                 self.updated) == (
+                    other.id,
+                    other.username,
+                    other.email,
+                    other.forename,
+                    other.surname,
+                    other.created,
+                    other.updated
+                ))
+
     def __repr__(self):
         return str({
             'id': self.id,
@@ -64,14 +97,41 @@ class ReportTemplate:
         self.template_title = record.template_title
         self.created = record.created
         self.updated = record.updated
+        self.expand = {}
 
         try:
             if "owner" in record.expand.keys():
                 self.owner = User(record.expand["owner"])
+                self.expand["owner"] = record.expand["owner"]
             else:
                 self.owner = None
         except AttributeError:
             self.owner = None
+
+    @staticmethod
+    def _is_valid_operand(other):
+        return hasattr(other, "template_title") and \
+               hasattr(other, "created") and \
+               hasattr(other, "updated") and \
+               hasattr(other, "id")
+
+    def copy(self):
+        return ReportTemplate(self)
+
+    def __eq__(self, other):
+        if not self._is_valid_operand(other):
+            return NotImplemented
+
+        return ((self.id,
+                 self.template_title,
+                 self.owner,
+                 self.created,
+                 self.updated) == (
+            other.id,
+            other.template_title,
+            other.owner,
+            other.created,
+            other.updated))
 
     def __repr__(self):
         return str({

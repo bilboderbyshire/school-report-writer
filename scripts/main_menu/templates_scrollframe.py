@@ -6,7 +6,7 @@ from .template_card import TemplateCard
 
 
 class TemplatesScrollableFrame(AutohidingScrollableAndLoadingFrame):
-    def __init__(self, master, add_command=None):
+    def __init__(self, master, select_template_command, add_command=None):
         super().__init__(master,
                          label_font=ctk.CTkFont(**SECONDARY_TITLE_FONT),
                          label_anchor="w",
@@ -14,6 +14,8 @@ class TemplatesScrollableFrame(AutohidingScrollableAndLoadingFrame):
                          label_text="Templates",
                          fg_color=ROOT_BG,
                          button_command=add_command)
+
+        self.select_template_command = select_template_command
 
     def build_template_frame(self, reports_set: list[ReportTemplate]):
 
@@ -23,7 +25,7 @@ class TemplatesScrollableFrame(AutohidingScrollableAndLoadingFrame):
         self.update_idletasks()
 
         for index, i in enumerate(reports_set):
-            new_card = TemplateCard(self, i, command=self.card_command)
+            new_card = TemplateCard(self, i, command=self.select_template_command)
             if index == len(reports_set) - 1:
                 new_card.grid(row=index, column=0, sticky="ew", padx=DEFAULT_PAD - 7)
             else:
@@ -32,5 +34,3 @@ class TemplatesScrollableFrame(AutohidingScrollableAndLoadingFrame):
         self.columnconfigure(0, weight=1)
         self.rowconfigure(0, weight=0)
 
-    def card_command(self):
-        print("Card clicked")

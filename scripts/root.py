@@ -31,8 +31,8 @@ class ReportWriter(ctk.CTk):
 
         self.frames = {}
         self.__setup_frames()
-        self.show_frame("main-menu")
-        # self.__login()
+        # self.show_frame("main-menu")
+        self.__login()
 
     def __login(self):
         user_accepted = ctk.BooleanVar(value=False)
