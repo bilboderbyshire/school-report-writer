@@ -15,6 +15,8 @@ class ListCard(ctk.CTkFrame):
                          fg_color=fg_color,
                          **kwargs)
 
+        self.card_data = None
+
         # When griding widgets into the list card, the card will not propagate and stay the same fixed size
         self.grid_propagate(False)
         self.command = command
@@ -23,9 +25,7 @@ class ListCard(ctk.CTkFrame):
 
         self.bind("<Enter>", lambda event: self.on_hover())
         self.bind("<Leave>", lambda event: self.on_mouse_leave())
-
-        if self.command is not None:
-            self.bind("<Button-1>", lambda event: self.command())
+        self.bind("<Button-1>", lambda event: self.command(self.card_data))
 
     def on_hover(self):
         self.configure(fg_color=self.hover_color)
@@ -39,4 +39,4 @@ class ListCard(ctk.CTkFrame):
             child.bind("<Leave>", lambda event: self.on_mouse_leave())
 
             if self.command is not None:
-                child.bind("<Button-1>", lambda event: self.command())
+                child.bind("<Button-1>", lambda event: self.command(self.card_data))
