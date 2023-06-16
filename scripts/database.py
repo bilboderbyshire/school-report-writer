@@ -1,11 +1,10 @@
 import pocketbase
 from pocketbase.models.utils import BaseModel
-
 from .settings import *
 from .containers import *
 
 
-class Pb(pocketbase.PocketBase):
+class ReportWriterInstance(pocketbase.PocketBase):
     def __init__(self):
         super().__init__(URL)
         self.user_data = None
@@ -287,5 +286,3 @@ class Pb(pocketbase.PocketBase):
         return {"response": False,
                 "message": f"Error deleting data from {collection}: User not authorised"}
 
-
-RUNNING_DB = Pb()
