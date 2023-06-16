@@ -3,7 +3,6 @@ from .. import title_bar as tbar
 from ..settings import *
 from .reports_scrollframe import ReportsScrollableFrame
 from .templates_scrollframe import TemplatesScrollableFrame
-from ..database import RUNNING_DB
 import CTkMessagebox as ctkmb
 from ..components import Separator
 from ..containers import ReportTemplate
@@ -39,33 +38,29 @@ class MainMenuScene(ctk.CTkFrame):
         self.bind("<Configure>", lambda event: self.check_if_scroll_needed())
 
     def fill_frames(self):
-        report_response, reports_result = RUNNING_DB.get_set_reports()
-        template_response, templates_results = RUNNING_DB.get_available_templates()
-
-        if report_response["response"] and template_response["response"]:
-            self.report_frame.build_report_frame(reports_result)
-            self.template_frame.build_template_frame(templates_results)
-        else:
-            if not report_response["response"]:
-                error_box = ctkmb.CTkMessagebox(
-                    title="Error",
-                    message=f"{report_response['message']} - Please try again later",
-                    icon="cancel")
-            else:
-                error_box = ctkmb.CTkMessagebox(
-                    title="Error",
-                    message=f"{template_response['message']} - Please try again later",
-                    icon="cancel")
-
-            error_box.wait_window()
-
-            self.change_cursor("arrow")
-            self.master.destroy()
-            return
-
-        self.check_if_scroll_needed()
-
-        self.change_cursor("arrow")
+        pass
+        # todo report_response, reports_result = RUNNING_DB.get_set_reports()
+        #  template_response, templates_results = RUNNING_DB.get_available_templates()
+        #  if report_response["response"] and template_response["response"]:
+        #      self.report_frame.build_report_frame(reports_result)
+        #      self.template_frame.build_template_frame(templates_results)
+        #  else:
+        #      if not report_response["response"]:
+        #          error_box = ctkmb.CTkMessagebox(
+        #              title="Error",
+        #              message=f"{report_response['message']} - Please try again later",
+        #              icon="cancel")
+        #      else:
+        #          error_box = ctkmb.CTkMessagebox(
+        #              title="Error",
+        #              message=f"{template_response['message']} - Please try again later",
+        #              icon="cancel")
+        #      error_box.wait_window()
+        #      self.change_cursor("arrow")
+        #      self.master.destroy()
+        #      return
+        #  self.check_if_scroll_needed()
+        #  self.change_cursor("arrow")
 
     def check_if_scroll_needed(self):
         self.report_frame.check_scrollbar_needed()

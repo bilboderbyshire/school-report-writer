@@ -1,6 +1,5 @@
 from ..containers import ReportTemplate, IndividualPiece, NewPieceRecord, Response
 from typing import Literal
-from ..database import RUNNING_DB
 import asyncio
 
 
@@ -97,39 +96,37 @@ class TemplateEngine:
         self.make_sections_sequential("copy")
 
     def save_template_to_database(self):
-        if "@" in self.template.id:
-            response, created_template = RUNNING_DB.create_new_template(self.template)
-
-            if not response["response"]:
-                print(response["message"])
-                return response
-            else:
-                self.template = ReportTemplate(created_template)
-
-        temp_structured_pieces: dict[int, dict[str: IndividualPiece]] = {}
-
-        for key, value in self.copy_of_pieces.items():
-            temp_structured_pieces[key] = {}
-            for c_key, c_value in value.items():
-                response, result = self.__save_piece(c_value)
-                if response["response"]:
-                    temp_structured_pieces[key][result.id] = result
-                else:
-                    print(response["message"])
-                    return response
-
-        self.pieces_structured = temp_structured_pieces
-        self.copy_of_pieces = self.make_copy_of_structured_pieces()
+        pass
+        # todo if "@" in self.template.id:
+        #      response, created_template = RUNNING_DB.create_new_template(self.template)
+        #      if not response["response"]:
+        #          print(response["message"])
+        #          return response
+        #      else:
+        #          self.template = ReportTemplate(created_template)
+        #   temp_structured_pieces: dict[int, dict[str: IndividualPiece]] = {}
+        #   for key, value in self.copy_of_pieces.items():
+        #       temp_structured_pieces[key] = {}
+        #       for c_key, c_value in value.items():
+        #           response, result = self.__save_piece(c_value)
+        #           if response["response"]:
+        #               temp_structured_pieces[key][result.id] = result
+        #           else:
+        #               print(response["message"])
+        #               return response
+        #   self.pieces_structured = temp_structured_pieces
+        #   self.copy_of_pieces = self.make_copy_of_structured_pieces()
 
     def __save_piece(self, piece_to_save: IndividualPiece) -> tuple[Response, IndividualPiece]:
-        if "@" in piece_to_save.id:
-            print(f"Starting save for {piece_to_save.id}")
-            response, result = RUNNING_DB.create_new_piece(piece_to_save, self.template)
-        else:
-            print(f"Starting update for {piece_to_save.id}")
-            response, result = RUNNING_DB.update_piece(piece_to_save, self.template)
-
-        return response, IndividualPiece(result)
+        pass
+        # todo
+        #  if "@" in piece_to_save.id:
+        #      print(f"Starting save for {piece_to_save.id}")
+        #      response, result = RUNNING_DB.create_new_piece(piece_to_save, self.template)
+        #  else:
+        #      print(f"Starting update for {piece_to_save.id}")
+        #      response, result = RUNNING_DB.update_piece(piece_to_save, self.template)
+        #  return response, IndividualPiece(result)
 
     def check_changes(self) -> bool:
         return self.copy_of_pieces == self.pieces_structured
@@ -156,35 +153,3 @@ class TemplateEngine:
 
     def __repr__(self):
         return self.repr_copy("main")
-
-# print(newTest.repr_copy())
-#
-# # Add section
-# input("Add section")
-# newTest.add_section()
-# print(newTest.repr_copy())
-#
-# # Delete section
-# del_section = int(input("Delete section:"))
-# newTest.delete_section(del_section)
-# print(newTest.repr_copy())
-#
-# # New piece
-# add_piece_section = int(input("New piece section"))
-# newTest.add_piece(add_piece_section)
-# print(newTest.repr_copy())
-#
-# # Edit piece
-# edit_piece_section = int(input("Edit piece section:"))
-# edit_piece_id = input("Edit piece id:")
-# newTest.edit_piece(edit_piece_section, edit_piece_id, "CHANGES")
-# print(newTest.repr_copy())
-#
-# # Delete piece
-# del_piece_section = int(input("Delete piece section"))
-# del_piece_id = input("Delete piece id:")
-# newTest.delete_piece(del_piece_section, del_piece_id)
-# print(newTest.repr_copy())
-#
-# input()
-# print(newTest.check_changes())

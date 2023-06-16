@@ -2,7 +2,7 @@ import customtkinter as ctk
 from .. import title_bar as tbar
 from ..settings import *
 from ..components import Separator, InvisibleEntry
-from ..database import RUNNING_DB
+from ..app_engine import AppEngine
 from .section_scrollframe import SectionScrollableFrame
 from .pieces_scrollframe import PiecesScrollableFrame
 from .template_engine import TemplateEngine
@@ -11,9 +11,10 @@ import CTkMessagebox as ctkmb
 
 
 class TemplateScene(ctk.CTkFrame):
-    def __init__(self, master):
+    def __init__(self, master, app_engine: AppEngine):
         super().__init__(master, fg_color=ROOT_BG)
 
+        self.app_engine = AppEngine
         self.prev_scene_string = None
         self.title_bar = None
         self.name_entry = None
@@ -70,26 +71,22 @@ class TemplateScene(ctk.CTkFrame):
             self.pieces_frame.loading_frame()
 
         if template is not None:
-            response, results = RUNNING_DB.get_pieces_in_template(template.id)
-            if response["response"]:
-                for i in self.winfo_children():
-                    i.destroy()
-
-                new_engine = TemplateEngine(template, results)
-                self.__build_frame(new_engine)
-
-                self.fill_frames()
-            else:
-                error_box = ctkmb.CTkMessagebox(
-                    title="Error",
-                    message=f"{response['message']} - Please try again later",
-                    icon="cancel")
-
-                error_box.wait_window()
-
-                self.change_cursor("arrow")
-                self.master.destroy()
-                return
+            # Todo response, results = RUNNING_DB.get_pieces_in_template(template.id)
+            #  if response["response"]:
+            #      for i in self.winfo_children():
+            #          i.destroy()
+            #      new_engine = TemplateEngine(template, results)
+            #      self.__build_frame(new_engine)
+            #      self.fill_frames()
+            #  else:
+            #      error_box = ctkmb.CTkMessagebox(
+            #          title="Error",
+            #          message=f"{response['message']} - Please try again later",
+            #          icon="cancel")
+            #      error_box.wait_window()
+            #      self.change_cursor("arrow")
+            #      self.master.destroy()
+            pass
         else:
             new_template = ReportTemplate(NewTemplateRecord("@000", "My new template"))
             new_piece = IndividualPiece(NewPieceRecord("@1", 1))
