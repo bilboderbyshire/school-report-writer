@@ -1,14 +1,16 @@
 import customtkinter as ctk
 from ..settings import *
-from ..database import RUNNING_DB
+from ..database import ReportWriterInstance
 import os
 from .login_frame import LoginFrame
 from .register_frame import RegisterFrame
 
 
 class LoginWindow(ctk.CTkToplevel):
-    def __init__(self, master, user_accepted: ctk.BooleanVar):
+    def __init__(self, master, user_accepted: ctk.BooleanVar, db_instance: ReportWriterInstance):
         super().__init__(master, fg_color=ROOT_BG)
+
+        self.db_instance = db_instance
 
         self.update_idletasks()
         ws = self.winfo_screenwidth()
@@ -43,7 +45,7 @@ class LoginWindow(ctk.CTkToplevel):
         current_frame_list = {"login": LoginFrame,
                               "register": RegisterFrame}
         for name, frame in current_frame_list.items():
-            new_frame = frame(self, self.user_accepted)
+            new_frame = frame(self, self.user_accepted, self.db_instance)
             self.frames[name] = new_frame
             new_frame.grid(row=0, column=0, sticky="nsew")
 
