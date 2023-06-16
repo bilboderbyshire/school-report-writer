@@ -1,7 +1,7 @@
 import pocketbase
 from pocketbase.models.utils import BaseModel
 from .settings import *
-from .containers import *
+from .containers import Response, UserCreation
 
 
 class ReportWriterInstance(pocketbase.PocketBase):
@@ -285,4 +285,3 @@ class ReportWriterInstance(pocketbase.PocketBase):
 
         return {"response": False,
                 "message": f"Error deleting data from {collection}: User not authorised"}
-

@@ -71,7 +71,7 @@ class TemplateScene(ctk.CTkFrame):
             self.pieces_frame.loading_frame()
 
         if template is not None:
-            # Todo response, results = RUNNING_DB.get_pieces_in_template(template.id)
+            # todo response, results = RUNNING_DB.get_pieces_in_template(template.id)
             #  if response["response"]:
             #      for i in self.winfo_children():
             #          i.destroy()
