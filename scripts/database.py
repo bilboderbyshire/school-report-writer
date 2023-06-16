@@ -1,4 +1,6 @@
 import pocketbase
+from pocketbase.models.utils import BaseModel
+
 from .settings import *
 from .containers import *
 
@@ -162,180 +164,128 @@ class Pb(pocketbase.PocketBase):
             return ({"response": False,
                      "message": "Search for user email failed"}, None)
 
-    def get_set_reports(self) -> tuple[Response, list[SingleReportSet]]:
+    def get_full_list_from_collection(self,
+                                      collection: str,
+                                      query_params: dict = None) -> tuple[Response, list[BaseModel] | None]:
+
+        if query_params is None:
+            query_params = {}
+
         self.refresh_auth()
+
         if self.user_is_valid:
             try:
-                results = self.collection("report_set").get_full_list(query_params={
-                    "expand": "template, template.owner, user",
-                    "sort": "-created"
-                })
-                return_list = [SingleReportSet(i) for i in results]
-                return {
-                    "response": True,
-                    "message": "success"
-                }, return_list
+                results = self.collection(collection).get_full_list(query_params=query_params)
+
+                return ({"response": True,
+                         "message": "success"}, results)
 
             except pocketbase.client.ClientResponseError as e:
-                print("Error collecting set reports:", repr(e))
+                print(f"Error collecting data from {collection}:", repr(e))
                 print(e.data)
 
                 return ({"response": False,
-                         "message": "Getting set reports failed"}, [])
-        else:
-            return ({"response": False,
-                     "message": "Getting set reports failed"}, [])
+                         "message": f"Error code {e.data['code']}: {e.data['message']}"}, None)
 
-    def get_reports_from_set(self, set_id) -> tuple[Response, list[IndividualReport]]:
+        return ({"response": False,
+                 "message": f"Error collecting data from {collection}: User not authorised"}, None)
+
+    def get_single_record(self,
+                          collection: str,
+                          record_id: str,
+                          query_params: dict = None) -> tuple[Response, BaseModel | None]:
+
+        if query_params is None:
+            query_params = {}
+
         self.refresh_auth()
+
         if self.user_is_valid:
             try:
-                results = self.collection("individual_reports").get_full_list(query_params={
-                    "filter": f'report_set.id = "{set_id}"',
-                    "expand": "report_set, report_set.template, user",
-                    "sort": "+pupil_name"
-                })
+                result = self.collection(collection).get_one(record_id, query_params=query_params)
 
-                return_list = [IndividualReport(i) for i in results]
+                return ({"response": True,
+                         "message": "success"}, result)
+
+            except pocketbase.client.ClientResponseError as e:
+                print(f"Error collecting data from {collection}:", repr(e))
+                print(e.data)
+
+                return ({"response": False,
+                         "message": f"Error code {e.data['code']}: {e.data['message']}"}, None)
+
+        return ({"response": False,
+                 "message": f"Error collecting data from {collection}: User not authorised"}, None)
+
+    def create_new_record(self,
+                          collection: str,
+                          record_data: dict) -> tuple[Response, BaseModel | None]:
+
+        self.refresh_auth()
+
+        if self.user_is_valid:
+            try:
+                result = self.collection(collection).create(record_data)
+
+                return ({"response": True,
+                         "message": "success"}, result)
+
+            except pocketbase.client.ClientResponseError as e:
+                print(f"Error creating record in {collection}:", repr(e))
+                print(e.data)
+
+                return ({"response": False,
+                         "message": f"Error code {e.data['code']}: {e.data['message']}"}, None)
+
+        return ({"response": False,
+                 "message": f"Error creating data in {collection}: User not authorised"}, None)
+
+    def update_record(self,
+                      collection: str,
+                      record_id: str,
+                      record_data: dict) -> tuple[Response, BaseModel | None]:
+
+        self.refresh_auth()
+
+        if self.user_is_valid:
+            try:
+                result = self.collection(collection).update(record_id, record_data)
+
+                return ({"response": True,
+                         "message": "success"}, result)
+
+            except pocketbase.client.ClientResponseError as e:
+                print(f"Error updating record {record_id} in {collection}:", repr(e))
+                print(e.data)
+
+                return ({"response": False,
+                         "message": f"Error code {e.data['code']}: {e.data['message']}"}, None)
+
+        return ({"response": False,
+                 "message": f"Error updating data in {collection}: User not authorised"}, None)
+
+    def delete_record(self,
+                      collection: str,
+                      record_id: str) -> Response:
+
+        self.refresh_auth()
+
+        if self.user_is_valid:
+            try:
+                self.collection(collection).delete(record_id)
 
                 return {"response": True,
-                        "message": "success"}, return_list
-            except pocketbase.client.ClientResponseError as e:
-                print("Error collecting individual reports:", repr(e))
-                print(e.data)
-
-                return ({"response": False,
-                         "message": "Getting individual reports failed"}, [])
-        else:
-            return ({"response": False,
-                     "message": "Getting individual reports failed"}, [])
-
-    def get_available_templates(self) -> tuple[Response, list[ReportTemplate] | None]:
-        self.refresh_auth()
-        if self.user_is_valid:
-            try:
-                results = self.collection("templates").get_full_list(query_params={
-                    "expand": "owner",
-                    "sort": "-created"
-                })
-
-                return_list = [ReportTemplate(i) for i in results]
-
-                return ({"response": True,
-                         "message": "success"}, return_list)
+                        "message": "success"}
 
             except pocketbase.client.ClientResponseError as e:
-                print("Error collecting available templates:", repr(e))
+                print(f"Error deleting record {record_id} in {collection}:", repr(e))
                 print(e.data)
 
-                return ({"response": False,
-                         "message": "Available template collection failed"}, None)
-        else:
-            return ({"response": False,
-                     "message": "Available template collection failed"}, None)
+                return {"response": False,
+                        "message": f"Error code {e.data['code']}: {e.data['message']}"}
 
-    def create_new_template(self, template: ReportTemplate) -> tuple[Response, ReportTemplate | None]:
-        self.refresh_auth()
-        if self.user_is_valid:
-            try:
-                template_data = {
-                    "template_title": template.template_title,
-                    "owner": self.get_users_id()[1]
-                }
-
-                result = self.collection("templates").create(template_data)
-
-                return ({"response": True,
-                         "message": "success"}, ReportTemplate(result))
-
-            except pocketbase.client.ClientResponseError as e:
-                print("Error creating new template:", repr(e))
-                print(e.data)
-
-                return ({"response": False,
-                         "message": "Creating template failed"}, None)
-        else:
-            return ({"response": False,
-                     "message": "Creating template failed"}, None)
-
-    def create_new_piece(self,
-                         piece: IndividualPiece,
-                         template: ReportTemplate) -> tuple[Response, IndividualPiece | None]:
-        self.refresh_auth()
-        if self.user_is_valid:
-            try:
-                piece_data = {
-                    "piece_text": piece.piece_text,
-                    "section": piece.section,
-                    "template": template.id
-                }
-
-                result = self.collection("report_pieces").create(piece_data)
-
-                return ({"response": True,
-                         "message": "success"}, IndividualPiece(result))
-
-            except pocketbase.client.ClientResponseError as e:
-                print("Error creating piece:", repr(e))
-                print(e.data)
-
-                return ({"response": False,
-                         "message": "Creating piece failed"}, None)
-        else:
-            return ({"response": False,
-                     "message": "Creating piece failed"}, None)
-
-    def update_piece(self,
-                     piece: IndividualPiece,
-                     template: ReportTemplate) -> tuple[Response, IndividualPiece | None]:
-        self.refresh_auth()
-        if self.user_is_valid:
-            try:
-                piece_data = {
-                    "piece_text": piece.piece_text,
-                    "section": piece.section,
-                    "template": template.id
-                }
-
-                result = self.collection("report_pieces").update(piece.id, piece_data)
-
-                return ({"response": True,
-                         "message": "success"}, IndividualPiece(result))
-
-            except pocketbase.client.ClientResponseError as e:
-                print("Error updating piece:", repr(e))
-                print(e.data)
-
-                return ({"response": False,
-                         "message": "Updating piece failed"}, None)
-        else:
-            return ({"response": False,
-                     "message": "Updating piece failed"}, None)
-
-    def get_pieces_in_template(self, template_id: str) -> tuple[Response, list[IndividualPiece] | None]:
-        self.refresh_auth()
-        if self.user_is_valid:
-            try:
-                results = self.collection("report_pieces").get_full_list(query_params={
-                    "filter": f'template.id="{template_id}"',
-                    "expand": "template",
-                    "sort": "-created"
-                })
-
-                return_list = [IndividualPiece(i) for i in results]
-
-                return ({"response": True,
-                         "message": "success"}, return_list)
-
-            except pocketbase.client.ClientResponseError as e:
-                print("Error collecting pieces from template:", repr(e))
-                print(e.data)
-
-                return ({"response": False,
-                         "message": "Pieces from template collection failed"}, None)
-        else:
-            return ({"response": False,
-                     "message": "Pieces from template collection failed"}, None)
+        return {"response": False,
+                "message": f"Error deleting data from {collection}: User not authorised"}
 
 
 RUNNING_DB = Pb()
