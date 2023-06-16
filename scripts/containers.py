@@ -400,3 +400,70 @@ class IndividualPiece:
             "created": self.created,
             "updated": self.updated
         })
+
+
+class TemplateShared:
+    def __init__(self, record):
+        self.record_object = record
+        self.id = record.id
+        self.template = None
+        self.shared_with = None
+        self.created = record.created
+        self.updated = record.updated
+        self.expand = {}
+
+        try:
+            if "template" in record.expand.keys():
+                self.template = ReportTemplate(record.expand["template"])
+                self.expand["template"] = record.expand["template"]
+        except AttributeError:
+            self.template = None
+
+        try:
+            if "shared_with" in record.expand.keys():
+                self.shared_with = User(record.expand["shared_with"])
+                self.expand["shared_with"] = record.expand["shared_with"]
+        except AttributeError:
+            self.shared_with = None
+
+    def copy(self):
+        return TemplateShared(self)
+
+    def data_to_create(self) -> dict:
+        return {
+            "template": self.template.id if self.template is not None else None,
+            "shared_with": self.shared_with.id if self.shared_with is not None else None
+        }
+
+    @staticmethod
+    def _is_valid_operand(other):
+        return hasattr(other, "id") and \
+               hasattr(other, "template") and \
+               hasattr(other, "shared_with") and \
+               hasattr(other, "created") and \
+               hasattr(other, "updated")
+
+    def __eq__(self, other):
+        if not self._is_valid_operand(other):
+            return NotImplemented
+
+        return ((self.id,
+                 self.template,
+                 self.shared_with,
+                 self.created,
+                 self.updated) == (
+            other.id,
+            other.template,
+            other.shared_with,
+            other.created,
+            other.updated
+        ))
+
+    def __repr__(self):
+        return str({
+            "id": self.id,
+            "template": repr(self.template),
+            "shared_with": repr(self.shared_with),
+            "created": self.created,
+            "updated": self.updated
+        })
