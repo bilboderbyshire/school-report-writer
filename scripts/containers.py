@@ -36,28 +36,43 @@ class UserCreation(TypedDict):
 
 
 class User:
-    def __init__(self, record):
+    def __init__(self, record, password=None, password_confirm=None) -> None:
         self.response_object = record
         self.id = record.id
         self.username = record.username
         self.email = record.email
+        self.email_visibility = record.email_visibility
         self.forename = record.forename
         self.surname = record.surname
         self.created = record.created
         self.updated = record.updated
-
-    @staticmethod
-    def _is_valid_operand(other):
-        return hasattr(other, "username") and \
-            hasattr(other, "email") and \
-            hasattr(other, "forename") and \
-            hasattr(other, "surname") and \
-            hasattr(other, "created") and \
-            hasattr(other, "updated") and \
-            hasattr(other, "id")
+        self.password = password
+        self.password_confirm = password_confirm
 
     def copy(self):
         return User(self)
+
+    def data_to_create(self) -> dict:
+        return {
+            "id": self.id,
+            "username": self.username,
+            "email": self.email,
+            "emailVisibility": self.email_visibility,
+            "password": self.password,
+            "passwordConfirm": self.password_confirm,
+            "forename": self.forename,
+            "surname": self.surname
+        }
+
+    @staticmethod
+    def _is_valid_operand(other) -> bool:
+        return hasattr(other, "username") and \
+               hasattr(other, "email") and \
+               hasattr(other, "forename") and \
+               hasattr(other, "surname") and \
+               hasattr(other, "created") and \
+               hasattr(other, "updated") and \
+               hasattr(other, "id")
 
     def __eq__(self, other):
         if not self._is_valid_operand(other):
@@ -91,10 +106,11 @@ class User:
 
 
 class ReportTemplate:
-    def __init__(self, record):
+    def __init__(self, record) -> None:
         self.response_object = record
         self.id = record.id
         self.template_title = record.template_title
+        self.owner = None
         self.created = record.created
         self.updated = record.updated
         self.expand = {}
@@ -103,10 +119,17 @@ class ReportTemplate:
             if "owner" in record.expand.keys():
                 self.owner = User(record.expand["owner"])
                 self.expand["owner"] = record.expand["owner"]
-            else:
-                self.owner = None
         except AttributeError:
             self.owner = None
+
+    def copy(self):
+        return ReportTemplate(self)
+
+    def data_to_create(self) -> dict:
+        return {
+            "template_title": self.template_title,
+            "owner": self.owner.id if self.owner is not None else None
+        }
 
     @staticmethod
     def _is_valid_operand(other):
@@ -114,9 +137,6 @@ class ReportTemplate:
                hasattr(other, "created") and \
                hasattr(other, "updated") and \
                hasattr(other, "id")
-
-    def copy(self):
-        return ReportTemplate(self)
 
     def __eq__(self, other):
         if not self._is_valid_operand(other):
@@ -144,25 +164,80 @@ class ReportTemplate:
 
 
 class SingleReportSet:
-    def __init__(self, record):
+    def __init__(self, record) -> None:
         self.response_object = record
         self.id = record.id
         self.report_title = record.report_title
         self.class_name = record.class_name
         self.report_number = record.report_number
         self.report_completed = record.report_completed
+        self.user = None
+        self.template = None
         self.created = record.created
         self.updated = record.updated
+        self.expand = {}
 
-        if "user" in record.expand.keys():
-            self.user = User(record.expand["user"])
-        else:
+        try:
+            if "user" in record.expand.keys():
+                self.user = User(record.expand["user"])
+                self.expand["user"] = record.expand["user"]
+        except AttributeError:
             self.user = None
 
-        if "template" in record.expand.keys():
-            self.template = ReportTemplate(record.expand["template"])
-        else:
+        try:
+            if "template" in record.expand.keys():
+                self.template = ReportTemplate(record.expand["template"])
+                self.expand["template"] = record.expand["template"]
+        except AttributeError:
             self.template = None
+
+    def copy(self):
+        return SingleReportSet(self)
+
+    def data_to_create(self) -> dict:
+        return {
+            "report_title": self.report_title,
+            "class_name": self.class_name,
+            "report_number": self.report_number,
+            "report_completed": self.report_completed,
+            "user": self.user.id if self.user is not None else None,
+            "template": self.template.id if self. template is not None else None
+        }
+
+    @staticmethod
+    def _is_valid_operand(other):
+        return hasattr(other, "id") and \
+               hasattr(other, "report_title") and \
+               hasattr(other, "class_name") and \
+               hasattr(other, "report_number") and \
+               hasattr(other, "report_completed") and \
+               hasattr(other, "created") and \
+               hasattr(other, "updated") and \
+               hasattr(other, "user") and \
+               hasattr(other, "template")
+
+    def __eq__(self, other):
+        if not self._is_valid_operand(other):
+            return NotImplemented
+
+        return ((self.id,
+                 self.report_title,
+                 self.class_name,
+                 self.report_number,
+                 self.report_completed,
+                 self.user,
+                 self.template,
+                 self.created,
+                 self.updated) == (
+            other.id,
+            other.report_title,
+            other.class_name,
+            other.report_number,
+            other.report_completed,
+            other.user,
+            other.template,
+            other.created,
+            other.updated))
 
     def __repr__(self):
         return str({
@@ -179,23 +254,75 @@ class SingleReportSet:
 
 
 class IndividualReport:
-    def __init__(self, record):
+    def __init__(self, record) -> None:
         self.response_object = record
         self.id = record.id
+        self.pupil_name = record.pupil_name
         self.report_text = record.report_text
+        self.user = None
+        self.report_set = None
         self.completed = record.completed
         self.created = record.created
         self.updated = record.updated
+        self.expand = {}
 
-        if "user" in record.expand.keys():
-            self.user = User(record.expand["user"])
-        else:
+        try:
+            if "user" in record.expand.keys():
+                self.user = User(record.expand["user"])
+                self.expand["user"] = record.expand["user"]
+        except AttributeError:
             self.user = None
 
-        if "report_set" in record.expand.keys():
-            self.report_set = SingleReportSet(record.expand["report_set"])
-        else:
+        try:
+            if "report_set" in record.expand.keys():
+                self.report_set = SingleReportSet(record.expand["report_set"])
+                self.expand["report_set"] = record.expand["report_set"]
+        except AttributeError:
             self.report_set = None
+
+    def copy(self):
+        return IndividualReport(self)
+
+    def data_to_create(self) -> dict:
+        return {
+            "pupil_name": self.pupil_name,
+            "report_text": self.report_text,
+            "completed": self.completed,
+            "user": self.user.id if self.user is not None else None,
+            "report_set": self.report_set.id if self.report_set is not None else None
+        }
+
+    @staticmethod
+    def _is_valid_operand(other):
+        return hasattr(other, "id") and \
+               hasattr(other, "pupil_name") and \
+               hasattr(other, "report_text") and \
+               hasattr(other, "user") and \
+               hasattr(other, "report_set") and \
+               hasattr(other, "completed") and \
+               hasattr(other, "created") and \
+               hasattr(other, "updated")
+
+    def __eq__(self, other):
+        if not self._is_valid_operand(other):
+            return NotImplemented
+
+        return ((self.id,
+                 self.pupil_name,
+                 self.report_text,
+                 self.user,
+                 self.report_set,
+                 self.completed,
+                 self.created,
+                 self.updated) == (
+            other.id,
+            other.pupil_name,
+            other.report_text,
+            other.user,
+            other.report_set,
+            other.completed,
+            other.created,
+            other.updated))
 
     def __repr__(self):
         return str({
@@ -210,11 +337,12 @@ class IndividualReport:
 
 
 class IndividualPiece:
-    def __init__(self, record):
+    def __init__(self, record) -> None:
         self.response_object = record
         self.id = record.id
         self.piece_text = record.piece_text
         self.section = record.section
+        self.template = None
         self.created = record.created
         self.updated = record.updated
         self.expand = {}
@@ -223,22 +351,27 @@ class IndividualPiece:
             if "template" in record.expand.keys():
                 self.template = ReportTemplate(record.expand["template"])
                 self.expand["template"] = record.expand["template"]
-            else:
-                self.template = None
         except AttributeError:
             self.template = None
+
+    def copy(self):
+        return IndividualPiece(self)
+
+    def data_to_create(self) -> dict:
+        return {
+            "piece_text": self.piece_text,
+            "section": self.section,
+            "template": self.template.id if self.template is not None else None
+        }
 
     @staticmethod
     def _is_valid_operand(other):
         return hasattr(other, "piece_text") and \
                hasattr(other, "section") and \
+               hasattr(other, "template") and \
                hasattr(other, "created") and \
                hasattr(other, "updated") and \
-               hasattr(other, "template") and \
                hasattr(other, "id")
-
-    def copy(self):
-        return IndividualPiece(self)
 
     def __eq__(self, other):
         if not self._is_valid_operand(other):
