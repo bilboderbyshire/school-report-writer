@@ -140,7 +140,6 @@ class ReportWriterInstance(pocketbase.PocketBase):
                     "message": "No user"}, None
 
     def check_if_user_exists(self, email_to_check) -> tuple[Response, bool | None]:
-        self.refresh_auth()
         if self.user_is_valid:
             try:
                 results = self.collection("users").get_full_list(query_params={
@@ -170,8 +169,6 @@ class ReportWriterInstance(pocketbase.PocketBase):
         if query_params is None:
             query_params = {}
 
-        self.refresh_auth()
-
         if self.user_is_valid:
             try:
                 results = self.collection(collection).get_full_list(query_params=query_params)
@@ -197,8 +194,6 @@ class ReportWriterInstance(pocketbase.PocketBase):
         if query_params is None:
             query_params = {}
 
-        self.refresh_auth()
-
         if self.user_is_valid:
             try:
                 result = self.collection(collection).get_one(record_id, query_params=query_params)
@@ -219,8 +214,6 @@ class ReportWriterInstance(pocketbase.PocketBase):
     def create_new_record(self,
                           collection: str,
                           record_data: dict) -> tuple[Response, BaseModel | None]:
-
-        self.refresh_auth()
 
         if self.user_is_valid:
             try:
@@ -244,8 +237,6 @@ class ReportWriterInstance(pocketbase.PocketBase):
                       record_id: str,
                       record_data: dict) -> tuple[Response, BaseModel | None]:
 
-        self.refresh_auth()
-
         if self.user_is_valid:
             try:
                 result = self.collection(collection).update(record_id, record_data)
@@ -266,8 +257,6 @@ class ReportWriterInstance(pocketbase.PocketBase):
     def delete_record(self,
                       collection: str,
                       record_id: str) -> Response:
-
-        self.refresh_auth()
 
         if self.user_is_valid:
             try:
