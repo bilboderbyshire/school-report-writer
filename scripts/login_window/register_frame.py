@@ -146,6 +146,9 @@ class RegisterFrame(ctk.CTkFrame):
         for i in all_entries:
             i.bind("<Return>", lambda event: self.register_account())
 
+    def set_focus(self):
+        self.forename_entry.focus_set()
+
     def back_button_pressed(self) -> None:
         """
         When either back button is pressed, the login frame is displayed

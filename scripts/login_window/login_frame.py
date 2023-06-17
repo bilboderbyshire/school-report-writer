@@ -87,6 +87,9 @@ class LoginFrame(ctk.CTkFrame):
         self.email_entry.bind("<Return>", lambda event: self.login_request())
         self.password_entry.bind("<Return>", lambda event: self.login_request())
 
+    def set_focus(self):
+        self.email_entry.focus()
+
     def login_request(self) -> None:
         """
         Collects the input email and password, performs basic validation, and requests authorisation from the database.
