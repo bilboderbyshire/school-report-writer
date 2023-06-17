@@ -4,6 +4,16 @@ import CTkMessagebox as ctkmb
 from .containers import *
 
 
+def create_copy_of_collection(collection: dict[str, ReportTemplate | IndividualReport | IndividualPiece
+                                               | SingleReportSet]) -> dict[str, ReportTemplate | IndividualReport |
+                                                                           IndividualPiece | SingleReportSet]:
+    new_dict = {}
+    for key, value in collection.items():
+        new_dict[key] = value.copy()
+
+    return new_dict
+
+
 class AppEngine:
     """
     The engine that runs all the data handling within the app. The UI contains a single instance of the app engine, and
@@ -22,11 +32,11 @@ class AppEngine:
         self.load_success = False
 
         self.load_data()
-        self.__create_report_to_report_set()
-        self.__create_piece_to_template()
 
-        print(self.reports_to_set_reports_collection)
-        print(self.piece_to_template_collection)
+        self.copy_of_template_collection = create_copy_of_collection(self.template_collection)
+        self.copy_of_piece_collection = create_copy_of_collection(self.piece_collection)
+        self.copy_of_reports_set_collection = create_copy_of_collection(self.reports_set_collection)
+        self.copy_of_individual_report_collection = create_copy_of_collection(self.individual_report_collection)
 
     def load_data(self) -> None:
         """A public method that will force the app engine to load data from the database in order to refresh local data.
@@ -70,7 +80,7 @@ class AppEngine:
     def __create_piece_to_template(self) -> None:
         """Create template and piece relationship"""
 
-        for piece in self.piece_collection.values():
+        for piece in self.copy_of_piece_collection.values():
             if piece.template not in self.piece_to_template_collection.keys():
                 # If the current piece's template doesn't exist in the dictionary, create the key with the template ID
                 #  and initialise with an empty dictionary
@@ -88,7 +98,7 @@ class AppEngine:
     def __create_report_to_report_set(self) -> None:
         """Create report to reports set relationship"""
 
-        for report in self.individual_report_collection.values():
+        for report in self.copy_of_individual_report_collection.values():
             # If the current report's report set doesn't exist in the dictionary, create the key with the report set ID
             #  and initialise with an empty dictionary
             if report.report_set not in self.reports_to_set_reports_collection.keys():
