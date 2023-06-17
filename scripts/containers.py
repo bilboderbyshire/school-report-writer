@@ -2,22 +2,23 @@ from typing import TypedDict
 
 
 class NewPieceRecord:
-    def __init__(self, piece_id: str, section: int):
+    def __init__(self, piece_id: str, section: int, template_id: str):
         self.id = piece_id
         self.piece_text = "New piece"
         self.section = section
+        self.template = template_id
         self.created = "Just now"
         self.updated = "now"
         self.expand = {}
 
 
 class NewTemplateRecord:
-    def __init__(self, template_id, template_title):
+    def __init__(self, template_id: str, template_title: str, user_id: str):
         self.id = template_id
         self.template_title = template_title
         self.created = "Just now"
         self.updated = "Just now"
-        self.owner = None
+        self.owner = user_id
         self.expand = {}
 
 
@@ -36,7 +37,7 @@ class UserCreation(TypedDict):
 
 
 class User:
-    def __init__(self, record, password=None, password_confirm=None) -> None:
+    def __init__(self, record, password: str = None, password_confirm: str = None) -> None:
         self.response_object = record
         self.id = record.id
         self.username = record.username
@@ -119,8 +120,10 @@ class ReportTemplate:
             if "owner" in record.expand.keys():
                 self.owner = User(record.expand["owner"])
                 self.expand["owner"] = record.expand["owner"]
+            else:
+                self.owner = record.owner
         except AttributeError:
-            self.owner = None
+            self.owner = record.owner
 
     def copy(self):
         return ReportTemplate(self)
@@ -181,15 +184,19 @@ class SingleReportSet:
             if "user" in record.expand.keys():
                 self.user = User(record.expand["user"])
                 self.expand["user"] = record.expand["user"]
+            else:
+                self.user = record.user
         except AttributeError:
-            self.user = None
+            self.user = record.user
 
         try:
             if "template" in record.expand.keys():
                 self.template = ReportTemplate(record.expand["template"])
                 self.expand["template"] = record.expand["template"]
+            else:
+                self.template = record.template
         except AttributeError:
-            self.template = None
+            self.template = record.template
 
     def copy(self):
         return SingleReportSet(self)
@@ -270,15 +277,19 @@ class IndividualReport:
             if "user" in record.expand.keys():
                 self.user = User(record.expand["user"])
                 self.expand["user"] = record.expand["user"]
+            else:
+                self.user = record.user
         except AttributeError:
-            self.user = None
+            self.user = record.user
 
         try:
             if "report_set" in record.expand.keys():
                 self.report_set = SingleReportSet(record.expand["report_set"])
                 self.expand["report_set"] = record.expand["report_set"]
+            else:
+                self.report_set = record.report_set
         except AttributeError:
-            self.report_set = None
+            self.report_set = record.report_set
 
     def copy(self):
         return IndividualReport(self)
@@ -328,6 +339,7 @@ class IndividualReport:
         return str({
             "id": self.id,
             "report_text": self.report_text,
+            "pupil_name": self.pupil_name,
             "completed": self.completed,
             "user": repr(self.user),
             "report_set": repr(self.report_set),
@@ -351,8 +363,10 @@ class IndividualPiece:
             if "template" in record.expand.keys():
                 self.template = ReportTemplate(record.expand["template"])
                 self.expand["template"] = record.expand["template"]
+            else:
+                self.template = record.template
         except AttributeError:
-            self.template = None
+            self.template = record.template
 
     def copy(self):
         return IndividualPiece(self)
@@ -416,15 +430,19 @@ class TemplateShared:
             if "template" in record.expand.keys():
                 self.template = ReportTemplate(record.expand["template"])
                 self.expand["template"] = record.expand["template"]
+            else:
+                self.template = record.template
         except AttributeError:
-            self.template = None
+            self.template = record.template
 
         try:
             if "shared_with" in record.expand.keys():
                 self.shared_with = User(record.expand["shared_with"])
                 self.expand["shared_with"] = record.expand["shared_with"]
+            else:
+                self.shared_with = record.shared_with
         except AttributeError:
-            self.shared_with = None
+            self.shared_with = record.shared_with
 
     def copy(self):
         return TemplateShared(self)
