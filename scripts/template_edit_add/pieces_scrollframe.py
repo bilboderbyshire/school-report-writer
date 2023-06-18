@@ -17,8 +17,7 @@ class PiecesScrollableFrame(AutohidingScrollableAndLoadingFrame):
                          label_font=ctk.CTkFont(**NORMAL_LABEL_FONT),
                          label_anchor="w",
                          label_fg_color="transparent",
-                         label_text="Pieces",
-                         border_width=2)
+                         label_text="Pieces")
 
         self.configure(border_color=self.cget("fg_color"))
 
