@@ -28,7 +28,7 @@ class ReportsScrollableFrame(AutohidingScrollableAndLoadingFrame):
         reports_set = self.app_engine.copy_of_reports_set_collection.values()
 
         for index, set_report in enumerate(reports_set):
-            new_card = ReportSetCard(self, self.app_engine, set_report, command=self.card_command)
+            new_card = ReportSetCard(self, self.app_engine, set_report, click_command=self.card_command)
             if index == len(reports_set) - 1:
                 new_card.grid(row=index, column=0, sticky="ew", padx=DEFAULT_PAD - 7)
             else:

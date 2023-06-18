@@ -7,8 +7,8 @@ from ..app_engine import AppEngine
 
 
 class ReportSetCard(ListCard):
-    def __init__(self, master, app_engine: AppEngine, report_set: SingleReportSet, command=None):
-        super().__init__(master, command=command)
+    def __init__(self, master, app_engine: AppEngine, report_set: SingleReportSet, click_command=None):
+        super().__init__(master, click_command=click_command)
 
         self.card_data = report_set
         title_text = f"{self.card_data.report_title} - " + \
