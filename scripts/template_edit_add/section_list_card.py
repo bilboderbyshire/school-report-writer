@@ -9,7 +9,7 @@ class SectionCard(ListCard):
                          fg_color="transparent",
                          hover_color=BUTTON_HOVER_COLOR,
                          height=57,
-                         command=select_section_command)
+                         click_command=select_section_command)
 
         self.card_data = section_number
 

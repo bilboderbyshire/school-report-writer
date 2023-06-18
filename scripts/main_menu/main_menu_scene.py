@@ -17,7 +17,7 @@ class MainMenuScene(ctk.CTkFrame):
 
     def __build_frame(self):
 
-        self.title_bar = tbar.TitleBar(self, "Report Writer", refresh_command=self.refresh_frames)
+        self.title_bar = tbar.TitleBar(self, "Report Writer", refresh_command=self.refresh_scene)
         self.title_bar.grid(row=0, column=0, columnspan=4, sticky="nsew", pady=(DEFAULT_PAD, 0), padx=DEFAULT_PAD)
 
         title_sep = Separator(self, "hor")
@@ -35,7 +35,7 @@ class MainMenuScene(ctk.CTkFrame):
         self.template_frame = TemplatesScrollableFrame(
             self,
             app_engine=self.app_engine,
-            select_template_command=self.open_template,
+            select_template_command=self.edit_template,
             add_command=self.add_template,
             card_add_command=("Add new template", self.add_template),
             card_delete_command=("Delete", self.delete_template),
@@ -67,7 +67,7 @@ class MainMenuScene(ctk.CTkFrame):
         self.report_frame.check_scrollbar_needed()
         self.template_frame.check_scrollbar_needed()
 
-    def refresh_frames(self):
+    def refresh_scene(self):
         self.change_cursor("watch")
         self.report_frame.loading_frame()
         self.template_frame.loading_frame()
@@ -107,7 +107,7 @@ class MainMenuScene(ctk.CTkFrame):
         self.template_frame.build_template_frame()
         self.template_frame.check_scrollbar_needed()
 
-    def copy_template(self, card_info: ReportTemplate):
+    def copy_template(self, card_info: ReportTemplate) -> ReportTemplate:
         new_title = "Copy of " + card_info.template_title
         new_id = f"@{self.app_engine.create_new_record_id('templates')}"
 
@@ -119,6 +119,8 @@ class MainMenuScene(ctk.CTkFrame):
         self.app_engine.copy_of_template_collection[new_id] = copied_template
         self.template_frame.build_template_frame()
         self.template_frame.check_scrollbar_needed()
+
+        return copied_template
 
     def delete_template(self, card_info: ReportTemplate):
         warning_message = ctkmb.CTkMessagebox(
@@ -149,9 +151,26 @@ class MainMenuScene(ctk.CTkFrame):
                         icon="cancel")
                     error_box.wait_window()
 
-    def open_template(self, template: ReportTemplate):
+    def edit_template(self, template: ReportTemplate):
+        template_to_view = template
+        if template_to_view.owner.id != self.app_engine.get_user_id():
+            warning_box = ctkmb.CTkMessagebox(
+                title="Warning",
+                message=f"You cannot edit '{template_to_view.template_title}' because it does not belong to you -"
+                        f" Would you like to make a copy to edit?",
+                icon="cancel",
+                option_2="Yes",
+                option_1="No")
+            warning_box.wait_window()
+
+            if warning_box.get() == "Yes":
+                template_to_view = self.copy_template(template)
+            else:
+                return
+
         template_scene = self.master.show_frame("template-scene")
-        template_scene.change_cursor("watch")
+
         template_scene.previous_scene("main-menu")
-        self.after(600, template_scene.refresh_frames(template))
+        template_scene.setup_scene(template_to_view)
+        template_scene.fill_frames()
 

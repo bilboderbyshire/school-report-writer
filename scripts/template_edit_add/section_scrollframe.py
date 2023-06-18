@@ -1,12 +1,16 @@
 import customtkinter as ctk
 from ..settings import *
 from ..components import AutohidingScrollableAndLoadingFrame, ListCard
+from ..containers import IndividualPiece
 from .section_list_card import SectionCard
-from .template_engine import TemplateEngine
+from typing import Callable
 
 
 class SectionScrollableFrame(AutohidingScrollableAndLoadingFrame):
-    def __init__(self, master, engine: TemplateEngine, select_section_command):
+    def __init__(self, master,
+                 structured_pieces: dict[int, dict[str, IndividualPiece]],
+                 select_section_command,
+                 card_add_command: Callable):
         super().__init__(master,
                          fg_color=ROOT_BG,
                          label_font=ctk.CTkFont(**NORMAL_LABEL_FONT),
@@ -14,8 +18,9 @@ class SectionScrollableFrame(AutohidingScrollableAndLoadingFrame):
                          label_fg_color="transparent",
                          label_text="Sections")
 
+        self.structured_pieces = structured_pieces
         self.select_section_command = select_section_command
-        self.engine = engine
+        self.card_add = card_add_command
 
     def build_section_frame(self):
         for i in self.winfo_children():
@@ -23,16 +28,14 @@ class SectionScrollableFrame(AutohidingScrollableAndLoadingFrame):
 
         self.update_idletasks()
 
-        working_dict = self.engine.get_working_template_dict()
-
-        for i in working_dict.keys():
+        for index, section in enumerate(self.structured_pieces.keys()):
             new_section_card = SectionCard(
-                self, i, len(working_dict[i]), self.select_section_command
+                self, section, len(self.structured_pieces[section]), self.select_section_command
             )
-            new_section_card.grid(row=i, column=0, sticky="ew", padx=DEFAULT_PAD)
+            new_section_card.grid(row=index, column=0, sticky="ew", padx=DEFAULT_PAD)
 
         add_section = self.make_add_section_button()
-        add_section.grid(row=len(working_dict.keys()) + 1, column=0, sticky="ew", padx=DEFAULT_PAD,
+        add_section.grid(row=len(self.structured_pieces.keys()) + 1, column=0, sticky="ew", padx=DEFAULT_PAD,
                          pady=(0, DEFAULT_PAD))
 
         self.columnconfigure(0, weight=1)
@@ -44,7 +47,7 @@ class SectionScrollableFrame(AutohidingScrollableAndLoadingFrame):
             fg_color="transparent",
             hover_color=BUTTON_HOVER_COLOR,
             height=30,
-            command=self.add_section)
+            click_command=self.card_add)
 
         add_button_text = ctk.CTkLabel(
             add_section_button,
@@ -62,9 +65,3 @@ class SectionScrollableFrame(AutohidingScrollableAndLoadingFrame):
         add_section_button.bind_frame()
 
         return add_section_button
-
-    def add_section(self, _):
-        new_section = self.engine.add_section()
-        self.build_section_frame()
-        self.check_scrollbar_needed()
-        self.select_section_command(new_section)

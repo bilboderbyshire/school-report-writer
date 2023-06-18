@@ -32,7 +32,7 @@ class ReportWriter(ctk.CTk):
         self.rowconfigure(0, weight=1)
         self.columnconfigure(0, weight=1)
 
-        self.frames = {}
+        self.frames: dict[str, MainMenuScene | TemplateScene] = {}
         self.db_instance = ReportWriterInstance()
         self.app_engine: AppEngine | None = None
         # self.show_frame("main-menu")
@@ -46,7 +46,8 @@ class ReportWriter(ctk.CTk):
             self.app_engine = AppEngine(self.db_instance)
             self.__setup_frames()
 
-            self.show_frame("main-menu")
+            new_frame = self.show_frame("main-menu")
+            new_frame.fill_frames()
 
         else:
             self.destroy()
@@ -61,8 +62,7 @@ class ReportWriter(ctk.CTk):
             self.frames[name] = new_frame
             new_frame.grid(row=0, column=0, sticky="nsew")
 
-    def show_frame(self, frame_to_show) -> Misc:
+    def show_frame(self, frame_to_show) -> TemplateScene | MainMenuScene:
         frame = self.frames[frame_to_show]
         frame.tkraise()
-        frame.fill_frames()
         return frame

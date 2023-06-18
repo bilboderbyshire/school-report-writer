@@ -62,7 +62,6 @@ class AppEngine:
         self.copy_of_reports_set_collection: dict[str, SingleReportSet] = {}
         self.copy_of_individual_report_collection: dict[str, IndividualReport] = {}
 
-        self.piece_to_template_collection: dict[str, dict[int, list[str]]] = {}
         self.reports_to_set_reports_collection: dict[str, list[str]] = {}
 
         # Create load_values dictionary for all data to be collected. Load values includes the database collection as
@@ -108,28 +107,33 @@ class AppEngine:
         self.copy_of_individual_report_collection: dict[str, IndividualReport] = \
             create_copy_of_collection(self.individual_report_collection)
 
-        self.__create_piece_to_template()
-        self.__create_report_to_report_set()
-
-    def __create_piece_to_template(self) -> None:
+    def create_piece_to_template(self, template_id: str) -> dict[int, dict[str, IndividualPiece]]:
         """Create template and piece relationship"""
 
+        new_relationship: dict[int, dict[str, IndividualPiece]] = {}
+
         for piece in self.copy_of_piece_collection.values():
-            if piece.template not in self.piece_to_template_collection.keys():
-                # If the current piece's template doesn't exist in the dictionary, create the key with the template ID
-                #  and initialise with an empty dictionary
-                self.piece_to_template_collection[piece.template] = {}
+            if piece.template == template_id:
+                if piece.section not in new_relationship.keys():
+                    # If the section doesn't exist within the templates dictionary, create a key using the section and
+                    #  initialise with an empty dictionary
+                    new_relationship[piece.section] = {}
 
-            if piece.section not in self.piece_to_template_collection[piece.template].keys():
-                # If the section doesn't exist within the templates dictionary, create a key using the section and
-                #  initialise with an empty dictionary
-                self.piece_to_template_collection[piece.template][piece.section] = []
+                # Create a new key, value pair using the piece's id and the piece itself, place that inside the relevant
+                #  section key, which is then inside the relevant template key.
+                new_relationship[piece.section][piece.id] = piece
 
-            # Create a new key, value pair using the piece's id and the piece itself, place that inside the relevant
-            #  section key, which is then inside the relevant template key.
-            self.piece_to_template_collection[piece.template][piece.section].append(piece.id)
+        current_sections = sorted(new_relationship.keys())
+        temp_dict = {}
 
-    def __create_report_to_report_set(self) -> None:
+        for i in range(len(current_sections)):
+            for key, value in new_relationship[current_sections[i]].items():
+                value.section = i + 1
+            temp_dict[i + 1] = new_relationship[current_sections[i]]
+
+        return temp_dict
+
+    def create_report_to_report_set(self) -> None:
         """Create report to reports set relationship"""
 
         for report in self.copy_of_individual_report_collection.values():
