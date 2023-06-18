@@ -265,10 +265,12 @@ class IndividualReport:
         self.response_object = record
         self.id = record.id
         self.pupil_name = record.pupil_name
+        self.pronouns = record.pronouns
+        self.other_variables = record.other_variables
         self.report_text = record.report_text
+        self.completed = record.completed
         self.user = None
         self.report_set = None
-        self.completed = record.completed
         self.created = record.created
         self.updated = record.updated
         self.expand = {}
@@ -297,6 +299,8 @@ class IndividualReport:
     def data_to_create(self) -> dict:
         return {
             "pupil_name": self.pupil_name,
+            "pronouns": self.pronouns,
+            "other_variables": self.other_variables,
             "report_text": self.report_text,
             "completed": self.completed,
             "user": self.user.id if self.user is not None else None,
@@ -307,10 +311,12 @@ class IndividualReport:
     def _is_valid_operand(other):
         return hasattr(other, "id") and \
                hasattr(other, "pupil_name") and \
+               hasattr(other, "pronouns") and \
+               hasattr(other, "other_variables") and \
                hasattr(other, "report_text") and \
+               hasattr(other, "completed") and \
                hasattr(other, "user") and \
                hasattr(other, "report_set") and \
-               hasattr(other, "completed") and \
                hasattr(other, "created") and \
                hasattr(other, "updated")
 
@@ -320,6 +326,8 @@ class IndividualReport:
 
         return ((self.id,
                  self.pupil_name,
+                 self.pronouns,
+                 self.other_variables,
                  self.report_text,
                  self.user,
                  self.report_set,
@@ -328,6 +336,8 @@ class IndividualReport:
                  self.updated) == (
             other.id,
             other.pupil_name,
+            other.pronouns,
+            other.other_variables,
             other.report_text,
             other.user,
             other.report_set,
@@ -338,8 +348,10 @@ class IndividualReport:
     def __repr__(self):
         return str({
             "id": self.id,
-            "report_text": self.report_text,
             "pupil_name": self.pupil_name,
+            "pronouns": self.pronouns,
+            "other_variables": self.other_variables,
+            "report_text": self.report_text,
             "completed": self.completed,
             "user": repr(self.user),
             "report_set": repr(self.report_set),
