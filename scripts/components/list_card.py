@@ -1,6 +1,6 @@
 import customtkinter as ctk
+from tkinter import Menu, Event
 from ..settings import *
-from ..containers import SingleReportSet
 
 
 class ListCard(ctk.CTkFrame):
@@ -23,9 +23,15 @@ class ListCard(ctk.CTkFrame):
         self.hover_color = hover_color
         self.main_color = fg_color
 
+        self.right_click_menu = Menu(self, tearoff=False)
+
         self.bind("<Enter>", lambda event: self.on_hover())
         self.bind("<Leave>", lambda event: self.on_mouse_leave())
         self.bind("<Button-1>", lambda event: self.command(self.card_data))
+        self.bind("<Button-3>", self.right_clicked)
+
+    def right_clicked(self, event: Event):
+        self.right_click_menu.tk_popup(event.x_root, event.y_root)
 
     def on_hover(self):
         self.configure(fg_color=self.hover_color)
@@ -37,6 +43,7 @@ class ListCard(ctk.CTkFrame):
         for child in self.winfo_children():
             child.bind("<Enter>", lambda event: self.on_hover())
             child.bind("<Leave>", lambda event: self.on_mouse_leave())
+            child.bind("<Button-3>", self.right_clicked)
 
             if self.command is not None:
                 child.bind("<Button-1>", lambda event: self.command(self.card_data))
