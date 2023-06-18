@@ -32,13 +32,15 @@ class MainMenuScene(ctk.CTkFrame):
         frame_sep = Separator(self, "ver")
         frame_sep.grid(row=2, column=2, sticky="nsew", pady=DEFAULT_PAD*3)
 
-        self.template_frame = TemplatesScrollableFrame(self,
-                                                       app_engine=self.app_engine,
-                                                       select_template_command=self.open_template,
-                                                       add_command=self.add_template,
-                                                       card_add_command=("Add new template", self.add_template),
-                                                       card_delete_command=("Delete", self.delete_template),
-                                                       card_copy_command=("Copy", self.copy_template))
+        self.template_frame = TemplatesScrollableFrame(
+            self,
+            app_engine=self.app_engine,
+            select_template_command=self.open_template,
+            add_command=self.add_template,
+            card_add_command=("Add new template", self.add_template),
+            card_delete_command=("Delete", self.delete_template),
+            card_copy_command=("Copy", self.copy_template)
+        )
         self.template_frame.grid(row=2, column=3, sticky="nsew", pady=(0, DEFAULT_PAD), padx=(3, DEFAULT_PAD))
 
         self.rowconfigure([0, 1], weight=0)
@@ -97,7 +99,7 @@ class MainMenuScene(ctk.CTkFrame):
                     continue
 
         new_template_id = self.app_engine.create_new_record_id(collection="templates")
-        template_title = f"My New Template {max_default_title if max_default_title > 1 else ''}"
+        template_title = f"My new template {max_default_title if max_default_title > 1 else ''}"
         blank_template = ReportTemplate(NewTemplateRecord(template_id=f"@{new_template_id}",
                                                           template_title=template_title,
                                                           owner=self.app_engine.user_container))
@@ -106,11 +108,12 @@ class MainMenuScene(ctk.CTkFrame):
         self.template_frame.check_scrollbar_needed()
 
     def copy_template(self, card_info: ReportTemplate):
-        new_title = "Copy of" + card_info.template_title
+        new_title = "Copy of " + card_info.template_title
         new_id = f"@{self.app_engine.create_new_record_id('templates')}"
 
         copied_template = card_info.copy()
         copied_template.template_title = new_title
+        copied_template.owner = self.app_engine.user_container.copy()
         copied_template.id = new_id
 
         self.app_engine.copy_of_template_collection[new_id] = copied_template
