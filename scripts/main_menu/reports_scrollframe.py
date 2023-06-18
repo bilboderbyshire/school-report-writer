@@ -1,29 +1,34 @@
 import customtkinter as ctk
 from ..settings import *
-from ..containers import ReportTemplate
+from ..containers import SingleReportSet
 from ..components import AutohidingScrollableAndLoadingFrame
-from .template_card import TemplateCard
+from .report_set_card import ReportSetCard
+from ..app_engine import AppEngine
 
 
-class TemplatesScrollableFrame(AutohidingScrollableAndLoadingFrame):
-    def __init__(self, master, add_command=None):
+class ReportsScrollableFrame(AutohidingScrollableAndLoadingFrame):
+    def __init__(self, master, app_engine: AppEngine, add_command=None):
         super().__init__(master,
                          label_font=ctk.CTkFont(**SECONDARY_TITLE_FONT),
                          label_anchor="w",
                          label_fg_color="transparent",
-                         label_text="Templates",
+                         label_text="Reports",
                          fg_color=ROOT_BG,
                          button_command=add_command)
 
-    def build_template_frame(self, reports_set: list[ReportTemplate]):
+        self.app_engine = app_engine
+
+    def build_report_frame(self):
 
         for i in self.winfo_children():
             i.destroy()
 
         self.update_idletasks()
 
-        for index, i in enumerate(reports_set):
-            new_card = TemplateCard(self, i, command=self.card_command)
+        reports_set = self.app_engine.copy_of_reports_set_collection.values()
+
+        for index, set_report in enumerate(reports_set):
+            new_card = ReportSetCard(self, self.app_engine, set_report, click_command=self.card_command)
             if index == len(reports_set) - 1:
                 new_card.grid(row=index, column=0, sticky="ew", padx=DEFAULT_PAD - 7)
             else:

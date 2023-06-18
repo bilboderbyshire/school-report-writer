@@ -49,7 +49,6 @@ class AutohidingScrollableAndLoadingFrame(ctk.CTkScrollableFrame):
         self._label.columnconfigure(0, weight=1)
         self._label.columnconfigure(1, weight=0)
 
-
     def loading_frame(self):
         for i in self.winfo_children():
             i.destroy()

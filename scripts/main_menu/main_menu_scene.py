@@ -1,31 +1,46 @@
 import customtkinter as ctk
 from .. import title_bar as tbar
 from ..settings import *
-from .reports_frame import ReportsScrollableFrame
-from .templates_frame import TemplatesScrollableFrame
-from ..database import RUNNING_DB
+from .reports_scrollframe import ReportsScrollableFrame
+from .templates_scrollframe import TemplatesScrollableFrame
 import CTkMessagebox as ctkmb
 from ..components import Separator
+from ..containers import ReportTemplate, NewTemplateRecord
+from ..app_engine import AppEngine
 
 
 class MainMenuScene(ctk.CTkFrame):
-    def __init__(self, master):
+    def __init__(self, master, app_engine: AppEngine):
         super().__init__(master, fg_color=ROOT_BG)
 
-        self.title_bar = tbar.TitleBar(self, "Report Writer", refresh_command=self.refresh_frames)
-        self.title_bar.grid(row=0, column=0, columnspan=4, sticky="nsew", **DEFAULT_PAD_COMPLETE)
+        self.app_engine = app_engine
+
+    def __build_frame(self):
+
+        self.title_bar = tbar.TitleBar(self, "Report Writer", refresh_command=self.refresh_scene)
+        self.title_bar.grid(row=0, column=0, columnspan=4, sticky="nsew", pady=(DEFAULT_PAD, 0), padx=DEFAULT_PAD)
 
         title_sep = Separator(self, "hor")
         title_sep.grid(row=1, column=0, columnspan=4, sticky="nsew", padx=DEFAULT_PAD*3, pady=DEFAULT_PAD)
 
-        self.report_frame = ReportsScrollableFrame(self, add_command=self.add_report)
+        self.report_frame = ReportsScrollableFrame(self,
+                                                   app_engine=self.app_engine,
+                                                   add_command=self.add_report)
         self.report_frame.grid(row=2, column=0, columnspan=2, sticky="nsew", pady=(0, DEFAULT_PAD),
                                padx=(DEFAULT_PAD, 3))
 
         frame_sep = Separator(self, "ver")
         frame_sep.grid(row=2, column=2, sticky="nsew", pady=DEFAULT_PAD*3)
 
-        self.template_frame = TemplatesScrollableFrame(self, add_command=self.add_template)
+        self.template_frame = TemplatesScrollableFrame(
+            self,
+            app_engine=self.app_engine,
+            select_template_command=self.edit_template,
+            add_command=self.add_template,
+            card_add_command=("Add new template", self.add_template),
+            card_delete_command=("Delete", self.delete_template),
+            card_copy_command=("Copy", self.copy_template)
+        )
         self.template_frame.grid(row=2, column=3, sticky="nsew", pady=(0, DEFAULT_PAD), padx=(3, DEFAULT_PAD))
 
         self.rowconfigure([0, 1], weight=0)
@@ -36,46 +51,32 @@ class MainMenuScene(ctk.CTkFrame):
         self.bind("<Configure>", lambda event: self.check_if_scroll_needed())
 
     def fill_frames(self):
-        report_response, reports_result = RUNNING_DB.get_set_reports()
-        template_response, templates_results = RUNNING_DB.get_available_templates()
+        for i in self.winfo_children():
+            i.destroy()
 
-        if report_response["response"] and template_response["response"]:
-            self.report_frame.build_report_frame(reports_result)
-            self.template_frame.build_template_frame(templates_results)
-        else:
-            if not report_response["response"]:
-                error_box = ctkmb.CTkMessagebox(
-                    title="Error",
-                    message=f"{report_response['message']} - Please try again later",
-                    icon="cancel")
-            else:
-                error_box = ctkmb.CTkMessagebox(
-                    title="Error",
-                    message=f"{template_response['message']} - Please try again later",
-                    icon="cancel")
+        self.update_idletasks()
 
-            error_box.wait_window()
+        self.__build_frame()
 
-            self.change_cursor("arrow")
-            self.master.destroy()
-            return
-
+        self.report_frame.build_report_frame()
+        self.template_frame.build_template_frame()
         self.check_if_scroll_needed()
-
         self.change_cursor("arrow")
 
     def check_if_scroll_needed(self):
         self.report_frame.check_scrollbar_needed()
         self.template_frame.check_scrollbar_needed()
 
-    def refresh_frames(self):
+    def refresh_scene(self):
         self.change_cursor("watch")
         self.report_frame.loading_frame()
         self.template_frame.loading_frame()
 
-        self.after(600, self.fill_frames)
+        self.after(700, self.app_engine.load_data)
+        self.fill_frames()
 
     def change_cursor(self, cursor: str) -> None:
+        self.configure(cursor=cursor)
         for i in self.winfo_children():
             i.configure(cursor=cursor)
 
@@ -83,5 +84,93 @@ class MainMenuScene(ctk.CTkFrame):
         print("Adding report")
 
     def add_template(self):
-        print("Adding template")
+        current_template_titles: list[str] = [i.template_title
+                                              for i in self.app_engine.copy_of_template_collection.values()]
+
+        max_default_title = 1
+        for i in current_template_titles:
+            if "My new template " == i[0:16]:
+                try:
+                    if i[16::] == "" and max_default_title == 1:
+                        max_default_title = 2
+                    elif int(i[16::]) >= max_default_title:
+                        max_default_title = int(i[16::]) + 1
+                except ValueError:
+                    continue
+
+        new_template_id = self.app_engine.create_new_record_id(collection="templates")
+        template_title = f"My new template {max_default_title if max_default_title > 1 else ''}"
+        blank_template = ReportTemplate(NewTemplateRecord(template_id=f"@{new_template_id}",
+                                                          template_title=template_title,
+                                                          owner=self.app_engine.user_container))
+        self.app_engine.copy_of_template_collection[blank_template.id] = blank_template
+        self.template_frame.build_template_frame()
+        self.template_frame.check_scrollbar_needed()
+
+    def copy_template(self, card_info: ReportTemplate) -> ReportTemplate:
+        new_title = "Copy of " + card_info.template_title
+        new_id = f"@{self.app_engine.create_new_record_id('templates')}"
+
+        copied_template = card_info.copy()
+        copied_template.template_title = new_title
+        copied_template.owner = self.app_engine.user_container.copy()
+        copied_template.id = new_id
+
+        self.app_engine.copy_of_template_collection[new_id] = copied_template
+        self.template_frame.build_template_frame()
+        self.template_frame.check_scrollbar_needed()
+
+        return copied_template
+
+    def delete_template(self, card_info: ReportTemplate):
+        warning_message = ctkmb.CTkMessagebox(
+            title="Warning",
+            message=f"Are you sure you want to delete the template {card_info.template_title}?\n "
+                    f"You will not be able to undo this move",
+            icon="warning",
+            option_2="Yes",
+            option_1="No"
+            )
+        warning_message.wait_window()
+        user_choice = warning_message.get()
+        if user_choice == "Yes":
+            if "@" in card_info.id:
+                self.app_engine.copy_of_template_collection.pop(card_info.id)
+                self.template_frame.build_template_frame()
+            else:
+                response = self.app_engine.db_instance.delete_record("templates", card_info.id)
+
+                if response["response"]:
+                    self.app_engine.copy_of_template_collection.pop(card_info.id)
+                    self.app_engine.template_collection.pop(card_info.id)
+                    self.template_frame.build_template_frame()
+                else:
+                    error_box = ctkmb.CTkMessagebox(
+                        title="Error",
+                        message=f"Error deleting template - {response['message']}",
+                        icon="cancel")
+                    error_box.wait_window()
+
+    def edit_template(self, template: ReportTemplate):
+        template_to_view = template
+        if template_to_view.owner.id != self.app_engine.get_user_id():
+            warning_box = ctkmb.CTkMessagebox(
+                title="Warning",
+                message=f"You cannot edit '{template_to_view.template_title}' because it does not belong to you -"
+                        f" Would you like to make a copy to edit?",
+                icon="cancel",
+                option_2="Yes",
+                option_1="No")
+            warning_box.wait_window()
+
+            if warning_box.get() == "Yes":
+                template_to_view = self.copy_template(template)
+            else:
+                return
+
+        template_scene = self.master.show_frame("template-scene")
+
+        template_scene.previous_scene("main-menu")
+        template_scene.setup_scene(template_to_view)
+        template_scene.fill_frames()
 

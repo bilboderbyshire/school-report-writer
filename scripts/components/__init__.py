@@ -7,3 +7,4 @@ from .secondary_button import SecondaryButton
 from .autohiding_scrollable_and_loading_frame import AutohidingScrollableAndLoadingFrame
 from .list_card import ListCard
 from .seperator import Separator
+from .invisible_entry import InvisibleEntry

@@ -1,7 +1,7 @@
 import customtkinter as ctk
 from ..components import TitleLabel, SingleLineEntry, NormalLabel, SmallLabelButton, SmallLabel, SecondaryButton
 from ..settings import *
-from ..database import RUNNING_DB
+from ..database import ReportWriterInstance
 
 
 class LoginFrame(ctk.CTkFrame):
@@ -10,9 +10,12 @@ class LoginFrame(ctk.CTkFrame):
     authorisation when the login button is clicked. Will display appropriate error messages on unsuccessful requests,
     or when local validation is run. The frame also allows users to select the option to create an account.
     """
-    def __init__(self, master, user_accepted: ctk.BooleanVar) -> None:
+    def __init__(self, master, user_accepted: ctk.BooleanVar, db_instance: ReportWriterInstance) -> None:
         super().__init__(master,
                          fg_color="transparent")
+
+        # Connect reference to the running database instance
+        self.db_instance = db_instance
 
         # User accepted bool is tracked by root app, decides if root should destroy itself (login cancelled) or
         #  deiconify (login successful)
@@ -84,6 +87,9 @@ class LoginFrame(ctk.CTkFrame):
         self.email_entry.bind("<Return>", lambda event: self.login_request())
         self.password_entry.bind("<Return>", lambda event: self.login_request())
 
+    def set_focus(self):
+        self.email_entry.focus()
+
     def login_request(self) -> None:
         """
         Collects the input email and password, performs basic validation, and requests authorisation from the database.
@@ -126,7 +132,7 @@ class LoginFrame(ctk.CTkFrame):
 
     def make_db_request(self, email, password) -> None:
         # A request is made to the database
-        response = RUNNING_DB.login(email, password)
+        response = self.db_instance.login(email, password)
 
         # After response is received, reset cursor
         self.configure(cursor="arrow")

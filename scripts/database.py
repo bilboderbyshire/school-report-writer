@@ -1,9 +1,10 @@
 import pocketbase
+from pocketbase.models.utils import BaseModel
 from .settings import *
-from .containers import *
+from .containers import Response, UserCreation
 
 
-class Pb(pocketbase.PocketBase):
+class ReportWriterInstance(pocketbase.PocketBase):
     def __init__(self):
         super().__init__(URL)
         self.user_data = None
@@ -138,56 +139,7 @@ class Pb(pocketbase.PocketBase):
             return {"response": False,
                     "message": "No user"}, None
 
-    def get_set_reports(self) -> tuple[Response, list[SingleReportSet]]:
-        self.refresh_auth()
-        if self.user_is_valid:
-            try:
-                results = self.collection("report_set").get_full_list(query_params={
-                    "expand": "template, template.owner, user",
-                    "sort": "-created"
-                })
-                return_list = [SingleReportSet(i) for i in results]
-                return {
-                    "response": True,
-                    "message": "success"
-                }, return_list
-
-            except pocketbase.client.ClientResponseError as e:
-                print("Error collecting set reports:", repr(e))
-                print(e.data)
-
-                return ({"response": False,
-                         "message": "Getting set reports failed"}, [])
-        else:
-            return ({"response": False,
-                     "message": "Getting set reports failed"}, [])
-
-    def get_reports_from_set(self, set_id) -> tuple[Response, list[IndividualReport]]:
-        self.refresh_auth()
-        if self.user_is_valid:
-            try:
-                results = self.collection("individual_reports").get_full_list(query_params={
-                    "filter": f'report_set.id = "{set_id}"',
-                    "expand": "report_set, report_set.template, user",
-                    "sort": "+pupil_name"
-                })
-
-                return_list = [IndividualReport(i) for i in results]
-
-                return {"response": True,
-                        "message": "success"}, return_list
-            except pocketbase.client.ClientResponseError as e:
-                print("Error collecting individual reports:", repr(e))
-                print(e.data)
-
-                return ({"response": False,
-                         "message": "Getting individual reports failed"}, [])
-        else:
-            return ({"response": False,
-                     "message": "Getting individual reports failed"}, [])
-
     def check_if_user_exists(self, email_to_check) -> tuple[Response, bool | None]:
-        self.refresh_auth()
         if self.user_is_valid:
             try:
                 results = self.collection("users").get_full_list(query_params={
@@ -210,29 +162,115 @@ class Pb(pocketbase.PocketBase):
             return ({"response": False,
                      "message": "Search for user email failed"}, None)
 
-    def get_available_templates(self) -> tuple[Response, list[ReportTemplate] | None]:
-        self.refresh_auth()
+    def get_full_list_from_collection(self,
+                                      collection: str,
+                                      query_params: dict = None) -> tuple[Response, list[BaseModel] | None]:
+
+        if query_params is None:
+            query_params = {}
+
         if self.user_is_valid:
             try:
-                results = self.collection("templates").get_full_list(query_params={
-                    "expand": "owner",
-                    "sort": "-created"
-                })
-
-                return_list = [ReportTemplate(i) for i in results]
+                results = self.collection(collection).get_full_list(query_params=query_params)
 
                 return ({"response": True,
-                         "message": "success"}, return_list)
+                         "message": "success"}, results)
 
             except pocketbase.client.ClientResponseError as e:
-                print("Error collecting available templates:", repr(e))
+                print(f"Error collecting data from {collection}:", repr(e))
                 print(e.data)
 
                 return ({"response": False,
-                         "message": "Available template collection failed"}, None)
-        else:
-            return ({"response": False,
-                     "message": "Available template collection failed"}, None)
+                         "message": f"Error code {e.data['code']}: {e.data['message']}"}, None)
 
+        return ({"response": False,
+                 "message": f"Error collecting data from {collection}: User not authorised"}, None)
 
-RUNNING_DB = Pb()
+    def get_single_record(self,
+                          collection: str,
+                          record_id: str,
+                          query_params: dict = None) -> tuple[Response, BaseModel | None]:
+
+        if query_params is None:
+            query_params = {}
+
+        if self.user_is_valid:
+            try:
+                result = self.collection(collection).get_one(record_id, query_params=query_params)
+
+                return ({"response": True,
+                         "message": "success"}, result)
+
+            except pocketbase.client.ClientResponseError as e:
+                print(f"Error collecting data from {collection}:", repr(e))
+                print(e.data)
+
+                return ({"response": False,
+                         "message": f"Error code {e.data['code']}: {e.data['message']}"}, None)
+
+        return ({"response": False,
+                 "message": f"Error collecting data from {collection}: User not authorised"}, None)
+
+    def create_new_record(self,
+                          collection: str,
+                          record_data: dict) -> tuple[Response, BaseModel | None]:
+
+        if self.user_is_valid:
+            try:
+                result = self.collection(collection).create(record_data)
+
+                return ({"response": True,
+                         "message": "success"}, result)
+
+            except pocketbase.client.ClientResponseError as e:
+                print(f"Error creating record in {collection}:", repr(e))
+                print(e.data)
+
+                return ({"response": False,
+                         "message": f"Error code {e.data['code']}: {e.data['message']}"}, None)
+
+        return ({"response": False,
+                 "message": f"Error creating data in {collection}: User not authorised"}, None)
+
+    def update_record(self,
+                      collection: str,
+                      record_id: str,
+                      record_data: dict) -> tuple[Response, BaseModel | None]:
+
+        if self.user_is_valid:
+            try:
+                result = self.collection(collection).update(record_id, record_data)
+
+                return ({"response": True,
+                         "message": "success"}, result)
+
+            except pocketbase.client.ClientResponseError as e:
+                print(f"Error updating record {record_id} in {collection}:", repr(e))
+                print(e.data)
+
+                return ({"response": False,
+                         "message": f"Error code {e.data['code']}: {e.data['message']}"}, None)
+
+        return ({"response": False,
+                 "message": f"Error updating data in {collection}: User not authorised"}, None)
+
+    def delete_record(self,
+                      collection: str,
+                      record_id: str) -> Response:
+
+        if self.user_is_valid:
+            try:
+                self.collection(collection).delete(record_id)
+
+                return {"response": True,
+                        "message": "success"}
+
+            except pocketbase.client.ClientResponseError as e:
+                print(f"Error deleting record {record_id} in {collection}:", repr(e))
+                print(e.data)
+
+                return {"response": False,
+                        "message": f"Error code {e.data['code']}: {e.data['message']}"}
+
+        return {"response": False,
+                "message": f"Error deleting data from {collection}: User not authorised"}

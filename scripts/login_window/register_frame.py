@@ -1,7 +1,7 @@
 import customtkinter as ctk
 from ..components import TitleLabel, SingleLineEntry, NormalLabel, SmallLabelButton, SmallLabel, SecondaryButton
 from ..settings import *
-from ..database import RUNNING_DB
+from ..database import ReportWriterInstance
 
 
 class RegisterFrame(ctk.CTkFrame):
@@ -9,9 +9,12 @@ class RegisterFrame(ctk.CTkFrame):
     database. Basic local validation is performed to ensure all the information is good. If successful, the user is
     logged in, and the main menu is displayed. If not successful, an error label is updated with an appropriate
     message, and the user is given another chance"""
-    def __init__(self, master, user_accepted: ctk.BooleanVar) -> None:
+    def __init__(self, master, user_accepted: ctk.BooleanVar, db_instance: ReportWriterInstance) -> None:
         super().__init__(master,
                          fg_color="transparent")
+
+        # Make connection to given database instance
+        self.db_instance = db_instance
 
         # User accepted bool is tracked by root app, decides if root should destroy itself (registration cancelled) or
         #  deiconify (registration successful)
@@ -143,6 +146,9 @@ class RegisterFrame(ctk.CTkFrame):
         for i in all_entries:
             i.bind("<Return>", lambda event: self.register_account())
 
+    def set_focus(self):
+        self.forename_entry.focus_set()
+
     def back_button_pressed(self) -> None:
         """
         When either back button is pressed, the login frame is displayed
@@ -206,7 +212,7 @@ class RegisterFrame(ctk.CTkFrame):
         self.after(500, lambda: self.make_db_request(data))
 
     def make_db_request(self, data) -> None:
-        response = RUNNING_DB.register_account(data)
+        response = self.db_instance.register_account(data)
 
         # After response is received, reset cursor
         self.configure(cursor="arrow")

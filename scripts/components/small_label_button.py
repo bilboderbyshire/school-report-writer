@@ -3,13 +3,17 @@ from ..settings import *
 
 
 class SmallLabelButton(ctk.CTkButton):
-    def __init__(self, master, **kwargs):
+    def __init__(self,
+                 master,
+                 fg_color="transparent",
+                 border_spacing=3,
+                 **kwargs):
         super().__init__(master,
-                         fg_color="transparent",
+                         fg_color=fg_color,
                          hover=False,
                          border_width=0,
                          text_color=LABEL_BUTTON_TEXT_COLOR,
-                         border_spacing=3,
+                         border_spacing=border_spacing,
                          **kwargs)
 
         self.button_font = ctk.CTkFont(**SMALL_LABEL_FONT)

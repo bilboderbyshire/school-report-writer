@@ -4,6 +4,10 @@ from .settings import *
 import os
 from .login_window import LoginWindow
 from .main_menu import MainMenuScene
+from .template_edit_add import TemplateScene
+from .database import ReportWriterInstance
+from .app_engine import AppEngine
+from typing import Type
 
 
 class ReportWriter(ctk.CTk):
@@ -28,27 +32,37 @@ class ReportWriter(ctk.CTk):
         self.rowconfigure(0, weight=1)
         self.columnconfigure(0, weight=1)
 
-        self.frames = {}
-        self.__setup_frames()
+        self.frames: dict[str, MainMenuScene | TemplateScene] = {}
+        self.db_instance = ReportWriterInstance()
+        self.app_engine: AppEngine | None = None
+        # self.show_frame("main-menu")
+
         self.__login()
 
     def __login(self):
         user_accepted = ctk.BooleanVar(value=False)
-        LoginWindow(self, user_accepted)
+        LoginWindow(self, user_accepted, self.db_instance)
         if user_accepted.get():
-            self.show_frame("main-menu")
-            self.frames["main-menu"].refresh_frames()
+            self.app_engine = AppEngine(self.db_instance)
+            self.__setup_frames()
+
+            new_frame = self.show_frame("main-menu")
+            new_frame.fill_frames()
+
         else:
             self.destroy()
 
     def __setup_frames(self):
-        current_frame_list = {"main-menu": MainMenuScene}
+        current_frame_list: dict[str, Type[MainMenuScene | TemplateScene]] = {
+            "main-menu": MainMenuScene,
+            "template-scene": TemplateScene
+        }
         for name, frame in current_frame_list.items():
-            new_frame = frame(self)
+            new_frame = frame(self, self.app_engine)
             self.frames[name] = new_frame
             new_frame.grid(row=0, column=0, sticky="nsew")
 
-    def show_frame(self, frame_to_show) -> Misc:
+    def show_frame(self, frame_to_show) -> TemplateScene | MainMenuScene:
         frame = self.frames[frame_to_show]
         frame.tkraise()
         return frame
