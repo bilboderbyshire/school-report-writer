@@ -1,4 +1,4 @@
-from typing import Type
+from typing import Type, Literal
 from .database import ReportWriterInstance
 import CTkMessagebox as ctkmb
 from .containers import *
@@ -34,6 +34,8 @@ class AppEngine:
 
         self.piece_to_template_collection: dict[str, dict[int, list[str]]] = {}
         self.reports_to_set_reports_collection: dict[str, list[str]] = {}
+
+        self.user_container = User(self.db_instance.user_model)
 
         self.load_success = False
 
@@ -139,6 +141,26 @@ class AppEngine:
             # Create a new key, value pair with the report's id and the report itself, place that inside the relevant
             #  report set dictionary
             self.reports_to_set_reports_collection[report.report_set].append(report.id)
+
+    def create_new_record_id(self, collection: Literal["template",
+                                                       "report_set",
+                                                       "individual_report",
+                                                       "report_piece"]) -> int:
+        collections = {
+            "templates": self.copy_of_template_collection,
+            "report_set": self.copy_of_reports_set_collection,
+            "individual_reports": self.individual_report_collection,
+            "report_pieces": self.piece_collection
+        }
+        current_ids: list[str] = [i.id for i in collections[collection].values()]
+
+        max_blank_id = 0
+        for i in current_ids:
+            if "@" in i:
+                if int(i[1::]) >= max_blank_id:
+                    max_blank_id = int(i[1::]) + 1
+
+        return max_blank_id
 
     def run_load_error(self, message: str) -> None:
 

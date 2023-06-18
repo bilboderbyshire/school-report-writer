@@ -8,7 +8,7 @@ class ListCard(ctk.CTkFrame):
                  fg_color=LABEL_CARD_COLOR,
                  hover_color=LABEL_CARD_HOVER_COLOR,
                  height=98,
-                 command=None,
+                 click_command=None,
                  **kwargs):
         super().__init__(master,
                          height=height,
@@ -19,7 +19,7 @@ class ListCard(ctk.CTkFrame):
 
         # When griding widgets into the list card, the card will not propagate and stay the same fixed size
         self.grid_propagate(False)
-        self.command = command
+        self.command = click_command
         self.hover_color = hover_color
         self.main_color = fg_color
 

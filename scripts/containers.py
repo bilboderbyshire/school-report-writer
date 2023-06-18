@@ -13,12 +13,12 @@ class NewPieceRecord:
 
 
 class NewTemplateRecord:
-    def __init__(self, template_id: str, template_title: str, user_id: str):
+    def __init__(self, template_id: str, template_title: str, owner):
         self.id = template_id
         self.template_title = template_title
         self.created = "Just now"
         self.updated = "Just now"
-        self.owner = user_id
+        self.owner: User = owner
         self.expand = {}
 
 

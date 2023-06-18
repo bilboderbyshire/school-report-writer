@@ -5,7 +5,7 @@ from .reports_scrollframe import ReportsScrollableFrame
 from .templates_scrollframe import TemplatesScrollableFrame
 import CTkMessagebox as ctkmb
 from ..components import Separator
-from ..containers import ReportTemplate
+from ..containers import ReportTemplate, NewTemplateRecord
 from ..app_engine import AppEngine
 
 
@@ -35,7 +35,10 @@ class MainMenuScene(ctk.CTkFrame):
         self.template_frame = TemplatesScrollableFrame(self,
                                                        app_engine=self.app_engine,
                                                        select_template_command=self.open_template,
-                                                       add_command=self.add_template)
+                                                       add_command=self.add_template,
+                                                       card_add_command=("Add new template", self.add_template),
+                                                       card_delete_command=("Delete", self.delete_template),
+                                                       card_copy_command=("Copy", self.copy_template))
         self.template_frame.grid(row=2, column=3, sticky="nsew", pady=(0, DEFAULT_PAD), padx=(3, DEFAULT_PAD))
 
         self.rowconfigure([0, 1], weight=0)
@@ -67,10 +70,11 @@ class MainMenuScene(ctk.CTkFrame):
         self.report_frame.loading_frame()
         self.template_frame.loading_frame()
 
-        self.after(600, self.app_engine.load_data)
+        self.after(700, self.app_engine.load_data)
         self.fill_frames()
 
     def change_cursor(self, cursor: str) -> None:
+        self.configure(cursor=cursor)
         for i in self.winfo_children():
             i.configure(cursor=cursor)
 
@@ -78,13 +82,73 @@ class MainMenuScene(ctk.CTkFrame):
         print("Adding report")
 
     def add_template(self):
-        template_scene = self.master.show_frame("template-scene")
-        template_scene.change_cursor("watch")
-        template_scene.previous_scene("main-menu")
-        self.after(600, template_scene.refresh_frames())
+        current_template_titles: list[str] = [i.template_title
+                                              for i in self.app_engine.copy_of_template_collection.values()]
+
+        max_default_title = 1
+        for i in current_template_titles:
+            if "My new template " == i[0:16]:
+                try:
+                    if i[16::] == "" and max_default_title == 1:
+                        max_default_title = 2
+                    elif int(i[16::]) >= max_default_title:
+                        max_default_title = int(i[16::]) + 1
+                except ValueError:
+                    continue
+
+        new_template_id = self.app_engine.create_new_record_id(collection="templates")
+        template_title = f"My New Template {max_default_title if max_default_title > 1 else ''}"
+        blank_template = ReportTemplate(NewTemplateRecord(template_id=f"@{new_template_id}",
+                                                          template_title=template_title,
+                                                          owner=self.app_engine.user_container))
+        self.app_engine.copy_of_template_collection[blank_template.id] = blank_template
+        self.template_frame.build_template_frame()
+        self.template_frame.check_scrollbar_needed()
+
+    def copy_template(self, card_info: ReportTemplate):
+        new_title = "Copy of" + card_info.template_title
+        new_id = f"@{self.app_engine.create_new_record_id('templates')}"
+
+        copied_template = card_info.copy()
+        copied_template.template_title = new_title
+        copied_template.id = new_id
+
+        self.app_engine.copy_of_template_collection[new_id] = copied_template
+        self.template_frame.build_template_frame()
+        self.template_frame.check_scrollbar_needed()
+
+    def delete_template(self, card_info: ReportTemplate):
+        warning_message = ctkmb.CTkMessagebox(
+            title="Warning",
+            message=f"Are you sure you want to delete the template {card_info.template_title}?\n "
+                    f"You will not be able to undo this move",
+            icon="warning",
+            option_2="Yes",
+            option_1="No"
+            )
+        warning_message.wait_window()
+        user_choice = warning_message.get()
+        if user_choice == "Yes":
+            if "@" in card_info.id:
+                self.app_engine.copy_of_template_collection.pop(card_info.id)
+                self.template_frame.build_template_frame()
+            else:
+                response = self.app_engine.db_instance.delete_record("templates", card_info.id)
+
+                if response["response"]:
+                    self.app_engine.copy_of_template_collection.pop(card_info.id)
+                    self.app_engine.template_collection.pop(card_info.id)
+                    self.template_frame.build_template_frame()
+                else:
+                    error_box = ctkmb.CTkMessagebox(
+                        title="Error",
+                        message=f"Error deleting template - {response['message']}",
+                        icon="cancel")
+                    error_box.wait_window()
 
     def open_template(self, template: ReportTemplate):
         template_scene = self.master.show_frame("template-scene")
         template_scene.change_cursor("watch")
         template_scene.previous_scene("main-menu")
         self.after(600, template_scene.refresh_frames(template))
+

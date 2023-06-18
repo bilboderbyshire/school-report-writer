@@ -3,13 +3,24 @@ from ..components import ListCard
 from ..containers import ReportTemplate
 from ..settings import *
 from ..app_engine import AppEngine
-from tkinter import Menu
+from typing import Callable
 
 
 class TemplateCard(ListCard):
-    def __init__(self, master, app_engine: AppEngine, template: ReportTemplate, command=None):
-        super().__init__(master, command=command)
+    def __init__(self, master,
+                 app_engine: AppEngine,
+                 template: ReportTemplate,
+                 add_command: tuple[str, Callable],
+                 copy_command: tuple[str, Callable],
+                 delete_command: tuple[str, Callable],
+                 click_command=None):
+        super().__init__(master, click_command=click_command)
         self.card_data = template
+
+        # Right click menu options
+        self.right_click_menu.add_command(label=add_command[0], command=add_command[1])
+        self.right_click_menu.add_command(label=copy_command[0], command=lambda: copy_command[1](self.card_data))
+        self.right_click_menu.add_command(label=delete_command[0], command=lambda: delete_command[1](self.card_data))
 
         title_text = f"{self.card_data.template_title}"
         if "@" in self.card_data.id:
