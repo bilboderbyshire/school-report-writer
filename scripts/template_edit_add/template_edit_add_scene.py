@@ -75,8 +75,7 @@ class TemplateScene(ctk.CTkFrame):
         all_sections = list(self.structured_pieces.keys())
         if all_sections:
             self.selected_section = all_sections[0]
-
-        self.section_frame.all_cards[self.selected_section].card_selected()
+            self.section_frame.all_cards[self.selected_section].card_selected()
 
         self.change_cursor("arrow")
 

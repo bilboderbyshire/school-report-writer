@@ -32,9 +32,6 @@ class SectionScrollableFrame(AutohidingScrollableAndLoadingFrame):
         self.update_idletasks()
 
         for index, section in enumerate(self.structured_pieces.keys()):
-            if index == 0:
-                self.current_card = section
-
             new_section_card = SectionCard(
                 self,
                 section,
