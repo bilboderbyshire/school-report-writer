@@ -7,6 +7,7 @@ class ListCard(ctk.CTkFrame):
     def __init__(self, master,
                  fg_color=LABEL_CARD_COLOR,
                  hover_color=LABEL_CARD_HOVER_COLOR,
+                 selected_color=LABEL_CARD_SELECTED_COLOR,
                  height=98,
                  click_command=None,
                  **kwargs):
@@ -22,6 +23,9 @@ class ListCard(ctk.CTkFrame):
         self.command = click_command
         self.hover_color = hover_color
         self.main_color = fg_color
+        self.selected_color = selected_color
+
+        self.selected: bool = False
 
         self.right_click_menu = Menu(self, tearoff=False)
 
@@ -34,10 +38,12 @@ class ListCard(ctk.CTkFrame):
         self.right_click_menu.tk_popup(event.x_root, event.y_root)
 
     def on_hover(self):
-        self.configure(fg_color=self.hover_color)
+        if not self.selected:
+            self.configure(fg_color=self.hover_color)
 
     def on_mouse_leave(self):
-        self.configure(fg_color=self.main_color)
+        if not self.selected:
+            self.configure(fg_color=self.main_color)
 
     def bind_frame(self):
         for child in self.winfo_children():
@@ -47,3 +53,11 @@ class ListCard(ctk.CTkFrame):
 
             if self.command is not None:
                 child.bind("<Button-1>", lambda event: self.command(self.card_data))
+
+    def card_selected(self):
+        self.selected = True
+        self.configure(fg_color=LABEL_CARD_SELECTED_COLOR)
+
+    def card_deselected(self):
+        self.selected = False
+        self.configure(fg_color=self.main_color)
