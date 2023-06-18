@@ -27,16 +27,20 @@ class AppEngine:
         self.reports_set_collection: dict[str, SingleReportSet] = {}
         self.individual_report_collection: dict[str, IndividualReport] = {}
 
+        self.copy_of_template_collection: dict[str, ReportTemplate] = {}
+        self.copy_of_piece_collection: dict[str, IndividualPiece] = {}
+        self.copy_of_reports_set_collection: dict[str, SingleReportSet] = {}
+        self.copy_of_individual_report_collection: dict[str, IndividualReport] = {}
+
         self.piece_to_template_collection: dict[str, dict[int, list[str]]] = {}
         self.reports_to_set_reports_collection: dict[str, list[str]] = {}
+
         self.load_success = False
 
         self.load_data()
 
-        self.copy_of_template_collection = create_copy_of_collection(self.template_collection)
-        self.copy_of_piece_collection = create_copy_of_collection(self.piece_collection)
-        self.copy_of_reports_set_collection = create_copy_of_collection(self.reports_set_collection)
-        self.copy_of_individual_report_collection = create_copy_of_collection(self.individual_report_collection)
+    def get_user_id(self) -> str:
+        return self.db_instance.get_users_id()[1]
 
     def load_data(self) -> None:
         """A public method that will force the app engine to load data from the database in order to refresh local data.
@@ -51,6 +55,14 @@ class AppEngine:
         self.reports_set_collection: dict[str, SingleReportSet] = {}
         self.individual_report_collection: dict[str, IndividualReport] = {}
 
+        self.copy_of_template_collection: dict[str, ReportTemplate] = {}
+        self.copy_of_piece_collection: dict[str, IndividualPiece] = {}
+        self.copy_of_reports_set_collection: dict[str, SingleReportSet] = {}
+        self.copy_of_individual_report_collection: dict[str, IndividualReport] = {}
+
+        self.piece_to_template_collection: dict[str, dict[int, list[str]]] = {}
+        self.reports_to_set_reports_collection: dict[str, list[str]] = {}
+
         # Create load_values dictionary for all data to be collected. Load values includes the database collection as
         #  the key linked to a tuple that contains the dictionary to populate, and the data container to wrap around
         #  the records returned for that collection
@@ -63,9 +75,15 @@ class AppEngine:
 
         for collection_name, dict_and_class in load_values.items():
             # Call a list collection with the database, using the current key (collection_name)
-            response, results = self.db_instance.get_full_list_from_collection(collection_name, {
-                "sort": "-created"
-            })
+            if collection_name != "templates":
+                response, results = self.db_instance.get_full_list_from_collection(collection_name, {
+                    "sort": "-created"
+                })
+            else:
+                response, results = self.db_instance.get_full_list_from_collection(collection_name, {
+                    "sort": "-created",
+                    "expand": "owner"
+                })
 
             if results is None:
                 # If the returned results is None, the collection attempt failed. Throw up an error message and escape
@@ -76,6 +94,20 @@ class AppEngine:
                 # If results are returned, use the given container class to generate an object with each returned record
                 for record in results:
                     dict_and_class[0][record.id] = dict_and_class[1](record)
+
+        self.copy_of_template_collection: dict[str, ReportTemplate] = \
+            create_copy_of_collection(self.template_collection)
+
+        self.copy_of_piece_collection: dict[str, IndividualPiece] = create_copy_of_collection(self.piece_collection)
+
+        self.copy_of_reports_set_collection: dict[str, SingleReportSet] = \
+            create_copy_of_collection(self.reports_set_collection)
+
+        self.copy_of_individual_report_collection: dict[str, IndividualReport] = \
+            create_copy_of_collection(self.individual_report_collection)
+
+        self.__create_piece_to_template()
+        self.__create_report_to_report_set()
 
     def __create_piece_to_template(self) -> None:
         """Create template and piece relationship"""
