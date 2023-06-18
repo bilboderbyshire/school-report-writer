@@ -3,10 +3,11 @@ from ..settings import *
 from ..containers import SingleReportSet
 from ..components import AutohidingScrollableAndLoadingFrame
 from .report_set_card import ReportSetCard
+from ..app_engine import AppEngine
 
 
 class ReportsScrollableFrame(AutohidingScrollableAndLoadingFrame):
-    def __init__(self, master, add_command=None):
+    def __init__(self, master, app_engine: AppEngine, add_command=None):
         super().__init__(master,
                          label_font=ctk.CTkFont(**SECONDARY_TITLE_FONT),
                          label_anchor="w",
@@ -15,15 +16,19 @@ class ReportsScrollableFrame(AutohidingScrollableAndLoadingFrame):
                          fg_color=ROOT_BG,
                          button_command=add_command)
 
-    def build_report_frame(self, reports_set: list[SingleReportSet]):
+        self.app_engine = app_engine
+
+    def build_report_frame(self):
 
         for i in self.winfo_children():
             i.destroy()
 
         self.update_idletasks()
 
-        for index, i in enumerate(reports_set):
-            new_card = ReportSetCard(self, i, command=self.card_command)
+        reports_set = self.app_engine.copy_of_reports_set_collection.values()
+
+        for index, set_report in enumerate(reports_set):
+            new_card = ReportSetCard(self, self.app_engine, set_report, command=self.card_command)
             if index == len(reports_set) - 1:
                 new_card.grid(row=index, column=0, sticky="ew", padx=DEFAULT_PAD - 7)
             else:

@@ -7,6 +7,7 @@ from .main_menu import MainMenuScene
 from .template_edit_add import TemplateScene
 from .database import ReportWriterInstance
 from .app_engine import AppEngine
+from typing import Type
 
 
 class ReportWriter(ctk.CTk):
@@ -35,6 +36,7 @@ class ReportWriter(ctk.CTk):
         self.db_instance = ReportWriterInstance()
         self.app_engine: AppEngine | None = None
         # self.show_frame("main-menu")
+
         self.__login()
 
     def __login(self):
@@ -42,17 +44,18 @@ class ReportWriter(ctk.CTk):
         LoginWindow(self, user_accepted, self.db_instance)
         if user_accepted.get():
             self.app_engine = AppEngine(self.db_instance)
+            self.__setup_frames()
 
-            # self.__setup_frames()
+            self.show_frame("main-menu")
 
-            # self.show_frame("main-menu")
-            # self.frames["main-menu"].refresh_frames()
         else:
             self.destroy()
 
     def __setup_frames(self):
-        current_frame_list = {"main-menu": MainMenuScene,
-                              "template-scene": TemplateScene}
+        current_frame_list: dict[str, Type[MainMenuScene | TemplateScene]] = {
+            "main-menu": MainMenuScene,
+            "template-scene": TemplateScene
+        }
         for name, frame in current_frame_list.items():
             new_frame = frame(self, self.app_engine)
             self.frames[name] = new_frame
@@ -61,4 +64,5 @@ class ReportWriter(ctk.CTk):
     def show_frame(self, frame_to_show) -> Misc:
         frame = self.frames[frame_to_show]
         frame.tkraise()
+        frame.fill_frames()
         return frame
