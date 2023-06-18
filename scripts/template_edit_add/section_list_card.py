@@ -1,10 +1,16 @@
 import customtkinter as ctk
 from ..settings import *
 from ..components import ListCard
+from typing import Callable
 
 
 class SectionCard(ListCard):
-    def __init__(self, master, section_number: int, piece_count: int, select_section_command):
+    def __init__(self, master,
+                 section_number: int,
+                 piece_count: int,
+                 select_section_command: Callable,
+                 add_command: tuple[str, Callable],
+                 delete_command: tuple[str, Callable]):
         super().__init__(master,
                          fg_color="transparent",
                          hover_color=BUTTON_HOVER_COLOR,
@@ -12,6 +18,11 @@ class SectionCard(ListCard):
                          click_command=select_section_command)
 
         self.card_data = section_number
+
+        self.right_click_menu.add_command(label="Select section",
+                                          command=lambda: select_section_command(self.card_data))
+        self.right_click_menu.add_command(label=add_command[0], command=add_command[1])
+        self.right_click_menu.add_command(label=delete_command[0], command=lambda: delete_command[1](self.card_data))
 
         self.text_label = ctk.CTkLabel(
             self,

@@ -19,6 +19,8 @@ class TemplateScene(ctk.CTkFrame):
         self.working_template: ReportTemplate = None
         self.structured_pieces: dict[int, dict[str, IndividualPiece]] = None
 
+        self.selected_section: int = None
+
     def __build_frame(self):
 
         title_bar = tbar.TitleBar(self, "Edit template",
@@ -38,7 +40,8 @@ class TemplateScene(ctk.CTkFrame):
         self.section_frame = SectionScrollableFrame(self,
                                                     structured_pieces=self.structured_pieces,
                                                     select_section_command=self.new_section_selected,
-                                                    card_add_command=self.add_section)
+                                                    card_add_command=("Add section", self.add_section),
+                                                    card_delete_command=("Delete", self.delete_section))
         self.section_frame.grid(row=4, rowspan=2, column=0, sticky="nsew", padx=DEFAULT_PAD, pady=(0, DEFAULT_PAD))
         #
         # self.pieces_frame = PiecesScrollableFrame(self,
@@ -69,6 +72,12 @@ class TemplateScene(ctk.CTkFrame):
         # self.pieces_frame.build_pieces_frame()
         self.check_if_scroll_needed()
 
+        all_sections = list(self.structured_pieces.keys())
+        if all_sections:
+            self.selected_section = all_sections[0]
+
+        self.section_frame.all_cards[self.selected_section].card_selected()
+
         self.change_cursor("arrow")
 
     def setup_scene(self, template: ReportTemplate):
@@ -98,32 +107,14 @@ class TemplateScene(ctk.CTkFrame):
         self.prev_scene_string = name_of_prev_frame
 
     def go_back(self):
-        if not self.discard_unsaved_changes():
-            return
         self.master.show_frame(self.prev_scene_string)
         self.prev_scene_string = None
 
-    def new_section_selected(self, section_num):
-        pass
-        # self.template_engine.change_current_section(section_num)
+    def new_section_selected(self, section_num: int):
+        self.section_frame.all_cards[self.selected_section].card_deselected()
+        self.selected_section = section_num
+        self.section_frame.all_cards[self.selected_section].card_selected()
         # self.pieces_frame.build_pieces_frame()
-
-    def discard_unsaved_changes(self) -> bool:
-        return True
-        # if not self.template_engine.check_changes():
-        #     warning_box = ctkmb.CTkMessagebox(
-        #         title="Warning",
-        #         message="You have unsaved changes, are you sure you want to do this?",
-        #         icon="warning",
-        #         option_2="Yes",
-        #         option_1="Cancel")
-        #
-        #     warning_box.wait_window()
-        #
-        #     if warning_box.get() == "Cancel":
-        #         return False
-        #
-        # return True
 
     def validate_name(self, P):
         if len(P) <= 40:
@@ -139,3 +130,35 @@ class TemplateScene(ctk.CTkFrame):
 
         self.section_frame.build_section_frame()
         self.section_frame.check_scrollbar_needed()
+        self.new_section_selected(new_section_num)
+
+    def delete_section(self, section: int):
+        if self.structured_pieces[section]:
+            warning_box = ctkmb.CTkMessagebox(
+                title="Warning",
+                message=f"Are you sure you want to delete section {section} and all the pieces inside?\n"
+                        f"You will not be able to undo this move",
+                icon="cancel",
+                option_2="Yes",
+                option_1="No")
+            warning_box.wait_window()
+
+            if warning_box.get() == "No":
+                return
+
+        for piece_id, piece in self.structured_pieces[section].items():
+            self.app_engine.copy_of_piece_collection.pop(piece_id)
+
+        self.structured_pieces.pop(section)
+        self.section_frame.build_section_frame()
+        self.section_frame.check_scrollbar_needed()
+
+        if section == self.selected_section:
+            all_sections = list(self.structured_pieces.keys())
+            if all_sections:
+                self.selected_section = all_sections[0]
+                self.section_frame.all_cards[self.selected_section].card_selected()
+            else:
+                self.selected_section = None
+        else:
+            self.section_frame.all_cards[self.selected_section].card_selected()

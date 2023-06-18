@@ -9,8 +9,9 @@ from typing import Callable
 class SectionScrollableFrame(AutohidingScrollableAndLoadingFrame):
     def __init__(self, master,
                  structured_pieces: dict[int, dict[str, IndividualPiece]],
-                 select_section_command,
-                 card_add_command: Callable):
+                 select_section_command: Callable,
+                 card_add_command: tuple[str, Callable],
+                 card_delete_command: tuple[str, Callable]):
         super().__init__(master,
                          fg_color=ROOT_BG,
                          label_font=ctk.CTkFont(**NORMAL_LABEL_FONT),
@@ -21,6 +22,8 @@ class SectionScrollableFrame(AutohidingScrollableAndLoadingFrame):
         self.structured_pieces = structured_pieces
         self.select_section_command = select_section_command
         self.card_add = card_add_command
+        self.card_delete = card_delete_command
+        self.all_cards: dict[int, SectionCard] = {}
 
     def build_section_frame(self):
         for i in self.winfo_children():
@@ -29,9 +32,18 @@ class SectionScrollableFrame(AutohidingScrollableAndLoadingFrame):
         self.update_idletasks()
 
         for index, section in enumerate(self.structured_pieces.keys()):
+            if index == 0:
+                self.current_card = section
+
             new_section_card = SectionCard(
-                self, section, len(self.structured_pieces[section]), self.select_section_command
+                self,
+                section,
+                len(self.structured_pieces[section]),
+                select_section_command=self.select_section_command,
+                add_command=self.card_add,
+                delete_command=self.card_delete
             )
+            self.all_cards[section] = new_section_card
             new_section_card.grid(row=index, column=0, sticky="ew", padx=DEFAULT_PAD)
 
         add_section = self.make_add_section_button()
@@ -47,7 +59,7 @@ class SectionScrollableFrame(AutohidingScrollableAndLoadingFrame):
             fg_color="transparent",
             hover_color=BUTTON_HOVER_COLOR,
             height=30,
-            click_command=self.card_add)
+            click_command=self.card_add[1])
 
         add_button_text = ctk.CTkLabel(
             add_section_button,
