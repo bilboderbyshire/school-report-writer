@@ -23,7 +23,7 @@ class SectionCard(ListCard):
 
         self.right_click_menu.add_command(label="Select section",
                                           command=lambda: select_section_command(self.card_data))
-        self.right_click_menu.add_command(label=add_command[0], command=add_command[1])
+        self.right_click_menu.add_command(label=add_command[0], command=lambda: add_command[1](self.card_data))
         self.right_click_menu.add_command(label=delete_command[0], command=lambda: delete_command[1](self.card_data))
 
         self.text_label = ctk.CTkLabel(

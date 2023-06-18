@@ -5,8 +5,7 @@ from ..components import Separator, InvisibleEntry
 from ..app_engine import AppEngine
 from .section_scrollframe import SectionScrollableFrame
 from .pieces_scrollframe import PiecesScrollableFrame
-from .template_engine import TemplateEngine
-from ..containers import ReportTemplate, NewTemplateRecord, NewPieceRecord, IndividualPiece
+from ..containers import ReportTemplate, NewPieceRecord, IndividualPiece
 import CTkMessagebox as ctkmb
 
 
@@ -20,6 +19,7 @@ class TemplateScene(ctk.CTkFrame):
         self.structured_pieces: dict[int, dict[str, IndividualPiece]] = None
 
         self.selected_section: int = None
+        self.selected_piece: str = None
 
     def __build_frame(self):
 
@@ -43,17 +43,21 @@ class TemplateScene(ctk.CTkFrame):
                                                     card_add_command=("Add section", self.add_section),
                                                     card_delete_command=("Delete", self.delete_section))
         self.section_frame.grid(row=4, rowspan=2, column=0, sticky="nsew", padx=DEFAULT_PAD, pady=(0, DEFAULT_PAD))
-        #
-        # self.pieces_frame = PiecesScrollableFrame(self,
-        #                                           app_engine=self.app_engine)
-        # self.pieces_frame.grid(row=4, column=1, sticky="nsew", padx=(0, DEFAULT_PAD), pady=(0, DEFAULT_PAD))
-        #
-        # self.piece_info_frame = ctk.CTkFrame(self)
-        # self.piece_info_frame.grid(row=5, column=1, sticky="nsew", padx=(0, DEFAULT_PAD), pady=(0, DEFAULT_PAD))
-        #
-        # self.edit_piece_frame = ctk.CTkFrame(self)
-        # self.edit_piece_frame.grid(row=4, rowspan=2, column=2, sticky="nsew", padx=(0, DEFAULT_PAD),
-        #                            pady=(0, DEFAULT_PAD))
+
+        self.pieces_frame = PiecesScrollableFrame(self,
+                                                  structured_pieces=self.structured_pieces,
+                                                  select_piece_command=self.new_piece_selected,
+                                                  card_add_command=("Add piece", self.add_piece),
+                                                  card_delete_command=("Delete", self.delete_piece),
+                                                  card_copy_command=("Copy", self.copy_piece))
+        self.pieces_frame.grid(row=4, column=1, sticky="nsew", padx=(0, DEFAULT_PAD), pady=(0, DEFAULT_PAD))
+
+        self.piece_info_frame = ctk.CTkFrame(self)
+        self.piece_info_frame.grid(row=5, column=1, sticky="nsew", padx=(0, DEFAULT_PAD), pady=(0, DEFAULT_PAD))
+
+        self.edit_piece_frame = ctk.CTkFrame(self)
+        self.edit_piece_frame.grid(row=4, rowspan=2, column=2, sticky="nsew", padx=(0, DEFAULT_PAD),
+                                   pady=(0, DEFAULT_PAD))
 
         self.rowconfigure([0, 1, 2, 3], weight=0)
         self.rowconfigure([4, 5], weight=1, uniform="rows")
@@ -69,15 +73,22 @@ class TemplateScene(ctk.CTkFrame):
         self.__build_frame()
 
         self.section_frame.build_section_frame()
-        # self.pieces_frame.build_pieces_frame()
-        self.check_if_scroll_needed()
 
         all_sections = list(self.structured_pieces.keys())
         if all_sections:
             self.selected_section = all_sections[0]
             self.section_frame.all_cards[self.selected_section].card_selected()
+        else:
+            self.selected_section = None
+
+        self.pieces_frame.build_pieces_frame(self.selected_section)
+
+        if self.selected_section is not None:
+            self.new_piece_selected()
 
         self.change_cursor("arrow")
+
+        self.check_if_scroll_needed()
 
     def setup_scene(self, template: ReportTemplate):
         self.working_template = template
@@ -86,7 +97,7 @@ class TemplateScene(ctk.CTkFrame):
     def refresh_scene(self):
         self.change_cursor("watch")
         self.section_frame.loading_frame()
-        # self.pieces_frame.loading_frame()
+        self.pieces_frame.loading_frame()
 
         self.after(700, self.app_engine.load_data)
 
@@ -95,7 +106,7 @@ class TemplateScene(ctk.CTkFrame):
 
     def check_if_scroll_needed(self):
         self.section_frame.check_scrollbar_needed()
-        # self.pieces_frame.check_scrollbar_needed()
+        self.pieces_frame.check_scrollbar_needed()
 
     def change_cursor(self, cursor: str) -> None:
         self.configure(cursor=cursor)
@@ -109,12 +120,6 @@ class TemplateScene(ctk.CTkFrame):
         self.master.show_frame(self.prev_scene_string)
         self.prev_scene_string = None
 
-    def new_section_selected(self, section_num: int):
-        self.section_frame.all_cards[self.selected_section].card_deselected()
-        self.selected_section = section_num
-        self.section_frame.all_cards[self.selected_section].card_selected()
-        # self.pieces_frame.build_pieces_frame()
-
     def validate_name(self, P):
         if len(P) <= 40:
             self.app_engine.copy_of_template_collection[self.working_template.id].template_title = P
@@ -122,14 +127,22 @@ class TemplateScene(ctk.CTkFrame):
         else:
             return False
 
+    def new_section_selected(self, section_num: int):
+        if self.selected_section is not None:
+            self.section_frame.all_cards[self.selected_section].card_deselected()
+        self.selected_section = section_num
+        self.section_frame.all_cards[self.selected_section].card_selected()
+        self.pieces_frame.build_pieces_frame(self.selected_section)
+        self.new_piece_selected()
+        self.pieces_frame.check_scrollbar_needed()
+
     def add_section(self, _):
         new_section_num = max(self.structured_pieces.keys(), default=0) + 1
 
         self.structured_pieces[new_section_num] = {}
-
         self.section_frame.build_section_frame()
-        self.section_frame.check_scrollbar_needed()
         self.new_section_selected(new_section_num)
+        self.check_if_scroll_needed()
 
     def delete_section(self, section: int):
         if self.structured_pieces[section]:
@@ -150,7 +163,6 @@ class TemplateScene(ctk.CTkFrame):
 
         self.structured_pieces.pop(section)
         self.section_frame.build_section_frame()
-        self.section_frame.check_scrollbar_needed()
 
         if section == self.selected_section:
             all_sections = list(self.structured_pieces.keys())
@@ -159,5 +171,65 @@ class TemplateScene(ctk.CTkFrame):
                 self.section_frame.all_cards[self.selected_section].card_selected()
             else:
                 self.selected_section = None
+
+            self.pieces_frame.build_pieces_frame(self.selected_section)
+            self.new_piece_selected()
         else:
             self.section_frame.all_cards[self.selected_section].card_selected()
+
+        self.check_if_scroll_needed()
+
+    def add_piece(self, _):
+        new_piece_id = f"@{self.app_engine.create_new_record_id('report_pieces')}"
+        new_piece = NewPieceRecord(new_piece_id, self.selected_section, self.working_template.id)
+
+        self.app_engine.copy_of_piece_collection[new_piece_id] = new_piece
+        self.structured_pieces[self.selected_section][new_piece_id] = new_piece
+
+        self.section_frame.build_section_frame()
+        self.section_frame.all_cards[self.selected_section].card_selected()
+
+        self.pieces_frame.build_pieces_frame(self.selected_section)
+        self.new_piece_selected(new_piece)
+        self.check_if_scroll_needed()
+
+    def new_piece_selected(self, piece: IndividualPiece | None = None):
+        if piece is not None:
+            if self.selected_piece is not None:
+                self.pieces_frame.all_cards[self.selected_piece].card_deselected()
+            self.selected_piece = piece.id
+            self.pieces_frame.all_cards[piece.id].card_selected()
+        else:
+            all_pieces = list(self.structured_pieces[self.selected_section].keys())
+            if all_pieces:
+                self.selected_piece = all_pieces[0]
+                self.pieces_frame.all_cards[self.selected_piece].card_selected()
+            else:
+                self.selected_piece = None
+
+    def delete_piece(self, piece: IndividualPiece):
+        self.structured_pieces[self.selected_section].pop(piece.id)
+        self.app_engine.copy_of_piece_collection.pop(piece.id)
+
+        self.pieces_frame.build_pieces_frame()
+
+        if piece.id == self.selected_piece:
+            self.new_piece_selected()
+        else:
+            self.pieces_frame.all_cards[self.selected_piece].card_selected()
+
+    def copy_piece(self, piece: IndividualPiece):
+        new_piece_id = f"@{self.app_engine.create_new_record_id('report_pieces')}"
+        new_piece = piece.copy()
+        new_piece.id = new_piece_id
+
+        self.app_engine.copy_of_piece_collection[new_piece_id] = new_piece
+        self.structured_pieces[self.selected_section][new_piece_id] = new_piece
+
+        self.section_frame.build_section_frame()
+        self.section_frame.all_cards[self.selected_section].card_selected()
+
+        self.pieces_frame.build_pieces_frame(self.selected_section)
+        self.new_piece_selected(new_piece)
+
+        self.check_if_scroll_needed()

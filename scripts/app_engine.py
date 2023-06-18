@@ -148,15 +148,16 @@ class AppEngine:
 
     def create_new_record_id(self, collection: Literal["template",
                                                        "report_set",
-                                                       "individual_report",
+                                                       "individual_reports",
                                                        "report_piece"]) -> int:
         collections = {
             "templates": self.copy_of_template_collection,
             "report_set": self.copy_of_reports_set_collection,
-            "individual_reports": self.individual_report_collection,
-            "report_pieces": self.piece_collection
+            "individual_reports": self.copy_of_individual_report_collection,
+            "report_pieces": self.copy_of_piece_collection
         }
-        current_ids: list[str] = [i.id for i in collections[collection].values()]
+
+        current_ids: list[str] = list(collections[collection].keys())
 
         max_blank_id = 0
         for i in current_ids:

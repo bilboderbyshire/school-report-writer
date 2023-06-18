@@ -2,9 +2,9 @@ from typing import TypedDict
 
 
 class NewPieceRecord:
-    def __init__(self, piece_id: str, section: int, template_id: str):
+    def __init__(self, piece_id: str, section: int, template_id: str, piece_text: str = "New piece"):
         self.id = piece_id
-        self.piece_text = "New piece"
+        self.piece_text = piece_text
         self.section = section
         self.template = template_id
         self.created = "Just now"
