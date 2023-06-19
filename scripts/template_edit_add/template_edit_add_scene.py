@@ -5,6 +5,7 @@ from ..components import Separator, InvisibleEntry
 from ..app_engine import AppEngine
 from .section_scrollframe import SectionScrollableFrame
 from .pieces_scrollframe import PiecesScrollableFrame
+from .edit_piece_frame import EditPieceFrame
 from ..containers import ReportTemplate, NewPieceRecord, IndividualPiece, TemplateSection, NewSectionRecord
 import CTkMessagebox as ctkmb
 
@@ -56,7 +57,8 @@ class TemplateScene(ctk.CTkFrame):
         self.piece_info_frame = ctk.CTkFrame(self)
         self.piece_info_frame.grid(row=5, column=1, sticky="nsew", padx=(0, DEFAULT_PAD), pady=(0, DEFAULT_PAD))
 
-        self.edit_piece_frame = ctk.CTkFrame(self)
+        self.edit_piece_frame = EditPieceFrame(self,
+                                               edit_command=self.piece_edited)
         self.edit_piece_frame.grid(row=4, rowspan=2, column=2, sticky="nsew", padx=(0, DEFAULT_PAD),
                                    pady=(0, DEFAULT_PAD))
 
@@ -235,11 +237,13 @@ class TemplateScene(ctk.CTkFrame):
                 self.pieces_frame.all_cards[self.selected_piece].card_deselected()
             self.selected_piece = piece.id
             self.pieces_frame.all_cards[self.selected_piece].card_selected()
+            self.edit_piece_frame.display_piece(piece)
         elif self.selected_section is not None:
             all_pieces = list(self.structured_pieces[self.selected_section].keys())
             if all_pieces:
                 self.selected_piece = all_pieces[0]
                 self.pieces_frame.all_cards[self.selected_piece].card_selected()
+                self.edit_piece_frame.display_piece(self.app_engine.copy_of_piece_collection[self.selected_piece])
             else:
                 self.selected_piece = None
         else:
@@ -272,3 +276,10 @@ class TemplateScene(ctk.CTkFrame):
         self.new_piece_selected(new_piece)
 
         self.check_if_scroll_needed()
+
+    def piece_edited(self, piece: IndividualPiece, new_text: str):
+        if new_text.strip() == "":
+            piece.piece_text = "Empty piece"
+        else:
+            piece.piece_text = new_text.strip()
+        self.pieces_frame.all_cards[piece.id].update_display_text()

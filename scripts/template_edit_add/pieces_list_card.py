@@ -19,7 +19,6 @@ class PieceListCard(ListCard):
 
         self.card_data = piece
 
-        self.piece_text = piece.piece_text
         self.card_font = ctk.CTkFont(**SMALL_LABEL_FONT)
         self.display_text_sv = ctk.StringVar()
 
@@ -37,11 +36,7 @@ class PieceListCard(ListCard):
             padx=0
         )
 
-        self.subtitle_label.grid(row=0, column=0, sticky="w", padx=(DEFAULT_PAD, 0))
-
-        self.rowconfigure(0, weight=0)
-        self.columnconfigure(0, weight=1)
-        self.columnconfigure([1, 2], weight=0)
+        self.subtitle_label.grid(row=0, column=0, sticky="ew", padx=(DEFAULT_PAD, SMALL_PAD))
         self.bind_frame()
 
         copy_image = ctk.CTkImage(
@@ -81,11 +76,11 @@ class PieceListCard(ListCard):
         )
 
         delete_button.grid(row=0, column=2, sticky="e", padx=(0, SMALL_PAD))
-        self.update_display_text()
+
+        self.rowconfigure(0, weight=0)
+        self.columnconfigure(0, weight=1)
+        self.columnconfigure([1, 2], weight=0)
 
     def update_display_text(self):
-        self.update_idletasks()
-        if len(self.piece_text) > 30:
-            self.display_text_sv.set(self.piece_text[0:28] + "...")
-        else:
-            self.display_text_sv.set(self.piece_text)
+        current_piece_text = " ".join(self.card_data.piece_text.split("\n"))
+        self.display_text_sv.set(current_piece_text)
