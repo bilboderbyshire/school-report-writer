@@ -115,13 +115,12 @@ class AppEngine:
 
         new_relationship: dict[str, dict[str, IndividualPiece]] = {}
 
+        for section in self.copy_of_section_collection.values():
+            if section.template == template_id:
+                new_relationship[section.id] = {}
+
         for piece in self.copy_of_piece_collection.values():
             if self.copy_of_section_collection[piece.section].template == template_id:
-                if piece.section not in new_relationship.keys():
-                    # If the section doesn't exist within the template's dictionary, create a key using the section and
-                    #  initialise with an empty dictionary
-                    new_relationship[piece.section] = {}
-
                 # Create a new key, value pair using the piece's id and the piece itself, place that inside the relevant
                 #  section key, which is then inside the relevant template key.
                 new_relationship[piece.section][piece.id] = piece

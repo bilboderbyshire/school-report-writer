@@ -26,9 +26,12 @@ class InvisibleEntry(ctk.CTkFrame):
             font=self.entry_font,
             fg_color=fg_color,
             text_color=text_color,
+            corner_radius=10,
             border_width=0,
             **kwargs)
         self.text_entry.insert(0, placeholder_text)
+
+        self.text_entry.winfo_children()[1].grid_configure(padx=0, pady=0)
 
         if show_image:
             self.edit_image = ctk.CTkImage(
@@ -45,11 +48,14 @@ class InvisibleEntry(ctk.CTkFrame):
                 anchor="center",
             )
 
-            self.image_label.grid(row=0, column=0, sticky="nsew", padx=(0, DEFAULT_PAD))
-            self.text_entry.grid(row=0, column=1, sticky="nsew")
+            self.image_label.grid(row=0, column=0, sticky="w")
+            self.text_entry.grid(row=0, column=1, sticky="new", padx=(DEFAULT_PAD, 0))
+            self.columnconfigure(0, weight=0)
+            self.columnconfigure(1, weight=1)
+        else:
+            self.text_entry.grid(row=0, column=0, sticky="nsew")
+            self.columnconfigure(0, weight=1)
 
         self.rowconfigure(0, weight=1)
-        self.columnconfigure(0, weight=0)
-        self.columnconfigure(1, weight=1)
 
         self.text_entry.bind("<Return>", lambda e: self.focus())

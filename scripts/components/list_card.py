@@ -31,7 +31,7 @@ class ListCard(ctk.CTkFrame):
 
         self.bind("<Enter>", lambda event: self.on_hover())
         self.bind("<Leave>", lambda event: self.on_mouse_leave())
-        self.bind("<Button-1>", lambda event: self.command(self.card_data))
+        self.bind("<Button-1>", lambda event: self.card_clicked())
         self.bind("<Button-3>", self.right_clicked)
 
     def right_clicked(self, event: Event):
@@ -61,3 +61,7 @@ class ListCard(ctk.CTkFrame):
     def card_deselected(self):
         self.selected = False
         self.configure(fg_color=self.main_color)
+
+    def card_clicked(self):
+        self.focus_set()
+        self.command(self.card_data)

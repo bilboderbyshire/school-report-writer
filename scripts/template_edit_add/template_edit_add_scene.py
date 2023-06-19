@@ -35,7 +35,7 @@ class TemplateScene(ctk.CTkFrame):
                                     placeholder_text=self.working_template.template_title,
                                     validate="key",
                                     validatecommand=(self.register(self.validate_name), "%P"))
-        name_entry.grid(row=3, column=0, columnspan=2, sticky="ew", padx=DEFAULT_PAD * 2, pady=DEFAULT_PAD)
+        name_entry.grid(row=3, column=0, columnspan=2, sticky="ew", padx=DEFAULT_PAD * 2, pady=(0, DEFAULT_PAD+6))
 
         self.section_frame = SectionScrollableFrame(self,
                                                     app_engine=self.app_engine,
@@ -145,19 +145,18 @@ class TemplateScene(ctk.CTkFrame):
         for section in self.app_engine.copy_of_section_collection.values():
             if section.template == self.working_template.id:
                 current_section_titles.append(section.section_title)
-
         max_title_number = 1
         for title in current_section_titles:
-            if title[0:11] == "New section":
+            if title[0:12] == "New section ":
                 try:
-                    if title[11::] == "" and max_title_number == 1:
+                    if title[12::] == "" and max_title_number == 1:
                         max_title_number = 2
-                    elif int(title[11::]) >= max_title_number:
-                        max_title_number = int(title[11::]) + 1
+                    elif int(title[12::]) >= max_title_number:
+                        max_title_number = int(title[12::]) + 1
                 except ValueError:
                     continue
 
-        new_section_name = f"New section {max_title_number}"
+        new_section_name = f"New section {max_title_number if max_title_number > 1 else ''}"
         new_section_id = f"@{self.app_engine.create_new_record_id('template_sections')}"
 
         new_section = TemplateSection(NewSectionRecord(
@@ -193,6 +192,7 @@ class TemplateScene(ctk.CTkFrame):
             self.app_engine.copy_of_piece_collection.pop(piece_id)
 
         self.structured_pieces.pop(section.id)
+        self.app_engine.copy_of_section_collection.pop(section.id)
         self.section_frame.build_section_frame()
 
         if section.id == self.selected_section:

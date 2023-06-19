@@ -22,11 +22,6 @@ class SectionCard(ListCard):
 
         self.card_data = section
 
-        self.right_click_menu.add_command(label="Select section",
-                                          command=lambda: select_section_command(self.card_data))
-        self.right_click_menu.add_command(label=add_command[0], command=lambda: add_command[1](self.card_data))
-        self.right_click_menu.add_command(label=delete_command[0], command=lambda: delete_command[1](self.card_data))
-
         entry_text = f"{self.card_data.section_title}"
         if "@" in self.card_data.id:
             entry_text = "*" + entry_text
@@ -35,12 +30,12 @@ class SectionCard(ListCard):
             self,
             placeholder_text=entry_text,
             font=ctk.CTkFont(**NORMAL_LABEL_FONT),
-            image_size=10,
+            show_image=False,
             validate="key",
             validatecommand=(self.register(self.validate_command), "%P")
         )
 
-        self.section_name.grid(row=0, column=0, sticky="new", padx=(DEFAULT_PAD, 0))
+        self.section_name.grid(row=0, column=0, columnspan=2, sticky="new", padx=DEFAULT_PAD)
 
         if piece_count == 0:
             sub_text = "No pieces"
@@ -60,6 +55,12 @@ class SectionCard(ListCard):
         )
 
         self.subtitle_label.grid(row=1, column=0, sticky="ew", padx=DEFAULT_PAD)
+
+        self.right_click_menu.add_command(label="Select section",
+                                          command=lambda: select_section_command(self.card_data))
+        self.right_click_menu.add_command(label=add_command[0], command=lambda: add_command[1](self.card_data))
+        self.right_click_menu.add_command(label=delete_command[0], command=lambda: delete_command[1](self.card_data))
+        self.right_click_menu.add_command(label="Edit section title", command=self.section_name.text_entry.focus_set)
 
         self.rowconfigure([0, 1], weight=0)
         self.columnconfigure(0, weight=1)
@@ -83,10 +84,13 @@ class SectionCard(ListCard):
             corner_radius=5
         )
 
-        delete_button.grid(row=0, column=1, sticky="e", padx=(0, DEFAULT_PAD))
+        delete_button.grid(row=1, column=1, sticky="e", padx=(0, DEFAULT_PAD))
 
     def validate_command(self, p: str):
-        self.card_data.section_title = p
+        if "@" in self.card_data.id:
+            self.card_data.section_title = p[1::]
+        else:
+            self.card_data.section_title = p
         return True
 
     def update_piece_count(self, new_count: int):
@@ -98,3 +102,15 @@ class SectionCard(ListCard):
             sub_text = f"{new_count} pieces"
 
         self.subtitle_label.configure(text=sub_text)
+
+    def bind_frame(self):
+        for child in self.winfo_children():
+            child.bind("<Enter>", lambda event: self.on_hover())
+            child.bind("<Leave>", lambda event: self.on_mouse_leave())
+            child.bind("<Button-3>", self.right_clicked)
+
+            if self.command is not None:
+                child.bind("<Button-1>", lambda event: self.command(self.card_data))
+
+        self.section_name.text_entry.bind("<Enter>", lambda event: self.on_hover())
+        self.section_name.text_entry.bind("<Leave>", lambda event: self.on_mouse_leave())
