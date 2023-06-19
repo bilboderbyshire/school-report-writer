@@ -4,9 +4,9 @@ import CTkMessagebox as ctkmb
 from .containers import *
 
 
-def create_copy_of_collection(collection: dict[str, ReportTemplate | IndividualReport | IndividualPiece
-                                               | SingleReportSet]) -> dict[str, ReportTemplate | IndividualReport |
-                                                                           IndividualPiece | SingleReportSet]:
+def create_copy_of_collection(collection: dict[str, ReportTemplate | TemplateSection | IndividualReport |
+                                               IndividualPiece | SingleReportSet]) -> \
+        dict[str, ReportTemplate | TemplateSection | IndividualReport | IndividualPiece | SingleReportSet]:
     new_dict = {}
     for key, value in collection.items():
         new_dict[key] = value.copy()
@@ -23,17 +23,16 @@ class AppEngine:
     def __init__(self, db_instance: ReportWriterInstance):
         self.db_instance = db_instance
         self.template_collection: dict[str, ReportTemplate] = {}
+        self.section_collection: dict[str, TemplateSection] = {}
         self.piece_collection: dict[str, IndividualPiece] = {}
         self.reports_set_collection: dict[str, SingleReportSet] = {}
         self.individual_report_collection: dict[str, IndividualReport] = {}
 
         self.copy_of_template_collection: dict[str, ReportTemplate] = {}
+        self.copy_of_section_collection: dict[str, TemplateSection] = {}
         self.copy_of_piece_collection: dict[str, IndividualPiece] = {}
         self.copy_of_reports_set_collection: dict[str, SingleReportSet] = {}
         self.copy_of_individual_report_collection: dict[str, IndividualReport] = {}
-
-        self.piece_to_template_collection: dict[str, dict[int, list[str]]] = {}
-        self.reports_to_set_reports_collection: dict[str, list[str]] = {}
 
         self.user_container = User(self.db_instance.user_model)
 
@@ -53,22 +52,24 @@ class AppEngine:
 
         # Set all collection dictionaries to be emtpy
         self.template_collection: dict[str, ReportTemplate] = {}
+        self.section_collection: dict[str, TemplateSection] = {}
         self.piece_collection: dict[str, IndividualPiece] = {}
         self.reports_set_collection: dict[str, SingleReportSet] = {}
         self.individual_report_collection: dict[str, IndividualReport] = {}
 
         self.copy_of_template_collection: dict[str, ReportTemplate] = {}
+        self.copy_of_section_collection: dict[str, TemplateSection] = {}
         self.copy_of_piece_collection: dict[str, IndividualPiece] = {}
         self.copy_of_reports_set_collection: dict[str, SingleReportSet] = {}
         self.copy_of_individual_report_collection: dict[str, IndividualReport] = {}
 
-        self.reports_to_set_reports_collection: dict[str, list[str]] = {}
-
         # Create load_values dictionary for all data to be collected. Load values includes the database collection as
         #  the key linked to a tuple that contains the dictionary to populate, and the data container to wrap around
         #  the records returned for that collection
-        load_values: dict[str, tuple[dict, Type[ReportTemplate | IndividualPiece | IndividualReport | SingleReportSet]]] = {
+        load_values: dict[str, tuple[dict, Type[ReportTemplate | TemplateSection | IndividualPiece | IndividualReport
+                                                | SingleReportSet]]] = {
             "templates": (self.template_collection, ReportTemplate),
+            "template_sections": (self.section_collection, TemplateSection),
             "report_pieces": (self.piece_collection, IndividualPiece),
             "report_set": (self.reports_set_collection, SingleReportSet),
             "individual_reports": (self.individual_report_collection, IndividualReport)
@@ -98,6 +99,8 @@ class AppEngine:
 
         self.copy_of_template_collection: dict[str, ReportTemplate] = \
             create_copy_of_collection(self.template_collection)
+
+        self.copy_of_section_collection: dict[str, TemplateSection] = create_copy_of_collection(self.section_collection)
 
         self.copy_of_piece_collection: dict[str, IndividualPiece] = create_copy_of_collection(self.piece_collection)
 
@@ -135,23 +138,25 @@ class AppEngine:
 
     def create_report_to_report_set(self) -> None:
         """Create report to reports set relationship"""
-
-        for report in self.copy_of_individual_report_collection.values():
-            # If the current report's report set doesn't exist in the dictionary, create the key with the report set ID
-            #  and initialise with an empty dictionary
-            if report.report_set not in self.reports_to_set_reports_collection.keys():
-                self.reports_to_set_reports_collection[report.report_set] = []
-
-            # Create a new key, value pair with the report's id and the report itself, place that inside the relevant
-            #  report set dictionary
-            self.reports_to_set_reports_collection[report.report_set].append(report.id)
+        pass
+        # for report in self.copy_of_individual_report_collection.values():
+        #     # If the current report's report set doesn't exist in the dictionary, create the key with the report set ID
+        #     #  and initialise with an empty dictionary
+        #     if report.report_set not in self.reports_to_set_reports_collection.keys():
+        #         self.reports_to_set_reports_collection[report.report_set] = []
+        #
+        #     # Create a new key, value pair with the report's id and the report itself, place that inside the relevant
+        #     #  report set dictionary
+        #     self.reports_to_set_reports_collection[report.report_set].append(report.id)
 
     def create_new_record_id(self, collection: Literal["templates",
                                                        "report_set",
+                                                       "template_sections",
                                                        "individual_reports",
                                                        "report_pieces"]) -> int:
         collections = {
             "templates": self.copy_of_template_collection,
+            "template_sections": self.copy_of_section_collection,
             "report_set": self.copy_of_reports_set_collection,
             "individual_reports": self.copy_of_individual_report_collection,
             "report_pieces": self.copy_of_piece_collection
