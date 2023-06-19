@@ -110,15 +110,15 @@ class AppEngine:
         self.copy_of_individual_report_collection: dict[str, IndividualReport] = \
             create_copy_of_collection(self.individual_report_collection)
 
-    def create_piece_to_template(self, template_id: str) -> dict[int, dict[str, IndividualPiece]]:
+    def create_piece_to_template(self, template_id: str) -> dict[str, dict[str, IndividualPiece]]:
         """Create template and piece relationship"""
 
-        new_relationship: dict[int, dict[str, IndividualPiece]] = {}
+        new_relationship: dict[str, dict[str, IndividualPiece]] = {}
 
         for piece in self.copy_of_piece_collection.values():
-            if piece.template == template_id:
+            if self.copy_of_section_collection[piece.section].template == template_id:
                 if piece.section not in new_relationship.keys():
-                    # If the section doesn't exist within the templates dictionary, create a key using the section and
+                    # If the section doesn't exist within the template's dictionary, create a key using the section and
                     #  initialise with an empty dictionary
                     new_relationship[piece.section] = {}
 
@@ -126,15 +126,7 @@ class AppEngine:
                 #  section key, which is then inside the relevant template key.
                 new_relationship[piece.section][piece.id] = piece
 
-        current_sections = sorted(new_relationship.keys())
-        temp_dict = {}
-
-        for i in range(len(current_sections)):
-            for key, value in new_relationship[current_sections[i]].items():
-                value.section = i + 1
-            temp_dict[i + 1] = new_relationship[current_sections[i]]
-
-        return temp_dict
+        return new_relationship
 
     def create_report_to_report_set(self) -> None:
         """Create report to reports set relationship"""
