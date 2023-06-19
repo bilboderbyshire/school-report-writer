@@ -198,7 +198,7 @@ class TemplateScene(ctk.CTkFrame):
             if self.selected_piece is not None:
                 self.pieces_frame.all_cards[self.selected_piece].card_deselected()
             self.selected_piece = piece.id
-            self.pieces_frame.all_cards[piece.id].card_selected()
+            self.pieces_frame.all_cards[self.selected_piece].card_selected()
         else:
             all_pieces = list(self.structured_pieces[self.selected_section].keys())
             if all_pieces:
@@ -211,7 +211,7 @@ class TemplateScene(ctk.CTkFrame):
         self.structured_pieces[self.selected_section].pop(piece.id)
         self.app_engine.copy_of_piece_collection.pop(piece.id)
 
-        self.pieces_frame.build_pieces_frame()
+        self.pieces_frame.build_pieces_frame(self.selected_section)
 
         if piece.id == self.selected_piece:
             self.new_piece_selected()
