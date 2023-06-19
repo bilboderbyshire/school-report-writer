@@ -8,7 +8,7 @@ from typing import Callable
 
 class PiecesScrollableFrame(AutohidingScrollableAndLoadingFrame):
     def __init__(self, master,
-                 structured_pieces: dict[int, dict[str, IndividualPiece]],
+                 structured_pieces: dict[str, dict[str, IndividualPiece]],
                  select_piece_command: Callable,
                  card_add_command: tuple[str, Callable],
                  card_delete_command: tuple[str, Callable],
@@ -29,7 +29,7 @@ class PiecesScrollableFrame(AutohidingScrollableAndLoadingFrame):
 
         self.all_cards: dict[str, PieceListCard] = {}
 
-    def build_pieces_frame(self, section: int | None = None):
+    def build_pieces_frame(self, section: str | None = None):
         for i in self.winfo_children():
             i.destroy()
 
