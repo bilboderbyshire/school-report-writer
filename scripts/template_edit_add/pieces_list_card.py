@@ -3,6 +3,8 @@ from ..settings import *
 from ..components import ListCard
 from ..containers import IndividualPiece
 from typing import Callable
+from PIL import Image
+import os
 
 
 class PieceListCard(ListCard):
@@ -35,11 +37,50 @@ class PieceListCard(ListCard):
             padx=0
         )
 
-        self.subtitle_label.grid(row=0, column=0, sticky="w", padx=DEFAULT_PAD)
+        self.subtitle_label.grid(row=0, column=0, sticky="w", padx=(DEFAULT_PAD, 0))
 
         self.rowconfigure(0, weight=0)
         self.columnconfigure(0, weight=1)
+        self.columnconfigure([1, 2], weight=0)
         self.bind_frame()
+
+        copy_image = ctk.CTkImage(
+            light_image=Image.open(os.path.join(os.getcwd(), "images/light-copy.png")),
+            dark_image=Image.open(os.path.join(os.getcwd(), "images/dark-copy.png")),
+            size=(15, 15)
+        )
+        copy_button = ctk.CTkButton(
+            self,
+            fg_color="transparent",
+            image=copy_image,
+            command=lambda: card_copy[1](self.card_data),
+            text="",
+            width=0,
+            height=0,
+            hover_color=BUTTON_HOVER_COLOR,
+            corner_radius=5
+        )
+
+        copy_button.grid(row=0, column=1, sticky="e", padx=(0, SMALL_PAD))
+
+        delete_image = ctk.CTkImage(
+            light_image=Image.open(os.path.join(os.getcwd(), "images/bin.png")),
+            dark_image=Image.open(os.path.join(os.getcwd(), "images/bin.png")),
+            size=(15, 15)
+        )
+        delete_button = ctk.CTkButton(
+            self,
+            fg_color="transparent",
+            image=delete_image,
+            command=lambda: card_delete[1](self.card_data),
+            text="",
+            width=0,
+            height=0,
+            hover_color=BUTTON_HOVER_COLOR,
+            corner_radius=5
+        )
+
+        delete_button.grid(row=0, column=2, sticky="e", padx=(0, SMALL_PAD))
         self.update_display_text()
 
     def update_display_text(self):
