@@ -117,6 +117,19 @@ class MainMenuScene(ctk.CTkFrame):
         copied_template.id = new_id
 
         self.app_engine.copy_of_template_collection[new_id] = copied_template
+        new_pieces: list[str] = []
+        for piece in self.app_engine.copy_of_piece_collection.values():
+            if piece.template == card_info.id:
+                new_pieces.append(piece.id)
+
+        for piece_id in new_pieces:
+            new_piece_id = f"@{self.app_engine.create_new_record_id('report_pieces')}"
+            current_piece = self.app_engine.copy_of_piece_collection[piece_id]
+            copied_piece = current_piece.copy()
+            copied_piece.id = new_piece_id
+            copied_piece.template = new_id
+            self.app_engine.copy_of_piece_collection[new_piece_id] = copied_piece
+
         self.template_frame.build_template_frame()
         self.template_frame.check_scrollbar_needed()
 
@@ -136,6 +149,15 @@ class MainMenuScene(ctk.CTkFrame):
         if user_choice == "Yes":
             if "@" in card_info.id:
                 self.app_engine.copy_of_template_collection.pop(card_info.id)
+
+                pieces_to_delete = []
+                for piece in self.app_engine.copy_of_piece_collection.values():
+                    if piece.template == card_info.id:
+                        pieces_to_delete.append(piece.id)
+
+                for piece_id in pieces_to_delete:
+                    self.app_engine.copy_of_piece_collection.pop(piece_id)
+
                 self.template_frame.build_template_frame()
             else:
                 response = self.app_engine.db_instance.delete_record("templates", card_info.id)

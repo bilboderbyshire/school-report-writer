@@ -181,7 +181,7 @@ class TemplateScene(ctk.CTkFrame):
 
     def add_piece(self, _):
         new_piece_id = f"@{self.app_engine.create_new_record_id('report_pieces')}"
-        new_piece = NewPieceRecord(new_piece_id, self.selected_section, self.working_template.id)
+        new_piece = IndividualPiece(NewPieceRecord(new_piece_id, self.selected_section, self.working_template.id))
 
         self.app_engine.copy_of_piece_collection[new_piece_id] = new_piece
         self.structured_pieces[self.selected_section][new_piece_id] = new_piece

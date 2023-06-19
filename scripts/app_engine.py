@@ -146,7 +146,7 @@ class AppEngine:
             #  report set dictionary
             self.reports_to_set_reports_collection[report.report_set].append(report.id)
 
-    def create_new_record_id(self, collection: Literal["template",
+    def create_new_record_id(self, collection: Literal["templates",
                                                        "report_set",
                                                        "individual_reports",
                                                        "report_pieces"]) -> int:
