@@ -183,7 +183,7 @@ class TemplateScene(ctk.CTkFrame):
             warning_box = ctkmb.CTkMessagebox(
                 title="Warning",
                 message=f"Are you sure you want to delete section '{section.section_title}' and all the pieces "
-                        f"inside?\nYou will not be able to undo this move",
+                        f"inside?\n\nYou will not be able to undo this move",
                 icon="cancel",
                 option_2="Yes",
                 option_1="No")

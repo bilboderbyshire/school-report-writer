@@ -117,18 +117,22 @@ class MainMenuScene(ctk.CTkFrame):
         copied_template.id = new_id
 
         self.app_engine.copy_of_template_collection[new_id] = copied_template
-        new_pieces: list[str] = []
-        for piece in self.app_engine.copy_of_piece_collection.values():
-            if piece.template == card_info.id:
-                new_pieces.append(piece.id)
 
-        for piece_id in new_pieces:
-            new_piece_id = f"@{self.app_engine.create_new_record_id('report_pieces')}"
-            current_piece = self.app_engine.copy_of_piece_collection[piece_id]
-            copied_piece = current_piece.copy()
-            copied_piece.id = new_piece_id
-            copied_piece.template = new_id
-            self.app_engine.copy_of_piece_collection[new_piece_id] = copied_piece
+        structured_pieces = self.app_engine.create_piece_to_template(card_info.id)
+        for section_id, piece_dict in structured_pieces.items():
+            new_section_id = f"@{self.app_engine.create_new_record_id('template_sections')}"
+            copied_section = self.app_engine.copy_of_section_collection[section_id].copy()
+            copied_section.id = new_section_id
+            copied_section.template = new_id
+            self.app_engine.copy_of_section_collection[new_section_id] = copied_section
+
+            for piece_id in piece_dict.keys():
+                new_piece_id = f"@{self.app_engine.create_new_record_id('report_pieces')}"
+                current_piece = self.app_engine.copy_of_piece_collection[piece_id]
+                copied_piece = current_piece.copy()
+                copied_piece.id = new_piece_id
+                copied_piece.section = new_section_id
+                self.app_engine.copy_of_piece_collection[new_piece_id] = copied_piece
 
         self.template_frame.build_template_frame()
         self.template_frame.check_scrollbar_needed()
@@ -136,9 +140,20 @@ class MainMenuScene(ctk.CTkFrame):
         return copied_template
 
     def delete_template(self, card_info: ReportTemplate):
+        def wipe_template():
+            structured_pieces = self.app_engine.create_piece_to_template(card_info.id)
+
+            for section_id, pieces_list in structured_pieces.items():
+                for piece_id in pieces_list.keys():
+                    self.app_engine.copy_of_piece_collection.pop(piece_id)
+                self.app_engine.copy_of_section_collection.pop(section_id)
+            self.app_engine.copy_of_template_collection.pop(card_info.id)
+            self.template_frame.build_template_frame()
+
         warning_message = ctkmb.CTkMessagebox(
             title="Warning",
-            message=f"Are you sure you want to delete the template {card_info.template_title}?\n "
+            message=f"Are you sure you want to delete the template {card_info.template_title} including "
+                    f"all the sections and pieces inside?\n\n"
                     f"You will not be able to undo this move",
             icon="warning",
             option_2="Yes",
@@ -148,24 +163,12 @@ class MainMenuScene(ctk.CTkFrame):
         user_choice = warning_message.get()
         if user_choice == "Yes":
             if "@" in card_info.id:
-                self.app_engine.copy_of_template_collection.pop(card_info.id)
-
-                pieces_to_delete = []
-                for piece in self.app_engine.copy_of_piece_collection.values():
-                    if piece.template == card_info.id:
-                        pieces_to_delete.append(piece.id)
-
-                for piece_id in pieces_to_delete:
-                    self.app_engine.copy_of_piece_collection.pop(piece_id)
-
-                self.template_frame.build_template_frame()
+                wipe_template()
             else:
                 response = self.app_engine.db_instance.delete_record("templates", card_info.id)
 
                 if response["response"]:
-                    self.app_engine.copy_of_template_collection.pop(card_info.id)
-                    self.app_engine.template_collection.pop(card_info.id)
-                    self.template_frame.build_template_frame()
+                    wipe_template()
                 else:
                     error_box = ctkmb.CTkMessagebox(
                         title="Error",
@@ -178,8 +181,8 @@ class MainMenuScene(ctk.CTkFrame):
         if template_to_view.owner.id != self.app_engine.get_user_id():
             warning_box = ctkmb.CTkMessagebox(
                 title="Warning",
-                message=f"You cannot edit '{template_to_view.template_title}' because it does not belong to you -"
-                        f" Would you like to make a copy to edit?",
+                message=f"You cannot edit '{template_to_view.template_title}' because it does not belong to you.\n\n"
+                        f"Would you like to make a copy to edit?",
                 icon="cancel",
                 option_2="Yes",
                 option_1="No")
