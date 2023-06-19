@@ -117,7 +117,8 @@ class TemplateScene(ctk.CTkFrame):
         self.prev_scene_string = name_of_prev_frame
 
     def go_back(self):
-        self.master.show_frame(self.prev_scene_string)
+        new_scene = self.master.show_frame(self.prev_scene_string)
+        new_scene.fill_frames()
         self.prev_scene_string = None
 
     def validate_name(self, P):
@@ -199,17 +200,22 @@ class TemplateScene(ctk.CTkFrame):
                 self.pieces_frame.all_cards[self.selected_piece].card_deselected()
             self.selected_piece = piece.id
             self.pieces_frame.all_cards[self.selected_piece].card_selected()
-        else:
+        elif self.selected_section is not None:
             all_pieces = list(self.structured_pieces[self.selected_section].keys())
             if all_pieces:
                 self.selected_piece = all_pieces[0]
                 self.pieces_frame.all_cards[self.selected_piece].card_selected()
             else:
                 self.selected_piece = None
+        else:
+            self.selected_piece = None
 
     def delete_piece(self, piece: IndividualPiece):
         self.structured_pieces[self.selected_section].pop(piece.id)
         self.app_engine.copy_of_piece_collection.pop(piece.id)
+
+        self.section_frame.build_section_frame()
+        self.section_frame.all_cards[self.selected_section].card_selected()
 
         self.pieces_frame.build_pieces_frame(self.selected_section)
 
