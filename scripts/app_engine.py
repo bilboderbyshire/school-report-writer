@@ -149,7 +149,7 @@ class AppEngine:
     def create_new_record_id(self, collection: Literal["template",
                                                        "report_set",
                                                        "individual_reports",
-                                                       "report_piece"]) -> int:
+                                                       "report_pieces"]) -> int:
         collections = {
             "templates": self.copy_of_template_collection,
             "report_set": self.copy_of_reports_set_collection,

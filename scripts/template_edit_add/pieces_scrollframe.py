@@ -47,10 +47,10 @@ class PiecesScrollableFrame(AutohidingScrollableAndLoadingFrame):
                                            card_delete=self.card_delete,
                                            card_copy=self.card_copy)
             self.all_cards[piece.id] = new_piece_card
-            new_piece_card.grid(row=index, column=0, sticky="ew", padx=DEFAULT_PAD)
+            new_piece_card.grid(row=index, column=0, sticky="ew", padx=DEFAULT_PAD-7)
 
         add_piece = self.make_add_piece_button()
-        add_piece.grid(row=len(self.structured_pieces[section].values()) + 1, column=0, sticky="ew", padx=DEFAULT_PAD,
+        add_piece.grid(row=len(self.structured_pieces[section].values()) + 1, column=0, sticky="ew", padx=DEFAULT_PAD-7,
                        pady=(0, DEFAULT_PAD))
 
         self.columnconfigure(0, weight=1)

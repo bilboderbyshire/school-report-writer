@@ -41,10 +41,10 @@ class SectionScrollableFrame(AutohidingScrollableAndLoadingFrame):
                 delete_command=self.card_delete
             )
             self.all_cards[section] = new_section_card
-            new_section_card.grid(row=index, column=0, sticky="ew", padx=DEFAULT_PAD)
+            new_section_card.grid(row=index, column=0, sticky="ew", padx=DEFAULT_PAD-7)
 
         add_section = self.make_add_section_button()
-        add_section.grid(row=len(self.structured_pieces.keys()) + 1, column=0, sticky="ew", padx=DEFAULT_PAD,
+        add_section.grid(row=len(self.structured_pieces.keys()) + 1, column=0, sticky="ew", padx=DEFAULT_PAD-7,
                          pady=(0, DEFAULT_PAD))
 
         self.columnconfigure(0, weight=1)
