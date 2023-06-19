@@ -14,13 +14,12 @@ class NewSectionRecord:
 
 
 class NewPieceRecord:
-    def __init__(self, piece_id: str, section: int, template_id: str, piece_text: str = "New piece"):
+    def __init__(self, piece_id: str, section_id: str, piece_text: str = "New piece"):
         self.id = piece_id
         self.piece_text = piece_text
-        self.section = section
-        self.template = template_id
+        self.section = section_id
         self.created = "Just now"
-        self.updated = "now"
+        self.updated = "Now"
         self.expand = {}
 
 
@@ -29,7 +28,7 @@ class NewTemplateRecord:
         self.id = template_id
         self.template_title = template_title
         self.created = "Just now"
-        self.updated = "Just now"
+        self.updated = "Now"
         self.owner: User = owner
         self.expand = {}
 
@@ -439,20 +438,19 @@ class IndividualPiece:
         self.response_object = record
         self.id = record.id
         self.piece_text = record.piece_text
-        self.section = record.section
-        self.template = None
+        self.section = None
         self.created = record.created
         self.updated = record.updated
         self.expand = {}
 
         try:
-            if "template" in record.expand.keys():
-                self.template = ReportTemplate(record.expand["template"])
-                self.expand["template"] = record.expand["template"]
+            if "section" in record.expand.keys():
+                self.section = TemplateSection(record.expand["section"])
+                self.expand["section"] = record.expand["section"]
             else:
-                self.template = record.template
+                self.section = record.section
         except AttributeError:
-            self.template = record.template
+            self.section = record.section
 
     def copy(self):
         return IndividualPiece(self)
@@ -460,8 +458,7 @@ class IndividualPiece:
     def data_to_create(self) -> dict:
         return {
             "piece_text": self.piece_text,
-            "section": self.section,
-            "template": self.template.id if self.template is not None else None
+            "section": self.section if isinstance(self.section, str) else self.section.id
         }
 
     @staticmethod
@@ -480,22 +477,19 @@ class IndividualPiece:
                  self.piece_text,
                  self.section,
                  self.created,
-                 self.updated,
-                 self.template) == (
+                 self.updated) == (
             other.id,
             other.piece_text,
             other.section,
             other.created,
-            other.updated,
-            other.template
+            other.updated
         ))
 
     def __repr__(self):
         return str({
             "id": self.id,
             "piece_text": self.piece_text,
-            "template": repr(self.template),
-            "section": self.section,
+            "section": repr(self.section),
             "created": self.created,
             "updated": self.updated
         })
