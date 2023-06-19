@@ -1,6 +1,18 @@
 from typing import TypedDict
 
 
+class NewSectionRecord:
+    def __init__(self, section_id: str,
+                 section_title: str,
+                 template_id: str):
+        self.id = section_id
+        self.section_title = section_title
+        self.template = template_id
+        self.created = "Just now"
+        self.updated = "Now"
+        self.expand = {}
+
+
 class NewPieceRecord:
     def __init__(self, piece_id: str, section: int, template_id: str, piece_text: str = "New piece"):
         self.id = piece_id
@@ -360,6 +372,68 @@ class IndividualReport:
         })
 
 
+class TemplateSection:
+    def __init__(self, record) -> None:
+        self.response_object = record
+        self.id = record.id
+        self.section_title = record.section_title
+        self.template = None
+        self.created = record.created
+        self.updated = record.updated
+        self.expand = {}
+
+        try:
+            if "template" in record.expand.keys():
+                self.template = ReportTemplate(record.expand["template"])
+                self.expand["template"] = record.expand["template"]
+            else:
+                self.template = record.template
+        except AttributeError:
+            self.template = record.template
+
+    def copy(self):
+        return TemplateSection(self)
+
+    def data_to_create(self) -> dict:
+        return {
+            "section_title": self.section_title,
+            "template": self.template if isinstance(self.template, str) else self.template.id
+        }
+
+    @staticmethod
+    def _is_valid_operand(other):
+        return hasattr(other, "id") and \
+               hasattr(other, "section_title") and \
+               hasattr(other, "template") and \
+               hasattr(other, "created") and \
+               hasattr(other, "updated")
+
+    def __eq__(self, other):
+        if not self._is_valid_operand(other):
+            return NotImplemented
+
+        return ((self.id,
+                 self.section_title,
+                 self.template,
+                 self.created,
+                 self.updated) == (
+            other.id,
+            other.section_title,
+            other.template,
+            other.created,
+            other.updated
+        ))
+
+    def __repr__(self):
+        return str({
+            "id": self.id,
+            "section_title": self.section_title,
+            "template": repr(self.template),
+            "created": self.created,
+            "updated": self.updated
+        })
+
+
 class IndividualPiece:
     def __init__(self, record) -> None:
         self.response_object = record
@@ -394,7 +468,6 @@ class IndividualPiece:
     def _is_valid_operand(other):
         return hasattr(other, "piece_text") and \
                hasattr(other, "section") and \
-               hasattr(other, "template") and \
                hasattr(other, "created") and \
                hasattr(other, "updated") and \
                hasattr(other, "id")
