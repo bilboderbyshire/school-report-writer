@@ -38,6 +38,7 @@ class TemplateScene(ctk.CTkFrame):
         name_entry.grid(row=3, column=0, columnspan=2, sticky="ew", padx=DEFAULT_PAD * 2, pady=DEFAULT_PAD)
 
         self.section_frame = SectionScrollableFrame(self,
+                                                    app_engine=self.app_engine,
                                                     structured_pieces=self.structured_pieces,
                                                     select_section_command=self.new_section_selected,
                                                     card_add_command=("Add section", self.add_section),
@@ -216,8 +217,7 @@ class TemplateScene(ctk.CTkFrame):
         self.app_engine.copy_of_piece_collection[new_piece_id] = new_piece
         self.structured_pieces[self.selected_section][new_piece_id] = new_piece
 
-        self.section_frame.build_section_frame()
-        self.section_frame.all_cards[self.selected_section].card_selected()
+        self.section_frame.reload_card_subtitles()
 
         self.pieces_frame.build_pieces_frame(self.selected_section)
         self.new_piece_selected(new_piece)
@@ -243,8 +243,7 @@ class TemplateScene(ctk.CTkFrame):
         self.structured_pieces[self.selected_section].pop(piece.id)
         self.app_engine.copy_of_piece_collection.pop(piece.id)
 
-        self.section_frame.build_section_frame()
-        self.section_frame.all_cards[self.selected_section].card_selected()
+        self.section_frame.reload_card_subtitles()
 
         self.pieces_frame.build_pieces_frame(self.selected_section)
 
@@ -261,8 +260,7 @@ class TemplateScene(ctk.CTkFrame):
         self.app_engine.copy_of_piece_collection[new_piece_id] = new_piece
         self.structured_pieces[self.selected_section][new_piece_id] = new_piece
 
-        self.section_frame.build_section_frame()
-        self.section_frame.all_cards[self.selected_section].card_selected()
+        self.section_frame.reload_card_subtitles()
 
         self.pieces_frame.build_pieces_frame(self.selected_section)
         self.new_piece_selected(new_piece)

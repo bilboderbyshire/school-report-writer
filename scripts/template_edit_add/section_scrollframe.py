@@ -1,14 +1,16 @@
 import customtkinter as ctk
 from ..settings import *
 from ..components import AutohidingScrollableAndLoadingFrame, ListCard
-from ..containers import IndividualPiece
+from ..containers import IndividualPiece, TemplateSection
 from .section_list_card import SectionCard
 from typing import Callable
+from ..app_engine import AppEngine
 
 
 class SectionScrollableFrame(AutohidingScrollableAndLoadingFrame):
     def __init__(self, master,
-                 structured_pieces: dict[int, dict[str, IndividualPiece]],
+                 app_engine: AppEngine,
+                 structured_pieces: dict[str, dict[str, IndividualPiece]],
                  select_section_command: Callable,
                  card_add_command: tuple[str, Callable],
                  card_delete_command: tuple[str, Callable]):
@@ -19,11 +21,12 @@ class SectionScrollableFrame(AutohidingScrollableAndLoadingFrame):
                          label_fg_color="transparent",
                          label_text="Sections")
 
+        self.app_engine = app_engine
         self.structured_pieces = structured_pieces
         self.select_section_command = select_section_command
         self.card_add = card_add_command
         self.card_delete = card_delete_command
-        self.all_cards: dict[int, SectionCard] = {}
+        self.all_cards: dict[str, SectionCard] = {}
 
     def build_section_frame(self):
         for i in self.winfo_children():
@@ -31,16 +34,16 @@ class SectionScrollableFrame(AutohidingScrollableAndLoadingFrame):
 
         self.update_idletasks()
 
-        for index, section in enumerate(self.structured_pieces.keys()):
+        for index, section_id in enumerate(self.structured_pieces.keys()):
             new_section_card = SectionCard(
                 self,
-                section,
-                len(self.structured_pieces[section]),
+                section=self.app_engine.copy_of_section_collection[section_id],
+                piece_count=len(self.structured_pieces[section_id]),
                 select_section_command=self.select_section_command,
                 add_command=self.card_add,
                 delete_command=self.card_delete
             )
-            self.all_cards[section] = new_section_card
+            self.all_cards[section_id] = new_section_card
             new_section_card.grid(row=index, column=0, sticky="ew", padx=DEFAULT_PAD-7)
 
         add_section = self.make_add_section_button()
@@ -74,3 +77,7 @@ class SectionScrollableFrame(AutohidingScrollableAndLoadingFrame):
         add_section_button.bind_frame()
 
         return add_section_button
+
+    def reload_card_subtitles(self):
+        for section_id, card in self.all_cards.items():
+            card.update_piece_count(len(self.structured_pieces[section_id]))
