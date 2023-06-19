@@ -85,7 +85,6 @@ class PieceListCard(ListCard):
 
     def update_display_text(self):
         self.update_idletasks()
-        print(self.winfo_width(), "width of piece card")
         if len(self.piece_text) > 30:
             self.display_text_sv.set(self.piece_text[0:28] + "...")
         else:
