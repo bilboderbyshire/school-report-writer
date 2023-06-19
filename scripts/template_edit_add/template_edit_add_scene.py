@@ -90,6 +90,7 @@ class TemplateScene(ctk.CTkFrame):
         self.change_cursor("arrow")
 
         self.check_if_scroll_needed()
+        self.focus_set()
 
     def setup_scene(self, template: ReportTemplate):
         self.working_template = template
@@ -131,6 +132,9 @@ class TemplateScene(ctk.CTkFrame):
 
     def new_section_selected(self, section: TemplateSection):
         if self.selected_section is not None:
+            if section.id == self.selected_section:
+                return
+
             self.section_frame.all_cards[self.selected_section].card_deselected()
 
         self.selected_section = section.id
@@ -225,6 +229,8 @@ class TemplateScene(ctk.CTkFrame):
 
     def new_piece_selected(self, piece: IndividualPiece | None = None):
         if piece is not None:
+            if piece.id == self.selected_piece:
+                return
             if self.selected_piece is not None:
                 self.pieces_frame.all_cards[self.selected_piece].card_deselected()
             self.selected_piece = piece.id

@@ -52,7 +52,7 @@ class ListCard(ctk.CTkFrame):
             child.bind("<Button-3>", self.right_clicked)
 
             if self.command is not None:
-                child.bind("<Button-1>", lambda event: self.command(self.card_data))
+                child.bind("<Button-1>", lambda event: self.card_clicked())
 
     def card_selected(self):
         self.selected = True

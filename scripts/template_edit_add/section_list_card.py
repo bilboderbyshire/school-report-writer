@@ -22,13 +22,13 @@ class SectionCard(ListCard):
 
         self.card_data = section
 
-        entry_text = f"{self.card_data.section_title}"
+        self.entry_text = f"{self.card_data.section_title}"
         if "@" in self.card_data.id:
-            entry_text = "*" + entry_text
+            self.entry_text = "*" + self.entry_text
 
         self.section_name = InvisibleEntry(
             self,
-            placeholder_text=entry_text,
+            placeholder_text=self.entry_text,
             font=ctk.CTkFont(**NORMAL_LABEL_FONT),
             show_image=False,
             validate="key",
@@ -58,9 +58,9 @@ class SectionCard(ListCard):
 
         self.right_click_menu.add_command(label="Select section",
                                           command=lambda: select_section_command(self.card_data))
+        self.right_click_menu.add_command(label="Edit section title", command=self.entry_enabled)
         self.right_click_menu.add_command(label=add_command[0], command=lambda: add_command[1](self.card_data))
         self.right_click_menu.add_command(label=delete_command[0], command=lambda: delete_command[1](self.card_data))
-        self.right_click_menu.add_command(label="Edit section title", command=self.section_name.text_entry.focus_set)
 
         self.rowconfigure([0, 1], weight=0)
         self.columnconfigure(0, weight=1)
@@ -86,8 +86,20 @@ class SectionCard(ListCard):
 
         delete_button.grid(row=1, column=1, sticky="e", padx=(0, DEFAULT_PAD))
 
+        self.section_name.text_entry.bind("<Button-1>", lambda event: self.entry_clicked())
+        self.section_name.text_entry.bind("<Enter>", lambda event: self.on_hover())
+        self.section_name.text_entry.bind("<Leave>", lambda event: self.on_mouse_leave())
+        self.section_name.text_entry.bind("<Double-Button-1>", lambda event: self.entry_enabled())
+        self.section_name.text_entry.bind("<FocusOut>", lambda event: self.entry_disabled())
+
+        self.entry_disabled()
+
     def validate_command(self, p: str):
         if "@" in self.card_data.id:
+            if len(p) < 1:
+                return False
+            elif p[0] != "*":
+                return False
             self.card_data.section_title = p[1::]
         else:
             self.card_data.section_title = p
@@ -103,14 +115,20 @@ class SectionCard(ListCard):
 
         self.subtitle_label.configure(text=sub_text)
 
-    def bind_frame(self):
-        for child in self.winfo_children():
-            child.bind("<Enter>", lambda event: self.on_hover())
-            child.bind("<Leave>", lambda event: self.on_mouse_leave())
-            child.bind("<Button-3>", self.right_clicked)
+    def entry_enabled(self):
+        self.section_name.text_entry.configure(state="normal")
+        self.section_name.text_entry.focus_set()
 
-            if self.command is not None:
-                child.bind("<Button-1>", lambda event: self.command(self.card_data))
+    def entry_disabled(self):
+        current_title = self.section_name.text_entry.get().strip()
 
-        self.section_name.text_entry.bind("<Enter>", lambda event: self.on_hover())
-        self.section_name.text_entry.bind("<Leave>", lambda event: self.on_mouse_leave())
+        if ("@" in self.card_data.id and current_title == "*") or \
+                ("@" not in self.card_data.id and current_title == ""):
+            self.section_name.text_entry.insert(0, self.entry_text)
+            self.section_name.text_entry.delete(len(self.entry_text), "end")
+
+        self.section_name.text_entry.configure(state="readonly")
+
+    def entry_clicked(self):
+        if self.section_name.text_entry.cget("state") == "readonly":
+            self.card_clicked()
