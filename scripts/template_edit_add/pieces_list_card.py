@@ -37,6 +37,7 @@ class PieceListCard(ListCard):
         )
 
         self.subtitle_label.grid(row=0, column=0, sticky="ew", padx=(DEFAULT_PAD, SMALL_PAD))
+        self.bind_frame()
 
         copy_image = ctk.CTkImage(
             light_image=Image.open(os.path.join(os.getcwd(), "images/light-copy.png")),

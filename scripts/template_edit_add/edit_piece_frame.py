@@ -19,14 +19,15 @@ class EditPieceFrame(ctk.CTkFrame):
             fg_color="transparent",
             text="Edit piece")
 
-        title_label.grid(row=0, column=0, sticky="nw", padx=13, pady=(5, 0))
+        title_label.grid(row=0, column=0, sticky="nw", padx=13, pady=(5, 6))
 
         self.piece_textbox = ctk.CTkTextbox(
             self,
             font=ctk.CTkFont(**SMALL_LABEL_FONT),
             fg_color="transparent",
             border_width=2,
-            wrap="word"
+            wrap="word",
+            undo=True,
         )
         self.piece_textbox.grid(row=1, column=0, sticky="nsew", padx=13, pady=DEFAULT_PAD)
 
@@ -38,7 +39,10 @@ class EditPieceFrame(ctk.CTkFrame):
         self.columnconfigure(0, weight=1)
 
     def display_piece(self, piece: IndividualPiece | None):
-        self.current_piece = piece
-        self.piece_textbox.delete("1.0", "end")
-        self.piece_textbox.insert("1.0", self.current_piece.piece_text)
-
+        if piece is not None:
+            self.current_piece = piece
+            self.piece_textbox.delete("1.0", "end")
+            self.piece_textbox.insert("1.0", self.current_piece.piece_text)
+            self.piece_textbox.focus_set()
+        else:
+            self.piece_textbox.delete("1.0", "end")
