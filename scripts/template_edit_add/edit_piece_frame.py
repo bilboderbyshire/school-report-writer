@@ -86,6 +86,10 @@ class EditPieceFrame(ctk.CTkFrame):
 
             if self.piece_textbox.tag_names(f"{current_line}.{current_tag_start_index+1}"):
                 current_tag_start_index += 1
+            elif in_tag and char == "{":
+                current_tag_end_index += 1
+                current_tag_start_index = current_tag_end_index
+                current_tag = char
             elif in_tag and char != "}":
                 current_tag_end_index += 1
                 current_tag += char
