@@ -67,11 +67,11 @@ class TemplateScene(ctk.CTkFrame):
         self.columnconfigure(0, weight=1, uniform="columns")
         self.columnconfigure([1, 2], weight=2, uniform="columns")
 
+        self.bind("<Configure>", lambda event: self.pieces_frame.update_all_text_displays())
+
     def fill_frames(self):
         for i in self.winfo_children():
             i.destroy()
-
-        self.update_idletasks()
 
         self.__build_frame()
 

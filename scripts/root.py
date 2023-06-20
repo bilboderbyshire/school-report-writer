@@ -28,6 +28,7 @@ class ReportWriter(ctk.CTk):
         self.geometry(f"{GEOMETRY}+{x}+{y}")
         self.title(WINDOW_TITLE)
         self.iconbitmap(default=os.path.join(os.getcwd(), "images/app-logo.ico"))
+        self.minsize(WIDTH, HEIGHT)
 
         self.rowconfigure(0, weight=1)
         self.columnconfigure(0, weight=1)
