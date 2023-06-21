@@ -9,3 +9,4 @@ from .list_card import ListCard
 from .seperator import Separator
 from .invisible_entry import InvisibleEntry
 from .small_entry import SmallEntry
+from .secondary_optionmenu import SecondaryOptionmenu
