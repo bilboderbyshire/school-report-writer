@@ -245,8 +245,10 @@ class TemplateScene(ctk.CTkFrame):
                 self.pieces_frame.all_cards[self.selected_piece].card_selected()
                 self.edit_piece_frame.display_piece(self.app_engine.copy_of_piece_collection[self.selected_piece])
             else:
+                self.edit_piece_frame.display_piece(piece)
                 self.selected_piece = None
         else:
+            self.edit_piece_frame.display_piece(piece)
             self.selected_piece = None
 
     def delete_piece(self, piece: IndividualPiece):

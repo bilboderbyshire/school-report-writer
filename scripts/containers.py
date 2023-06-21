@@ -1,4 +1,6 @@
 from typing import TypedDict
+from . import utils
+import customtkinter as ctk
 
 
 class NewSectionRecord:
@@ -442,6 +444,7 @@ class IndividualPiece:
         self.created = record.created
         self.updated = record.updated
         self.expand = {}
+        self.variables: dict[str, list[str]] = {}
 
         try:
             if "section" in record.expand.keys():
@@ -460,6 +463,10 @@ class IndividualPiece:
             "piece_text": self.piece_text,
             "section": self.section if isinstance(self.section, str) else self.section.id
         }
+
+    def find_tags_in_piece(self, textbox: ctk.CTkTextbox):
+        self.variables = utils.find_tags_in_text(self.piece_text, textbox, self.variables)
+        print(self.variables)
 
     @staticmethod
     def _is_valid_operand(other):
