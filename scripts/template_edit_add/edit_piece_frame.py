@@ -3,6 +3,7 @@ from ..settings import *
 from ..containers import IndividualPiece
 from typing import Callable
 from .auto_insert_button_frame import AutoInsertButtons
+from .user_variables_button_frame import UserVariablesButtonFrame
 
 
 class EditPieceFrame(ctk.CTkFrame):
@@ -56,7 +57,13 @@ class EditPieceFrame(ctk.CTkFrame):
         )
         self.auto_inserts.grid(row=0, column=0, sticky="nsew", pady=(0, SMALL_PAD))
 
+        self.user_inserts = UserVariablesButtonFrame(
+            self.inserts_frame
+        )
+        self.user_inserts.grid(row=1, column=0, sticky="nsew")
+
         self.inserts_frame.rowconfigure(0, weight=0)
+        self.inserts_frame.rowconfigure(1, weight=1)
         self.inserts_frame.columnconfigure(0, weight=1)
 
         self.rowconfigure(0, weight=0)
