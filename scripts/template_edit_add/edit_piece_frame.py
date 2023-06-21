@@ -67,7 +67,7 @@ class EditPieceFrame(ctk.CTkFrame):
         self.inserts_frame.columnconfigure(0, weight=1)
 
         self.rowconfigure(0, weight=0)
-        self.rowconfigure([1, 2], weight=1, uniform="rows")
+        self.rowconfigure([1, 2], weight=1)
         self.columnconfigure(0, weight=1)
 
     def display_piece(self, piece: IndividualPiece | None):
