@@ -13,6 +13,7 @@ class EditPieceFrame(ctk.CTkFrame):
 
         self.current_piece: IndividualPiece | None = None
         self.edit_command = edit_command
+        self.after_cancel_id = None
 
         title_label = ctk.CTkLabel(
             self,
@@ -33,7 +34,9 @@ class EditPieceFrame(ctk.CTkFrame):
         )
         self.piece_textbox.grid(row=1, column=0, sticky="nsew", padx=13, pady=DEFAULT_PAD)
 
-        self.piece_textbox.bind("<KeyRelease>", lambda event: self.refresh_tags())
+        self.piece_textbox.bind("<KeyPress>", lambda event: self.refresh_tags())
+        self.piece_textbox.bind("<KeyRelease>", lambda event: self.edit_command(self.current_piece,
+                                                                                self.piece_textbox.get("1.0", "end")))
 
         self.piece_textbox.tag_config("pronoun", foreground=PRONOUN_COLOUR)
         self.piece_textbox.tag_config("dependant", foreground=PRONOUN_DEPENDANT_COLOUR)
@@ -65,60 +68,16 @@ class EditPieceFrame(ctk.CTkFrame):
             self.current_piece = piece
             self.piece_textbox.delete("1.0", "end")
             self.piece_textbox.insert("1.0", self.current_piece.piece_text)
-            self.refresh_tags()
+            self.current_piece.find_tags_in_piece(self.piece_textbox)
             self.piece_textbox.focus_set()
         else:
             self.piece_textbox.delete("1.0", "end")
 
     def refresh_tags(self):
-        self.edit_command(self.current_piece, self.piece_textbox.get("1.0", "end"))
-        all_tags = self.piece_textbox.tag_names()
-        current_line = 1
-        current_tag_start_index = -1
-        current_tag_end_index = 0
-        in_tag = False
-        current_tag = ""
-        for char in self.current_piece.piece_text:
-            if char == "\n":
-                current_line += 1
-                current_tag_start_index = -1
-                continue
+        if self.after_cancel_id is not None:
+            self.after_cancel(self.after_cancel_id)
 
-            if self.piece_textbox.tag_names(f"{current_line}.{current_tag_start_index+1}"):
-                current_tag_start_index += 1
-            elif in_tag and char == "{":
-                current_tag_end_index += 1
-                current_tag_start_index = current_tag_end_index
-                current_tag = char
-            elif in_tag and char != "}":
-                current_tag_end_index += 1
-                current_tag += char
-            elif char == "{":
-                current_tag_start_index += 1
-                current_tag_end_index = current_tag_start_index
-                current_tag = char
-                in_tag = True
-            elif char == "}":
-                current_tag += char
-                current_tag_end_index += 1
-                in_tag = False
-                if ":" in current_tag:
-                    final_tag = current_tag.split(":")[0][1::]
-                else:
-                    final_tag = current_tag[1:-1]
-                if final_tag in all_tags:
-                    self.piece_textbox.tag_add(
-                        final_tag,
-                        f"{current_line}.{current_tag_start_index}",
-                        f"{current_line}.{current_tag_end_index + 1}")
-
-                current_tag = ""
-                current_tag_start_index = current_tag_end_index
-                current_tag_end_index = 0
-            else:
-                current_tag_start_index += 1
-
-        self.piece_textbox.update()
+        self.after_cancel_id = self.after(1000, self.current_piece.find_tags_in_piece, self.piece_textbox)
 
     def insert_pronoun(self, value: str):
         new_pronoun = value.split(":")[0].lower()
@@ -136,14 +95,20 @@ class EditPieceFrame(ctk.CTkFrame):
         else:
             pronoun_text = "{Unknown pronoun}"
 
-        self.piece_textbox.insert("insert", pronoun_text, "pronoun")
-        self.edit_command(self.current_piece, self.piece_textbox.get("1.0", "end"))
+        self.new_variable_inserted(pronoun_text, "pronoun")
 
     def insert_pronoun_dependant(self, value: str):
         new_value = "{dependant:" + value + "}"
-        self.piece_textbox.insert("insert", new_value, "dependant")
-        self.edit_command(self.current_piece, self.piece_textbox.get("1.0", "end"))
+        self.new_variable_inserted(new_value, "dependant")
 
     def insert_name(self):
-        self.piece_textbox.insert("insert", "{name}", "name")
+        self.new_variable_inserted("{name}", "name")
+
+    def new_variable_inserted(self, variable: str, variable_name: str):
+        self.piece_textbox.insert("insert", variable, variable_name)
         self.edit_command(self.current_piece, self.piece_textbox.get("1.0", "end"))
+
+        if variable_name in self.current_piece.variables.keys():
+            self.current_piece.variables[variable_name].append(variable)
+        else:
+            self.current_piece.variables[variable_name] = [variable]
