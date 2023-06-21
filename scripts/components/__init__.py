@@ -8,3 +8,4 @@ from .autohiding_scrollable_and_loading_frame import AutohidingScrollableAndLoad
 from .list_card import ListCard
 from .seperator import Separator
 from .invisible_entry import InvisibleEntry
+from .small_entry import SmallEntry
