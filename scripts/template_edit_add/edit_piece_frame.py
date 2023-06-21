@@ -31,9 +31,10 @@ class EditPieceFrame(ctk.CTkFrame):
             fg_color="transparent",
             border_width=2,
             wrap="word",
+            height=10,
             undo=True,
         )
-        self.piece_textbox.grid(row=1, column=0, sticky="nsew", padx=13, pady=DEFAULT_PAD)
+        self.piece_textbox.grid(row=1, column=0, sticky="nsew", padx=13, pady=SMALL_PAD)
 
         self.piece_textbox.bind("<KeyPress>", lambda event: self.refresh_tags())
         self.piece_textbox.bind("<KeyRelease>", lambda event: self.edit_command(self.current_piece,
@@ -67,7 +68,8 @@ class EditPieceFrame(ctk.CTkFrame):
         self.inserts_frame.columnconfigure(0, weight=1)
 
         self.rowconfigure(0, weight=0)
-        self.rowconfigure([1, 2], weight=1)
+        self.rowconfigure(1, weight=2, uniform="rows")
+        self.rowconfigure(2, weight=3, uniform="rows")
         self.columnconfigure(0, weight=1)
 
     def display_piece(self, piece: IndividualPiece | None):

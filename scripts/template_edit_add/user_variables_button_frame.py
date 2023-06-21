@@ -1,6 +1,6 @@
 import customtkinter as ctk
 from ..settings import *
-from ..components import SmallEntry
+from ..components import SecondaryOptionmenu, SecondaryButton
 
 
 class UserVariablesButtonFrame(ctk.CTkFrame):
@@ -11,45 +11,73 @@ class UserVariablesButtonFrame(ctk.CTkFrame):
 
         title_label = ctk.CTkLabel(
             self,
-            font=ctk.CTkFont(**NORMAL_LABEL_FONT),
+            font=ctk.CTkFont(**SMALL_LABEL_FONT),
             anchor="w",
             fg_color="transparent",
             text="Create variables")
 
         title_label.grid(row=0, column=0, columnspan=3, sticky="nw", pady=(5, 6))
 
-        self.create_variable_frame = ctk.CTkFrame(self, fg_color="transparent")
-        self.create_variable_frame.grid(row=1, column=0, sticky="nsew", padx=(0, SMALL_PAD), pady=(0, SMALL_PAD))
+        self.variable_button_frame = ctk.CTkFrame(self, fg_color="transparent")
+        self.variable_button_frame.grid(row=1, column=0, sticky="nsew", padx=(0, SMALL_PAD), pady=(0, SMALL_PAD))
 
-        self.variable_name_label = ctk.CTkLabel(
-            self.create_variable_frame,
-            fg_color="transparent",
-            text="Variable name",
-            font=ctk.CTkFont(**SMALL_LABEL_FONT, slant="italic"),
-            anchor="w"
+        self.select_variable = SecondaryOptionmenu(
+            self.variable_button_frame,
+            font=ctk.CTkFont(**VERY_SMALL_FONT),
+            values=["Option1",
+                    "Option2"]
         )
-        self.variable_name_label.grid(row=0, column=0, sticky="ew")
+        self.select_variable.grid(row=0, column=0, sticky="ew", pady=(0, SMALL_PAD))
 
-        self.variable_name_entry = SmallEntry(self.create_variable_frame,
-                                              placeholder_text="eg., Positive descriptors")
-        self.variable_name_entry.grid(row=1, column=0, sticky="nsew", pady=(0, SMALL_PAD))
-
-        self.variable_choice_label = ctk.CTkLabel(
-            self.create_variable_frame,
-            fg_color="transparent",
-            text="Variable choices",
-            font=ctk.CTkFont(**SMALL_LABEL_FONT, slant="italic"),
-            anchor="w"
+        self.insert_button = ctk.CTkButton(
+            self.variable_button_frame,
+            font=ctk.CTkFont(**VERY_SMALL_FONT),
+            text="Insert",
+            state="disabled"
         )
-        self.variable_choice_label.grid(row=2, column=0, sticky="ew")
+        self.insert_button.grid(row=1, column=0, sticky="ew")
 
-        self.variable_choice_entry = SmallEntry(self.create_variable_frame,
-                                                placeholder_text="eg., choice1, choice2, ...")
-        self.variable_choice_entry.grid(row=3, column=0, sticky="nsew")
+        self.variable_button_frame.rowconfigure([0, 1], weight=0)
+        self.variable_button_frame.columnconfigure(0, weight=1)
 
-        self.create_variable_frame.rowconfigure([0, 1], weight=0)
-        self.create_variable_frame.columnconfigure(0, weight=1)
+        self.variable_view_frame = ctk.CTkFrame(self, fg_color="transparent")
+        self.variable_view_frame.grid(row=1, column=1, sticky="nsew", pady=(0, SMALL_PAD))
+
+        self.variable_textbox = ctk.CTkTextbox(
+            self.variable_view_frame,
+            font=ctk.CTkFont(**VERY_SMALL_FONT),
+            fg_color="transparent",
+            text_color=FADED_TEXT_COLOR,
+            border_width=2,
+            wrap="word",
+            height=10,
+            width=10,
+        )
+        self.variable_textbox.grid(row=0, column=0, columnspan=3, sticky="nsew", pady=(0, SMALL_PAD))
+        self.variable_textbox.insert("1.0", "hello")
+        self.variable_textbox.configure(state="disabled")
+
+        self.edit_button = SecondaryButton(
+            self.variable_view_frame,
+            font=ctk.CTkFont(**VERY_SMALL_FONT),
+            text="Edit",
+            state="disabled"
+        )
+        self.edit_button.grid(row=1, column=1, sticky="ew", padx=(0, SMALL_PAD), pady=(0, SMALL_PAD))
+
+        self.copy_button = SecondaryButton(
+            self.variable_view_frame,
+            font=ctk.CTkFont(**VERY_SMALL_FONT),
+            text="Copy",
+            state="disabled"
+        )
+        self.copy_button.grid(row=1, column=2, sticky="ew", pady=(0, SMALL_PAD))
+
+        self.variable_view_frame.rowconfigure(0, weight=1)
+        self.variable_view_frame.rowconfigure(1, weight=0)
+        self.variable_view_frame.columnconfigure([0, 1, 2], weight=1, uniform="row")
 
         self.rowconfigure(0, weight=0)
-        self.columnconfigure(0, weight=2, uniform="columns")
-        self.columnconfigure(1, weight=1, uniform="columns")
+        self.rowconfigure(1, weight=1)
+        self.columnconfigure(0, weight=1, uniform="columns")
+        self.columnconfigure(1, weight=2, uniform="columns")
