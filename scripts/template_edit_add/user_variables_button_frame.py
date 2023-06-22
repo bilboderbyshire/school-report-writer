@@ -63,7 +63,6 @@ class UserVariablesButtonFrame(ctk.CTkFrame):
             width=10,
         )
         self.variable_textbox.grid(row=0, column=0, columnspan=3, sticky="nsew", pady=(0, SMALL_PAD))
-        self.variable_textbox.insert("1.0", "hello")
         self.variable_textbox.configure(state="disabled")
 
         self.edit_button = SecondaryButton(
