@@ -96,19 +96,24 @@ class EditPieceFrame(ctk.CTkFrame):
                 # return string between tag start and end
                 variable = self.piece_textbox.get(start, end).split(":")[1][0:-1]
 
-        print(variable)
         self.user_inserts.variable_selected(variable)
         self.user_inserts.select_variable.set(variable.capitalize())
 
     def display_piece(self, piece: IndividualPiece | None):
         if piece is not None:
+            self.piece_textbox.configure(state="normal")
             self.current_piece = piece
             self.piece_textbox.delete("1.0", "end")
             self.piece_textbox.insert("1.0", self.current_piece.piece_text)
             self.current_piece.find_tags_in_piece(self.piece_textbox, self.variables_collection)
             self.piece_textbox.focus_set()
+            self.auto_inserts.enable_all()
+            self.user_inserts.enable_all()
         else:
             self.piece_textbox.delete("1.0", "end")
+            self.piece_textbox.configure(state="disabled")
+            self.auto_inserts.disable_all()
+            self.user_inserts.disable_all()
 
     def refresh_tags(self):
         if self.after_cancel_id is not None:

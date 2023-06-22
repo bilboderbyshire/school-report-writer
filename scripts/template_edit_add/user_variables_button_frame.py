@@ -90,6 +90,20 @@ class UserVariablesButtonFrame(ctk.CTkFrame):
         self.columnconfigure(0, weight=1, uniform="columns")
         self.columnconfigure(1, weight=2, uniform="columns")
 
+    def disable_all(self):
+        self.select_variable.set("Choose variable")
+        self.select_variable.configure(state="disabled")
+        self.insert_button.configure(state="disabled")
+        self.copy_button.configure(state="disabled")
+        self.edit_button.configure(state="disabled")
+        self.variable_textbox.configure(state="normal")
+        self.variable_textbox.delete("1.0", "end")
+        self.variable_textbox.configure(state="disabled")
+
+    def enable_all(self):
+        self.select_variable.configure(state="enabled")
+
+
     def variable_selected(self, variable_name: str):
         for i in self.variables_collection.values():
             if i.variable_name.lower() == variable_name.lower():

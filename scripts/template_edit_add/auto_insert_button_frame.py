@@ -71,3 +71,13 @@ class AutoInsertButtons(ctk.CTkFrame):
     def pronoun_dependants_dropdown_callback(self, dropdown_value):
         self.pronoun_dependants_dropdown.set("Dependant")
         self.insert_pronoun_dependant_command(dropdown_value)
+
+    def disable_all(self):
+        self.pronoun_dropdown.configure(state="disabled")
+        self.pronoun_dependants_dropdown.configure(state="disabled")
+        self.insert_name.configure(state="disabled")
+
+    def enable_all(self):
+        self.pronoun_dropdown.configure(state="normal")
+        self.pronoun_dependants_dropdown.configure(state="normal")
+        self.insert_name.configure(state="normal")
