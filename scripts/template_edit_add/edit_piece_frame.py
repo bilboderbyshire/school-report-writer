@@ -1,6 +1,7 @@
 import customtkinter as ctk
 from ..settings import *
 from ..containers import IndividualPiece, UserVariable
+from ..components import NormalLabel
 from typing import Callable
 from .auto_insert_button_frame import AutoInsertButtons
 from .user_variables_button_frame import UserVariablesButtonFrame
@@ -10,19 +11,19 @@ class EditPieceFrame(ctk.CTkFrame):
     def __init__(self,
                  master,
                  variables_collection: dict[str, UserVariable],
-                 edit_command: Callable):
+                 edit_command: Callable,
+                 create_variable_command: Callable):
         super().__init__(master)
 
         self.current_piece: IndividualPiece | None = None
         self.variables_collection = variables_collection
         self.edit_command = edit_command
+        self.create_variable_command = create_variable_command
         self.after_cancel_id = None
 
-        title_label = ctk.CTkLabel(
+        title_label = NormalLabel(
             self,
-            font=ctk.CTkFont(**NORMAL_LABEL_FONT),
             anchor="w",
-            fg_color="transparent",
             text="Edit piece")
 
         title_label.grid(row=0, column=0, sticky="nw", padx=13, pady=(5, 6))
@@ -66,7 +67,8 @@ class EditPieceFrame(ctk.CTkFrame):
         self.user_inserts = UserVariablesButtonFrame(
             self.inserts_frame,
             variables_collection=variables_collection,
-            insert_variable_command=self.insert_user_variable
+            insert_variable_command=self.insert_user_variable,
+            create_variable_command=self.create_variable_command
         )
         self.user_inserts.grid(row=1, column=0, sticky="nsew")
 

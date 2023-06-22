@@ -6,8 +6,10 @@ from ..app_engine import AppEngine
 from .section_scrollframe import SectionScrollableFrame
 from .pieces_scrollframe import PiecesScrollableFrame
 from .edit_piece_frame import EditPieceFrame
-from ..containers import ReportTemplate, NewPieceRecord, IndividualPiece, TemplateSection, NewSectionRecord
+from ..containers import ReportTemplate, NewPieceRecord, IndividualPiece, TemplateSection, NewSectionRecord, \
+    NewUserVariableRecord, UserVariable
 import CTkMessagebox as ctkmb
+from ..variable_edit_toplevel import VariableEditToplevel
 
 
 class TemplateScene(ctk.CTkFrame):
@@ -59,7 +61,8 @@ class TemplateScene(ctk.CTkFrame):
 
         self.edit_piece_frame = EditPieceFrame(self,
                                                edit_command=self.piece_edited,
-                                               variables_collection=self.app_engine.copy_of_user_variables_collection)
+                                               variables_collection=self.app_engine.copy_of_user_variables_collection,
+                                               create_variable_command=self.create_variable)
         self.edit_piece_frame.grid(row=4, rowspan=2, column=2, sticky="nsew", padx=(0, DEFAULT_PAD),
                                    pady=(0, DEFAULT_PAD))
 
@@ -288,3 +291,13 @@ class TemplateScene(ctk.CTkFrame):
         else:
             piece.piece_text = new_text.strip()
         self.pieces_frame.all_cards[piece.id].update_display_text()
+
+    def create_variable(self):
+        new_variable_id = f"@{self.app_engine.create_new_record_id('user_variables')}"
+        new_variable = UserVariable(NewUserVariableRecord(
+            new_variable_id,
+            "New variable",
+            self.app_engine.get_user_id()
+        ))
+        VariableEditToplevel(self.master, new_variable, self.app_engine.copy_of_user_variables_collection)
+        self.grab_set()

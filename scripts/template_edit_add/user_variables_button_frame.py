@@ -1,7 +1,7 @@
 import customtkinter as ctk
 from ..settings import *
 from ..components import SecondaryOptionmenu, SecondaryButton
-from ..containers import UserVariable
+from ..containers import UserVariable, NewUserVariableRecord
 from typing import Callable
 
 
@@ -9,7 +9,8 @@ class UserVariablesButtonFrame(ctk.CTkFrame):
     def __init__(self,
                  master,
                  variables_collection: dict[str, UserVariable],
-                 insert_variable_command: Callable):
+                 insert_variable_command: Callable,
+                 create_variable_command: Callable):
         super().__init__(master,
                          fg_color="transparent")
 
@@ -37,6 +38,15 @@ class UserVariablesButtonFrame(ctk.CTkFrame):
         self.select_variable.grid(row=0, column=0, sticky="ew", pady=(0, SMALL_PAD))
         self.select_variable.set("Choose variable")
 
+        self.create_variable_button = SecondaryButton(
+            self.variable_button_frame,
+            font=ctk.CTkFont(**VERY_SMALL_FONT),
+            text="Create new...",
+            state="normal",
+            command=create_variable_command
+        )
+        self.create_variable_button.grid(row=1, column=0, sticky="ew", pady=(0, SMALL_PAD))
+
         self.insert_button = ctk.CTkButton(
             self.variable_button_frame,
             font=ctk.CTkFont(**VERY_SMALL_FONT),
@@ -44,9 +54,9 @@ class UserVariablesButtonFrame(ctk.CTkFrame):
             state="disabled",
             command=lambda: insert_variable_command(self.chosen_variable)
         )
-        self.insert_button.grid(row=1, column=0, sticky="ew")
+        self.insert_button.grid(row=2, column=0, sticky="ew")
 
-        self.variable_button_frame.rowconfigure([0, 1], weight=0)
+        self.variable_button_frame.rowconfigure([0, 1, 2], weight=0)
         self.variable_button_frame.columnconfigure(0, weight=1)
 
         self.variable_view_frame = ctk.CTkFrame(self, fg_color="transparent")
@@ -102,7 +112,6 @@ class UserVariablesButtonFrame(ctk.CTkFrame):
 
     def enable_all(self):
         self.select_variable.configure(state="enabled")
-
 
     def variable_selected(self, variable_name: str):
         for i in self.variables_collection.values():

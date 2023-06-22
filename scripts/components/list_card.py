@@ -31,7 +31,8 @@ class ListCard(ctk.CTkFrame):
 
         self.bind("<Enter>", lambda event: self.on_hover())
         self.bind("<Leave>", lambda event: self.on_mouse_leave())
-        self.bind("<Button-1>", lambda event: self.card_clicked())
+        if self.command is not None:
+            self.bind("<Button-1>", lambda event: self.card_clicked())
         self.bind("<Button-3>", self.right_clicked)
 
     def right_clicked(self, event: Event):

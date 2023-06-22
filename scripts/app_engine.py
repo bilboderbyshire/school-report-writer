@@ -153,13 +153,15 @@ class AppEngine:
                                                        "report_set",
                                                        "template_sections",
                                                        "individual_reports",
-                                                       "report_pieces"]) -> int:
+                                                       "report_pieces",
+                                                       "user_variables"]) -> int:
         collections = {
             "templates": self.copy_of_template_collection,
             "template_sections": self.copy_of_section_collection,
             "report_set": self.copy_of_reports_set_collection,
             "individual_reports": self.copy_of_individual_report_collection,
-            "report_pieces": self.copy_of_piece_collection
+            "report_pieces": self.copy_of_piece_collection,
+            "user_variables": self.copy_of_user_variables_collection
         }
 
         current_ids: list[str] = list(collections[collection].keys())
