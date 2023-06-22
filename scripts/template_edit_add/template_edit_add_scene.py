@@ -181,6 +181,8 @@ class TemplateScene(ctk.CTkFrame):
         self.new_piece_selected()
         self.check_if_scroll_needed()
 
+        self.section_frame.all_cards[new_section_id].entry_enabled()
+
     def delete_section(self, section: TemplateSection):
         if self.structured_pieces[section.id]:
             warning_box = ctkmb.CTkMessagebox(
