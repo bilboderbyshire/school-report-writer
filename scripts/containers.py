@@ -3,6 +3,22 @@ from . import utils
 import customtkinter as ctk
 
 
+class NewUserVariableRecord:
+    def __init__(self, var_id: str,
+                 variable_name: str,
+                 owner_id: str,
+                 variable_items: str = None,
+                 variable_type: str = None,
+                 ):
+        self.id = var_id
+        self.variable_name = variable_name
+        self.variable_items = variable_items
+        self.variable_type = variable_type
+        self.owner = owner_id
+        self.created = "Just now"
+        self.updated = "Now"
+
+
 class NewSectionRecord:
     def __init__(self, section_id: str,
                  section_title: str,
