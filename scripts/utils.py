@@ -17,8 +17,10 @@ def rgb_to_hex(rgb: tuple[int, int, int]) -> str:
     return f"#{r_val}{g_val}{b_val}"
 
 
-def find_tags_in_text(text: str, textbox: ctk.CTkTextbox, variable_tracker: dict[str, list[str]]) -> \
+def find_tags_in_text(text: str, textbox: ctk.CTkTextbox,
+                      user_variables) -> \
         dict[str, list[str]]:
+    variable_tracker = {}
     all_tags = textbox.tag_names()
     current_line = 1
     current_tag_start_index = -1
@@ -50,10 +52,25 @@ def find_tags_in_text(text: str, textbox: ctk.CTkTextbox, variable_tracker: dict
             current_tag_end_index += 1
             in_tag = False
             if ":" in current_tag:
-                final_tag = current_tag.split(":")[0][1::]
+                full_tag = current_tag.split(":")
+                final_tag = full_tag[0][1::]
+                var_details = full_tag[1][0:-1]
             else:
                 final_tag = current_tag[1:-1]
+                var_details = None
             if final_tag in all_tags:
+
+                if final_tag in ["chain", "static", "choice"] and var_details is not None:
+                    variable_exists = False
+                    for i in user_variables.values():
+                        if var_details == i.variable_name:
+                            variable_exists = True
+                            break
+                    if not variable_exists:
+                        continue
+                elif final_tag in ["chain", "static", "choice"] and var_details is None:
+                    continue
+
                 textbox.tag_add(
                     final_tag,
                     f"{current_line}.{current_tag_start_index}",

@@ -58,7 +58,8 @@ class TemplateScene(ctk.CTkFrame):
         self.piece_info_frame.grid(row=5, column=1, sticky="nsew", padx=(0, DEFAULT_PAD), pady=(0, DEFAULT_PAD))
 
         self.edit_piece_frame = EditPieceFrame(self,
-                                               edit_command=self.piece_edited)
+                                               edit_command=self.piece_edited,
+                                               variables_collection=self.app_engine.copy_of_user_variables_collection)
         self.edit_piece_frame.grid(row=4, rowspan=2, column=2, sticky="nsew", padx=(0, DEFAULT_PAD),
                                    pady=(0, DEFAULT_PAD))
 

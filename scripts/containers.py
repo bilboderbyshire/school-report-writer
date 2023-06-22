@@ -435,6 +435,80 @@ class TemplateSection:
         })
 
 
+class UserVariable:
+    def __init__(self, record):
+        self.record_object = record
+        self.id = record.id
+        self.variable_name = record.variable_name
+        self.variable_items = record.variable_items
+        self.variable_type = record.variable_type
+        self.owner = None
+        self.created = record.created
+        self.updated = record.updated
+        self.expand = {}
+
+        try:
+            if "owner" in record.expand.keys():
+                self.owner = User(record.expand["owner"])
+                self.expand["owner"] = record.expand["owner"]
+            else:
+                self.owner = record.owner
+        except AttributeError:
+            self.owner = record.owner
+
+    def copy(self):
+        return UserVariable(self)
+
+    def data_to_create(self) -> dict:
+        return {
+            "variable_name": self.variable_name,
+            "variable_items": self.variable_items,
+            "variable_type": self.variable_type,
+            "owner": self.owner if isinstance(self.owner, str) else self.owner.id
+        }
+
+    @staticmethod
+    def _is_valid_operand(other):
+        return hasattr(other, "id") and \
+            hasattr(other, "variable_name") and \
+            hasattr(other, "variable_items") and \
+            hasattr(other, "variable_type") and \
+            hasattr(other, "owner") and \
+            hasattr(other, "created") and \
+            hasattr(other, "updated")
+
+    def __eq__(self, other):
+        if not self._is_valid_operand(other):
+            return NotImplemented
+
+        return ((self.id,
+                 self.variable_name,
+                 self.variable_items,
+                 self.variable_type,
+                 self.owner,
+                 self.created,
+                 self.updated) == (
+            other.id,
+            other.variable_name,
+            other.variable_items,
+            other.variable_type,
+            other.owner,
+            other.created,
+            other.updated
+                ))
+
+    def __repr__(self):
+        return str({
+            "id": self.id,
+            "variable_name": self.variable_name,
+            "variable_items": self.variable_items,
+            "variable_type": self.variable_type,
+            "owner": repr(self.owner),
+            "created": self.created,
+            "updated": self.updated
+        })
+
+
 class IndividualPiece:
     def __init__(self, record) -> None:
         self.response_object = record
@@ -464,8 +538,8 @@ class IndividualPiece:
             "section": self.section if isinstance(self.section, str) else self.section.id
         }
 
-    def find_tags_in_piece(self, textbox: ctk.CTkTextbox):
-        self.variables = utils.find_tags_in_text(self.piece_text, textbox, self.variables)
+    def find_tags_in_piece(self, textbox: ctk.CTkTextbox, user_variables: dict[str, UserVariable]):
+        self.variables = utils.find_tags_in_text(self.piece_text, textbox, user_variables)
         print(self.variables)
 
     @staticmethod
@@ -568,80 +642,6 @@ class TemplateShared:
             "id": self.id,
             "template": repr(self.template),
             "shared_with": repr(self.shared_with),
-            "created": self.created,
-            "updated": self.updated
-        })
-
-
-class UserVariable:
-    def __init__(self, record):
-        self.record_object = record
-        self.id = record.id
-        self.variable_name = record.variable_name
-        self.variable_items = record.variable_items
-        self.variable_type = record.variable_type
-        self.owner = None
-        self.created = record.created
-        self.updated = record.updated
-        self.expand = {}
-
-        try:
-            if "owner" in record.expand.keys():
-                self.owner = User(record.expand["owner"])
-                self.expand["owner"] = record.expand["owner"]
-            else:
-                self.owner = record.owner
-        except AttributeError:
-            self.owner = record.owner
-
-    def copy(self):
-        return UserVariable(self)
-
-    def data_to_create(self) -> dict:
-        return {
-            "variable_name": self.variable_name,
-            "variable_items": self.variable_items,
-            "variable_type": self.variable_type,
-            "owner": self.owner if isinstance(self.owner, str) else self.owner.id
-        }
-
-    @staticmethod
-    def _is_valid_operand(other):
-        return hasattr(other, "id") and \
-            hasattr(other, "variable_name") and \
-            hasattr(other, "variable_items") and \
-            hasattr(other, "variable_type") and \
-            hasattr(other, "owner") and \
-            hasattr(other, "created") and \
-            hasattr(other, "updated")
-
-    def __eq__(self, other):
-        if not self._is_valid_operand(other):
-            return NotImplemented
-
-        return ((self.id,
-                 self.variable_name,
-                 self.variable_items,
-                 self.variable_type,
-                 self.owner,
-                 self.created,
-                 self.updated) == (
-            other.id,
-            other.variable_name,
-            other.variable_items,
-            other.variable_type,
-            other.owner,
-            other.created,
-            other.updated
-                ))
-
-    def __repr__(self):
-        return str({
-            "id": self.id,
-            "variable_name": self.variable_name,
-            "variable_items": self.variable_items,
-            "variable_type": self.variable_type,
-            "owner": repr(self.owner),
             "created": self.created,
             "updated": self.updated
         })
