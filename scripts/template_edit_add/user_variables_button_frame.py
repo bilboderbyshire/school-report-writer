@@ -133,9 +133,9 @@ class UserVariablesButtonFrame(ctk.CTkFrame):
                 current_line = 2
                 splitter = ""
                 if self.chosen_variable.variable_type == "choice":
-                    all_items = self.chosen_variable.variable_items.split(",")
+                    all_items = self.chosen_variable.variable_items.split("/")
                 else:
-                    all_items = self.chosen_variable.variable_items.split(",")
+                    all_items = self.chosen_variable.variable_items.split("/")
                     splitter = all_items.pop()
 
                 for value in all_items:
