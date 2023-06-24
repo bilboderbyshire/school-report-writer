@@ -6,15 +6,20 @@ from ..components import SingleLineEntry, NormalLabel, SecondaryButton, WarningB
 from .new_variable_options_scrollframe import VariableOptionsScrollframe
 import CTkMessagebox as ctkmb
 import os
+from typing import Literal
 
 
 class VariableEditToplevel(ctk.CTkToplevel):
     def __init__(self, master,
                  variable_to_edit: UserVariable,
-                 variable_collection: dict[str, UserVariable]):
+                 variable_collection: dict[str, UserVariable],
+                 edit_type: Literal["edit", "copy", "add"],
+                 top_level_choice_tracker: ctk.StringVar):
         super().__init__(master,
                          fg_color=ROOT_BG)
 
+        self.choice_tracker = top_level_choice_tracker
+        self.edit_type = edit_type
         self.new_variable = variable_to_edit
         self.variable_collection = variable_collection
         self.original_title = self.new_variable.variable_name
@@ -140,8 +145,6 @@ class VariableEditToplevel(ctk.CTkToplevel):
         else:
             self.options_frame.enabled()
 
-
-
     def refill_empty_name(self):
         if self.name_entry.get().strip() == "":
             self.name_entry.delete(0, "end")
@@ -160,11 +163,11 @@ class VariableEditToplevel(ctk.CTkToplevel):
         if warning_box.get() == "No":
             return
         else:
-            if self.new_variable.id in self.variable_collection.keys():
-                self.variable_collection.pop(self.new_variable.id)
+            self.choice_tracker.set("delete")
             self.destroy()
 
     def cancel_clicked(self):
+        self.choice_tracker.set("cancel")
         self.destroy()
 
     def save_clicked(self):
@@ -176,6 +179,15 @@ class VariableEditToplevel(ctk.CTkToplevel):
             warning_box = ctkmb.CTkMessagebox(
                 title="Warning",
                 message=f"Please provide an appropriate name",
+                icon="cancel",
+                option_1="OK")
+            warning_box.wait_window()
+            return
+        elif self.edit_type == "copy" and self.name_entry.get() == self.original_title:
+            self.name_entry.configure(border_color=BAD_COLOR)
+            warning_box = ctkmb.CTkMessagebox(
+                title="Warning",
+                message=f"This variable name already exists, please change the name",
                 icon="cancel",
                 option_1="OK")
             warning_box.wait_window()
@@ -213,6 +225,8 @@ class VariableEditToplevel(ctk.CTkToplevel):
                 option_1="OK")
             warning_box.wait_window()
             return
+        elif self.radio_var.get() == "static":
+            self.new_variable.variable_items = None
         else:
             all_options = []
             card_failed = False
@@ -228,7 +242,7 @@ class VariableEditToplevel(ctk.CTkToplevel):
             if card_failed:
                 warning_box = ctkmb.CTkMessagebox(
                     title="Warning",
-                    message="Illegal character found in option. Please do not use {}@: or /",
+                    message="Illegal character found in options. Please do not use {}@: or /",
                     icon="cancel",
                     option_1="OK")
                 warning_box.wait_window()
@@ -238,7 +252,5 @@ class VariableEditToplevel(ctk.CTkToplevel):
         self.new_variable.variable_name = self.name_entry.get().lower()
         self.new_variable.variable_type = self.radio_var.get()
 
-        if self.new_variable.id not in self.variable_collection.keys():
-            self.variable_collection[self.new_variable.id] = self.new_variable
-
+        self.choice_tracker.set("save")
         self.destroy()

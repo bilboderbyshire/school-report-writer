@@ -13,7 +13,8 @@ class EditPieceFrame(ctk.CTkFrame):
                  variables_collection: dict[str, UserVariable],
                  edit_command: Callable,
                  create_variable_command: Callable,
-                 edit_variable_command: Callable):
+                 edit_variable_command: Callable,
+                 copy_variable_command: Callable):
         super().__init__(master)
 
         self.current_piece: IndividualPiece | None = None
@@ -21,6 +22,7 @@ class EditPieceFrame(ctk.CTkFrame):
         self.edit_command = edit_command
         self.create_variable_command = create_variable_command
         self.edit_variable_command = edit_variable_command
+        self.copy_variable_command = copy_variable_command
         self.after_cancel_id = None
 
         title_label = NormalLabel(
@@ -71,7 +73,8 @@ class EditPieceFrame(ctk.CTkFrame):
             variables_collection=variables_collection,
             insert_variable_command=self.insert_user_variable,
             create_variable_command=self.create_variable_command,
-            edit_variable_command=self.edit_variable_command
+            edit_variable_command=self.edit_variable_command,
+            copy_variable_command=self.copy_variable_command
         )
         self.user_inserts.grid(row=1, column=0, sticky="nsew")
 
