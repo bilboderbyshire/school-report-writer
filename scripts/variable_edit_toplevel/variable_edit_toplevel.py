@@ -83,16 +83,13 @@ class VariableEditToplevel(ctk.CTkToplevel):
         self.radio_frame.rowconfigure(0, weight=0)
         self.radio_frame.columnconfigure([0, 1, 2], weight=1, uniform="columns")
 
-        options_label = NormalLabel(self, text="Options:", anchor="sw")
-        options_label.grid(row=4, column=0, sticky="ew", padx=DEFAULT_PAD, pady=(0, DEFAULT_PAD))
-
         self.options_frame = VariableOptionsScrollframe(
             self, self.new_variable.variable_items.split("/") if self.new_variable.variable_items is not None else []
         )
-        self.options_frame.grid(row=5, column=0, sticky="nsew", pady=(0, DEFAULT_PAD), padx=DEFAULT_PAD)
+        self.options_frame.grid(row=4, column=0, sticky="nsew", pady=(0, DEFAULT_PAD), padx=DEFAULT_PAD)
 
-        self.rowconfigure([0, 1, 2, 3, 4], weight=0)
-        self.rowconfigure(5, weight=1)
+        self.rowconfigure([0, 1, 2, 3], weight=0)
+        self.rowconfigure(4, weight=1)
         self.columnconfigure(0, weight=1)
 
         self.grab_set()

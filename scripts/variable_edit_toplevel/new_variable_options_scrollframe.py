@@ -6,7 +6,11 @@ from .option_list_card import OptionListCard
 
 class VariableOptionsScrollframe(AutohidingScrollableAndLoadingFrame):
     def __init__(self, master, options_list: list[str]):
-        super().__init__(master)
+        super().__init__(master,
+                         label_font=ctk.CTkFont(**NORMAL_LABEL_FONT),
+                         label_anchor="w",
+                         label_fg_color="transparent",
+                         label_text="Options:")
 
         self.options_list = options_list
         self.all_cards: dict[int, ListCard] = {}
@@ -19,11 +23,12 @@ class VariableOptionsScrollframe(AutohidingScrollableAndLoadingFrame):
                 add_option_command=self.add_option_command,
                 delete_option_command=self.delete_option_command
             )
-            new_card.grid(row=index, column=0, sticky="nsew", padx=SMALL_PAD, pady=(SMALL_PAD, 0))
+            new_card.grid(row=index, column=0, sticky="nsew", padx=SMALL_PAD, pady=(0, SMALL_PAD))
             self.all_cards[index] = new_card
 
         self.add_option_button = self.make_add_option_button()
-        self.add_option_button.grid(row=len(self.all_cards.keys()), column=0, sticky="nsew", **SMALL_PAD_COMPLETE)
+        self.add_option_button.grid(row=len(self.all_cards.keys()), column=0, sticky="nsew", padx=SMALL_PAD,
+                                    pady=(0, SMALL_PAD))
 
         self.columnconfigure(0, weight=1)
 
@@ -67,8 +72,8 @@ class VariableOptionsScrollframe(AutohidingScrollableAndLoadingFrame):
         )
         self.all_cards[new_id] = new_card
 
-        self.add_option_button.grid(row=new_id+1, column=0, sticky="nsew", **SMALL_PAD_COMPLETE)
-        new_card.grid(row=new_id, column=0, sticky="nsew", padx=SMALL_PAD, pady=(SMALL_PAD, 0))
+        self.add_option_button.grid(row=new_id+1, column=0, sticky="nsew", padx=SMALL_PAD, pady=(0, SMALL_PAD))
+        new_card.grid(row=new_id, column=0, sticky="nsew", padx=SMALL_PAD, pady=(0, SMALL_PAD))
         self.check_scrollbar_needed()
 
         new_card.edit_text()

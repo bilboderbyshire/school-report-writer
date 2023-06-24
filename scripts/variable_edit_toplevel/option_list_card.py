@@ -1,6 +1,6 @@
 import customtkinter as ctk
 from ..settings import *
-from ..components import ListCard, InvisibleEntry
+from ..components import ListCard
 from typing import Callable
 from PIL import Image
 import os
@@ -70,6 +70,7 @@ class OptionListCard(ListCard):
 
         self.option_label.bind("<Double-Button-1>", lambda event: self.edit_text())
         self.label_frame.bind("<Double-Button-1>", lambda event: self.edit_text())
+        self.bind("<Double-Button-1>", lambda event: self.edit_text())
         self.option_label.bind("<Enter>", lambda event: self.on_hover())
         self.label_frame.bind("<Enter>", lambda event: self.on_hover())
         self.option_label.bind("<Leave>", lambda event: self.on_mouse_leave())
