@@ -556,7 +556,6 @@ class IndividualPiece:
 
     def find_tags_in_piece(self, textbox: ctk.CTkTextbox, user_variables: dict[str, UserVariable]):
         self.variables = utils.find_tags_in_text(self.piece_text, textbox, user_variables)
-        print(self.variables)
 
     @staticmethod
     def _is_valid_operand(other):
