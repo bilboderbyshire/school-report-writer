@@ -40,7 +40,8 @@ class OptionListCard(ListCard):
             border_color=("#979DA2", "#565B5E"),
             activate_scrollbars=False,
             wrap="word",
-            height=0
+            height=0,
+            border_spacing=0,
         )
         self.option_entry.grid(row=0, column=0, sticky="nsew")
         self.option_entry.insert("1.0", self.option_text.get())
@@ -108,7 +109,7 @@ class OptionListCard(ListCard):
             size=(15, 15)
         )
 
-        close_button = ctk.CTkButton(
+        self.close_button = ctk.CTkButton(
             self,
             fg_color="transparent",
             image=close_image,
@@ -119,12 +120,12 @@ class OptionListCard(ListCard):
             command=self.delete_variable_command
         )
 
-        close_button.grid(row=0, column=1, sticky="ne", padx=(0, SMALL_PAD), pady=(SMALL_PAD, 0))
+        self.close_button.grid(row=0, column=1, sticky="ne", padx=(0, SMALL_PAD), pady=(SMALL_PAD, 0))
 
     def resize_label(self):
         self.label_frame.update()
         self.option_label.update()
-        self.option_label.configure(wraplength=self.option_label.winfo_width()-6)
+        self.option_label.configure(wraplength=int(self.option_entry._current_width)-15)
 
     def resize_entry(self):
         self.option_text.set(self.option_entry.get("1.0", "end-1c"))
@@ -144,6 +145,5 @@ class OptionListCard(ListCard):
 
     def defocus_text(self):
         self.option_text.set(self.option_entry.get("1.0", "end-1c"))
-        print(repr(self.option_text.get()))
         self.label_frame.tkraise(self.entry_frame)
         self.resize_label()
