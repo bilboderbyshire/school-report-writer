@@ -19,7 +19,6 @@ class PieceListCard(ListCard):
 
         self.card_data = piece
 
-        self.piece_text = piece.piece_text
         self.card_font = ctk.CTkFont(**SMALL_LABEL_FONT)
         self.display_text_sv = ctk.StringVar()
 
@@ -37,11 +36,7 @@ class PieceListCard(ListCard):
             padx=0
         )
 
-        self.subtitle_label.grid(row=0, column=0, sticky="w", padx=(DEFAULT_PAD, 0))
-
-        self.rowconfigure(0, weight=0)
-        self.columnconfigure(0, weight=1)
-        self.columnconfigure([1, 2], weight=0)
+        self.subtitle_label.grid(row=0, column=0, sticky="ew", padx=(DEFAULT_PAD, SMALL_PAD))
         self.bind_frame()
 
         copy_image = ctk.CTkImage(
@@ -81,11 +76,27 @@ class PieceListCard(ListCard):
         )
 
         delete_button.grid(row=0, column=2, sticky="e", padx=(0, SMALL_PAD))
-        self.update_display_text()
+
+        self.rowconfigure(0, weight=0)
+        self.columnconfigure(0, weight=1)
+        self.columnconfigure([1, 2], weight=0)
 
     def update_display_text(self):
         self.update_idletasks()
-        if len(self.piece_text) > 30:
-            self.display_text_sv.set(self.piece_text[0:28] + "...")
+        allowed_width = self.subtitle_label.winfo_width()
+        current_piece_text = " ".join(self.card_data.piece_text.split("\n"))
+        text_width = self.card_font.measure(current_piece_text)
+
+        if text_width > allowed_width:
+            average_char_width = self.card_font.measure("H")
+            starting_index = allowed_width // average_char_width
+            num_of_chars_allowed = self.find_text_that_fits(current_piece_text, allowed_width, starting_index)
+            self.display_text_sv.set(current_piece_text[0:num_of_chars_allowed-3] + "...")
         else:
-            self.display_text_sv.set(self.piece_text)
+            self.display_text_sv.set(current_piece_text)
+
+    def find_text_that_fits(self, full_text: str, allowed_width: int, string_index: int = 2):
+        if self.card_font.measure(full_text[0:string_index]) >= allowed_width:
+            return string_index
+        else:
+            return self.find_text_that_fits(full_text, allowed_width, string_index+1)

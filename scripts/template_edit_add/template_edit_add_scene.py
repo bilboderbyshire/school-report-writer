@@ -5,8 +5,11 @@ from ..components import Separator, InvisibleEntry
 from ..app_engine import AppEngine
 from .section_scrollframe import SectionScrollableFrame
 from .pieces_scrollframe import PiecesScrollableFrame
-from ..containers import ReportTemplate, NewPieceRecord, IndividualPiece, TemplateSection, NewSectionRecord
+from .edit_piece_frame import EditPieceFrame
+from ..containers import ReportTemplate, NewPieceRecord, IndividualPiece, TemplateSection, NewSectionRecord, \
+    NewUserVariableRecord, UserVariable
 import CTkMessagebox as ctkmb
+from ..variable_edit_toplevel import VariableEditToplevel
 
 
 class TemplateScene(ctk.CTkFrame):
@@ -56,7 +59,12 @@ class TemplateScene(ctk.CTkFrame):
         self.piece_info_frame = ctk.CTkFrame(self)
         self.piece_info_frame.grid(row=5, column=1, sticky="nsew", padx=(0, DEFAULT_PAD), pady=(0, DEFAULT_PAD))
 
-        self.edit_piece_frame = ctk.CTkFrame(self)
+        self.edit_piece_frame = EditPieceFrame(self,
+                                               edit_command=self.piece_edited,
+                                               variables_collection=self.app_engine.copy_of_user_variables_collection,
+                                               create_variable_command=self.create_variable,
+                                               edit_variable_command=self.edit_variable,
+                                               copy_variable_command=self.copy_variable)
         self.edit_piece_frame.grid(row=4, rowspan=2, column=2, sticky="nsew", padx=(0, DEFAULT_PAD),
                                    pady=(0, DEFAULT_PAD))
 
@@ -65,11 +73,11 @@ class TemplateScene(ctk.CTkFrame):
         self.columnconfigure(0, weight=1, uniform="columns")
         self.columnconfigure([1, 2], weight=2, uniform="columns")
 
+        self.bind("<Configure>", lambda event: self.pieces_frame.update_all_text_displays())
+
     def fill_frames(self):
         for i in self.winfo_children():
             i.destroy()
-
-        self.update_idletasks()
 
         self.__build_frame()
 
@@ -178,6 +186,8 @@ class TemplateScene(ctk.CTkFrame):
         self.new_piece_selected()
         self.check_if_scroll_needed()
 
+        self.section_frame.all_cards[new_section_id].entry_enabled()
+
     def delete_section(self, section: TemplateSection):
         if self.structured_pieces[section.id]:
             warning_box = ctkmb.CTkMessagebox(
@@ -235,14 +245,18 @@ class TemplateScene(ctk.CTkFrame):
                 self.pieces_frame.all_cards[self.selected_piece].card_deselected()
             self.selected_piece = piece.id
             self.pieces_frame.all_cards[self.selected_piece].card_selected()
+            self.edit_piece_frame.display_piece(piece)
         elif self.selected_section is not None:
             all_pieces = list(self.structured_pieces[self.selected_section].keys())
             if all_pieces:
                 self.selected_piece = all_pieces[0]
                 self.pieces_frame.all_cards[self.selected_piece].card_selected()
+                self.edit_piece_frame.display_piece(self.app_engine.copy_of_piece_collection[self.selected_piece])
             else:
+                self.edit_piece_frame.display_piece(piece)
                 self.selected_piece = None
         else:
+            self.edit_piece_frame.display_piece(piece)
             self.selected_piece = None
 
     def delete_piece(self, piece: IndividualPiece):
@@ -272,3 +286,79 @@ class TemplateScene(ctk.CTkFrame):
         self.new_piece_selected(new_piece)
 
         self.check_if_scroll_needed()
+
+    def piece_edited(self, piece: IndividualPiece, new_text: str):
+        if new_text.strip() == "":
+            piece.piece_text = "Empty piece"
+        else:
+            piece.piece_text = new_text.strip()
+        self.pieces_frame.all_cards[piece.id].update_display_text()
+
+    def create_variable(self):
+        tracker_var = ctk.StringVar(value="cancel")
+        new_variable_id = f"@{self.app_engine.create_new_record_id('user_variables')}"
+        new_variable = UserVariable(NewUserVariableRecord(
+            new_variable_id,
+            "New variable",
+            self.app_engine.get_user_id()
+        ))
+        VariableEditToplevel(self.master,
+                             variable_to_edit=new_variable,
+                             variable_collection=self.app_engine.copy_of_user_variables_collection,
+                             edit_type="add",
+                             top_level_choice_tracker=tracker_var)
+        self.grab_set()
+        if tracker_var.get() == "save":
+            new_variable = self.app_engine.upload_new_record(
+                data=new_variable.data_to_create(),
+                collection="user_variables",
+                container_type=UserVariable)
+            self.app_engine.copy_of_user_variables_collection[new_variable.id] = new_variable
+            self.edit_piece_frame.user_inserts.refresh_variable_dropdown(new_variable)
+        else:
+            self.edit_piece_frame.user_inserts.refresh_variable_dropdown(None)
+
+    def edit_variable(self, variable: UserVariable):
+        tracker_var = ctk.StringVar(value="cancel")
+        VariableEditToplevel(self.master,
+                             variable_to_edit=variable,
+                             variable_collection=self.app_engine.copy_of_user_variables_collection,
+                             edit_type="edit",
+                             top_level_choice_tracker=tracker_var)
+        self.grab_set()
+        if tracker_var.get() == "delete":
+            self.app_engine.delete_record(variable.id, "user_variables")
+            self.app_engine.copy_of_user_variables_collection.pop(variable.id)
+            self.edit_piece_frame.user_inserts.refresh_variable_dropdown(None)
+        elif tracker_var.get() == "cancel":
+            self.edit_piece_frame.user_inserts.refresh_variable_dropdown(variable)
+        else:
+            self.app_engine.update_record(
+                record_id=variable.id,
+                data=variable.data_to_create(),
+                collection="user_variables",
+                container_type=UserVariable
+            )
+            self.edit_piece_frame.user_inserts.refresh_variable_dropdown(variable)
+
+    def copy_variable(self, variable: UserVariable):
+        tracker_var = ctk.StringVar(value="cancel")
+        new_variable_id = f"@{self.app_engine.create_new_record_id('user_variables')}"
+        copied_variable = variable.copy()
+        copied_variable.id = new_variable_id
+
+        VariableEditToplevel(self.master,
+                             variable_to_edit=copied_variable,
+                             variable_collection=self.app_engine.copy_of_user_variables_collection,
+                             edit_type="copy",
+                             top_level_choice_tracker=tracker_var)
+        self.grab_set()
+        if tracker_var.get() == "save":
+            new_variable = self.app_engine.upload_new_record(
+                data=copied_variable.data_to_create(),
+                collection="user_variables",
+                container_type=UserVariable)
+            self.app_engine.copy_of_user_variables_collection[new_variable.id] = new_variable
+            self.edit_piece_frame.user_inserts.refresh_variable_dropdown(new_variable)
+        else:
+            self.edit_piece_frame.user_inserts.refresh_variable_dropdown(variable)

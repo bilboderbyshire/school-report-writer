@@ -30,13 +30,13 @@ class PiecesScrollableFrame(AutohidingScrollableAndLoadingFrame):
         self.all_cards: dict[str, PieceListCard] = {}
 
     def build_pieces_frame(self, section: str | None = None):
+        self.all_cards = {}
         for i in self.winfo_children():
             i.destroy()
 
         self.update_idletasks()
 
         if section is None:
-            self.all_cards = {}
             return
 
         for index, piece in enumerate(self.structured_pieces[section].values()):
@@ -55,6 +55,8 @@ class PiecesScrollableFrame(AutohidingScrollableAndLoadingFrame):
 
         self.columnconfigure(0, weight=1)
         self.rowconfigure(0, weight=0)
+
+        self.update_all_text_displays()
 
     def make_add_piece_button(self) -> ListCard:
         add_piece_button = ListCard(
@@ -79,3 +81,7 @@ class PiecesScrollableFrame(AutohidingScrollableAndLoadingFrame):
         add_piece_button.bind_frame()
 
         return add_piece_button
+
+    def update_all_text_displays(self):
+        for card in self.all_cards.values():
+            card.update_display_text()

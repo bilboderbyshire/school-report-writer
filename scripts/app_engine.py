@@ -5,8 +5,9 @@ from .containers import *
 
 
 def create_copy_of_collection(collection: dict[str, ReportTemplate | TemplateSection | IndividualReport |
-                                               IndividualPiece | SingleReportSet]) -> \
-        dict[str, ReportTemplate | TemplateSection | IndividualReport | IndividualPiece | SingleReportSet]:
+                                               IndividualPiece | SingleReportSet | UserVariable]) -> \
+        dict[str, ReportTemplate | TemplateSection | IndividualReport | IndividualPiece
+             | SingleReportSet | UserVariable]:
     new_dict = {}
     for key, value in collection.items():
         new_dict[key] = value.copy()
@@ -27,12 +28,14 @@ class AppEngine:
         self.piece_collection: dict[str, IndividualPiece] = {}
         self.reports_set_collection: dict[str, SingleReportSet] = {}
         self.individual_report_collection: dict[str, IndividualReport] = {}
+        self.user_variables_collection: dict[str, UserVariable] = {}
 
         self.copy_of_template_collection: dict[str, ReportTemplate] = {}
         self.copy_of_section_collection: dict[str, TemplateSection] = {}
         self.copy_of_piece_collection: dict[str, IndividualPiece] = {}
         self.copy_of_reports_set_collection: dict[str, SingleReportSet] = {}
         self.copy_of_individual_report_collection: dict[str, IndividualReport] = {}
+        self.copy_of_user_variables_collection: dict[str, UserVariable] = {}
 
         self.user_container = User(self.db_instance.user_model)
 
@@ -56,23 +59,26 @@ class AppEngine:
         self.piece_collection: dict[str, IndividualPiece] = {}
         self.reports_set_collection: dict[str, SingleReportSet] = {}
         self.individual_report_collection: dict[str, IndividualReport] = {}
+        self.user_variables_collection: dict[str, UserVariable] = {}
 
         self.copy_of_template_collection: dict[str, ReportTemplate] = {}
         self.copy_of_section_collection: dict[str, TemplateSection] = {}
         self.copy_of_piece_collection: dict[str, IndividualPiece] = {}
         self.copy_of_reports_set_collection: dict[str, SingleReportSet] = {}
         self.copy_of_individual_report_collection: dict[str, IndividualReport] = {}
+        self.copy_of_user_variables_collection: dict[str, UserVariable] = {}
 
         # Create load_values dictionary for all data to be collected. Load values includes the database collection as
         #  the key linked to a tuple that contains the dictionary to populate, and the data container to wrap around
         #  the records returned for that collection
         load_values: dict[str, tuple[dict, Type[ReportTemplate | TemplateSection | IndividualPiece | IndividualReport
-                                                | SingleReportSet]]] = {
+                                                | SingleReportSet | UserVariable]]] = {
             "templates": (self.template_collection, ReportTemplate),
             "template_sections": (self.section_collection, TemplateSection),
             "report_pieces": (self.piece_collection, IndividualPiece),
             "report_set": (self.reports_set_collection, SingleReportSet),
-            "individual_reports": (self.individual_report_collection, IndividualReport)
+            "individual_reports": (self.individual_report_collection, IndividualReport),
+            "user_variables": (self.user_variables_collection, UserVariable)
         }
 
         for collection_name, dict_and_class in load_values.items():
@@ -110,6 +116,9 @@ class AppEngine:
         self.copy_of_individual_report_collection: dict[str, IndividualReport] = \
             create_copy_of_collection(self.individual_report_collection)
 
+        self.copy_of_user_variables_collection: dict[str, UserVariable] = \
+            create_copy_of_collection(self.user_variables_collection)
+
     def create_piece_to_template(self, template_id: str) -> dict[str, dict[str, IndividualPiece]]:
         """Create template and piece relationship"""
 
@@ -144,13 +153,15 @@ class AppEngine:
                                                        "report_set",
                                                        "template_sections",
                                                        "individual_reports",
-                                                       "report_pieces"]) -> int:
+                                                       "report_pieces",
+                                                       "user_variables"]) -> int:
         collections = {
             "templates": self.copy_of_template_collection,
             "template_sections": self.copy_of_section_collection,
             "report_set": self.copy_of_reports_set_collection,
             "individual_reports": self.copy_of_individual_report_collection,
-            "report_pieces": self.copy_of_piece_collection
+            "report_pieces": self.copy_of_piece_collection,
+            "user_variables": self.copy_of_user_variables_collection
         }
 
         current_ids: list[str] = list(collections[collection].keys())
@@ -171,3 +182,45 @@ class AppEngine:
             icon="cancel")
         error_box.wait_window()
         self.load_success = False
+
+    def upload_new_record(
+            self,
+            data: dict[str, str | int | float | bool],
+            collection: str,
+            container_type: Type[
+                ReportTemplate | TemplateSection | IndividualPiece | IndividualReport | SingleReportSet | UserVariable
+            ]) -> ReportTemplate | TemplateSection | IndividualPiece | IndividualReport | SingleReportSet | \
+            UserVariable | None:
+
+        response, result = self.db_instance.create_new_record(collection, data)
+
+        if not response["response"]:
+            self.run_load_error(response["message"])
+        else:
+            return container_type(result)
+
+    def update_record(
+            self,
+            record_id: str,
+            data: dict[str, str | int | float | bool],
+            collection: str,
+            container_type: Type[
+                ReportTemplate | TemplateSection | IndividualPiece | IndividualReport | SingleReportSet | UserVariable
+                ]) -> ReportTemplate | TemplateSection | IndividualPiece | IndividualReport | SingleReportSet | \
+            UserVariable | None:
+
+        response, result = self.db_instance.update_record(collection, record_id, data)
+
+        if not response["response"]:
+            self.run_load_error(response["message"])
+        else:
+            return container_type(result)
+
+    def delete_record(self, record_id: str, collection: str) -> None:
+
+        response = self.db_instance.delete_record(collection, record_id)
+
+        if not response["response"]:
+            self.run_load_error(response["message"])
+
+
