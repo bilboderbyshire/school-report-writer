@@ -26,23 +26,26 @@ class ListCard(ctk.CTkFrame):
         self.selected_color = selected_color
 
         self.selected: bool = False
+        self.disabled: bool = False
 
         self.right_click_menu = Menu(self, tearoff=False)
 
         self.bind("<Enter>", lambda event: self.on_hover())
         self.bind("<Leave>", lambda event: self.on_mouse_leave())
-        self.bind("<Button-1>", lambda event: self.card_clicked())
+        if self.command is not None:
+            self.bind("<Button-1>", lambda event: self.card_clicked())
         self.bind("<Button-3>", self.right_clicked)
 
     def right_clicked(self, event: Event):
-        self.right_click_menu.tk_popup(event.x_root, event.y_root)
+        if not self.disabled:
+            self.right_click_menu.tk_popup(event.x_root, event.y_root)
 
     def on_hover(self):
-        if not self.selected:
+        if not self.selected and not self.disabled:
             self.configure(fg_color=self.hover_color)
 
     def on_mouse_leave(self):
-        if not self.selected:
+        if not self.selected and not self.disabled:
             self.configure(fg_color=self.main_color)
 
     def bind_frame(self):
@@ -65,3 +68,9 @@ class ListCard(ctk.CTkFrame):
     def card_clicked(self):
         self.focus_set()
         self.command(self.card_data)
+
+    def card_disabled(self):
+        self.disabled = True
+
+    def card_enabled(self):
+        self.disabled = False

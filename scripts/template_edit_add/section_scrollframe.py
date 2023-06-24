@@ -1,7 +1,7 @@
 import customtkinter as ctk
 from ..settings import *
 from ..components import AutohidingScrollableAndLoadingFrame, ListCard
-from ..containers import IndividualPiece, TemplateSection
+from ..containers import IndividualPiece
 from .section_list_card import SectionCard
 from typing import Callable
 from ..app_engine import AppEngine

@@ -23,19 +23,25 @@ class SectionCard(ListCard):
         self.card_data = section
 
         self.entry_text = f"{self.card_data.section_title}"
-        if "@" in self.card_data.id:
-            self.entry_text = "*" + self.entry_text
 
         self.section_name = InvisibleEntry(
             self,
             placeholder_text=self.entry_text,
             font=ctk.CTkFont(**NORMAL_LABEL_FONT),
-            show_image=False,
-            validate="key",
-            validatecommand=(self.register(self.validate_command), "%P")
+            show_image=False
         )
 
-        self.section_name.grid(row=0, column=0, columnspan=2, sticky="new", padx=DEFAULT_PAD)
+        if "@" in self.card_data.id:
+            self.unsaved_label = ctk.CTkLabel(
+                self,
+                fg_color="transparent",
+                text="*",
+                font=ctk.CTkFont(**NORMAL_LABEL_FONT),
+            )
+            self.unsaved_label.grid(row=0, column=0, sticky="w", padx=(DEFAULT_PAD, 0))
+            self.section_name.grid(row=0, column=1, columnspan=2, sticky="new", padx=(0, DEFAULT_PAD))
+        else:
+            self.section_name.grid(row=0, column=0, columnspan=3, sticky="new", padx=DEFAULT_PAD)
 
         if piece_count == 0:
             sub_text = "No pieces"
@@ -54,7 +60,7 @@ class SectionCard(ListCard):
             padx=0
         )
 
-        self.subtitle_label.grid(row=1, column=0, sticky="ew", padx=DEFAULT_PAD)
+        self.subtitle_label.grid(row=1, column=0, columnspan=2, sticky="ew", padx=DEFAULT_PAD)
 
         self.right_click_menu.add_command(label="Select section",
                                           command=lambda: select_section_command(self.card_data))
@@ -63,8 +69,9 @@ class SectionCard(ListCard):
         self.right_click_menu.add_command(label=delete_command[0], command=lambda: delete_command[1](self.card_data))
 
         self.rowconfigure([0, 1], weight=0)
-        self.columnconfigure(0, weight=1)
-        self.columnconfigure(1, weight=0)
+        self.columnconfigure(0, weight=0)
+        self.columnconfigure(1, weight=1)
+        self.columnconfigure(2, weight=0)
         self.bind_frame()
 
         delete_image = ctk.CTkImage(
@@ -84,7 +91,7 @@ class SectionCard(ListCard):
             corner_radius=5
         )
 
-        delete_button.grid(row=1, column=1, sticky="e", padx=(0, DEFAULT_PAD))
+        delete_button.grid(row=1, column=2, sticky="e", padx=(0, DEFAULT_PAD))
 
         self.section_name.text_entry.bind("<Button-1>", lambda event: self.entry_clicked())
         self.section_name.text_entry.bind("<Enter>", lambda event: self.on_hover())
@@ -93,17 +100,6 @@ class SectionCard(ListCard):
         self.section_name.text_entry.bind("<FocusOut>", lambda event: self.entry_disabled())
 
         self.entry_disabled()
-
-    def validate_command(self, p: str):
-        if "@" in self.card_data.id:
-            if len(p) < 1:
-                return False
-            elif p[0] != "*":
-                return False
-            self.card_data.section_title = p[1::]
-        else:
-            self.card_data.section_title = p
-        return True
 
     def update_piece_count(self, new_count: int):
         if new_count == 0:
@@ -117,13 +113,13 @@ class SectionCard(ListCard):
 
     def entry_enabled(self):
         self.section_name.text_entry.configure(state="normal")
+        self.section_name.text_entry.select_range(0, "end")
         self.section_name.text_entry.focus_set()
 
     def entry_disabled(self):
         current_title = self.section_name.text_entry.get().strip()
 
-        if ("@" in self.card_data.id and current_title == "*") or \
-                ("@" not in self.card_data.id and current_title == ""):
+        if current_title == "":
             self.section_name.text_entry.insert(0, self.entry_text)
             self.section_name.text_entry.delete(len(self.entry_text), "end")
 
