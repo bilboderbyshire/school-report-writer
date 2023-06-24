@@ -9,7 +9,10 @@ class UserVariablesButtonFrame(ctk.CTkFrame):
     def __init__(self,
                  master,
                  variables_collection: dict[str, UserVariable],
-                 insert_variable_command: Callable):
+                 insert_variable_command: Callable,
+                 create_variable_command: Callable,
+                 edit_variable_command: Callable,
+                 copy_variable_command: Callable):
         super().__init__(master,
                          fg_color="transparent")
 
@@ -35,7 +38,16 @@ class UserVariablesButtonFrame(ctk.CTkFrame):
             command=self.variable_selected
         )
         self.select_variable.grid(row=0, column=0, sticky="ew", pady=(0, SMALL_PAD))
-        self.select_variable.set("Choose variable")
+        self.select_variable.set("Choose...")
+
+        self.create_variable_button = SecondaryButton(
+            self.variable_button_frame,
+            font=ctk.CTkFont(**VERY_SMALL_FONT),
+            text="Create new...",
+            state="normal",
+            command=create_variable_command
+        )
+        self.create_variable_button.grid(row=1, column=0, sticky="ew", pady=(0, SMALL_PAD))
 
         self.insert_button = ctk.CTkButton(
             self.variable_button_frame,
@@ -44,9 +56,9 @@ class UserVariablesButtonFrame(ctk.CTkFrame):
             state="disabled",
             command=lambda: insert_variable_command(self.chosen_variable)
         )
-        self.insert_button.grid(row=1, column=0, sticky="ew")
+        self.insert_button.grid(row=2, column=0, sticky="ew")
 
-        self.variable_button_frame.rowconfigure([0, 1], weight=0)
+        self.variable_button_frame.rowconfigure([0, 1, 2], weight=0)
         self.variable_button_frame.columnconfigure(0, weight=1)
 
         self.variable_view_frame = ctk.CTkFrame(self, fg_color="transparent")
@@ -69,7 +81,8 @@ class UserVariablesButtonFrame(ctk.CTkFrame):
             self.variable_view_frame,
             font=ctk.CTkFont(**VERY_SMALL_FONT),
             text="Edit",
-            state="disabled"
+            state="disabled",
+            command=lambda: edit_variable_command(self.chosen_variable)
         )
         self.edit_button.grid(row=1, column=1, sticky="ew", padx=(0, SMALL_PAD), pady=(0, SMALL_PAD))
 
@@ -77,7 +90,8 @@ class UserVariablesButtonFrame(ctk.CTkFrame):
             self.variable_view_frame,
             font=ctk.CTkFont(**VERY_SMALL_FONT),
             text="Copy",
-            state="disabled"
+            state="disabled",
+            command=lambda: copy_variable_command(self.chosen_variable)
         )
         self.copy_button.grid(row=1, column=2, sticky="ew", pady=(0, SMALL_PAD))
 
@@ -91,7 +105,7 @@ class UserVariablesButtonFrame(ctk.CTkFrame):
         self.columnconfigure(1, weight=2, uniform="columns")
 
     def disable_all(self):
-        self.select_variable.set("Choose variable")
+        self.select_variable.set("Choose...")
         self.select_variable.configure(state="disabled")
         self.insert_button.configure(state="disabled")
         self.copy_button.configure(state="disabled")
@@ -103,15 +117,18 @@ class UserVariablesButtonFrame(ctk.CTkFrame):
     def enable_all(self):
         self.select_variable.configure(state="enabled")
 
+    def variable_selected(self, variable_name: str | None):
+        self.variable_textbox.configure(state="normal")
+        self.variable_textbox.delete("1.0", "end")
 
-    def variable_selected(self, variable_name: str):
+        if variable_name is None:
+            self.variable_textbox.configure(state="disabled")
+            return
+
         for i in self.variables_collection.values():
             if i.variable_name.lower() == variable_name.lower():
                 self.chosen_variable = i
                 break
-
-        self.variable_textbox.configure(state="normal")
-        self.variable_textbox.delete("1.0", "end")
 
         if self.chosen_variable is not None:
             self.insert_button.configure(state="normal")
@@ -122,20 +139,21 @@ class UserVariablesButtonFrame(ctk.CTkFrame):
             else:
                 self.variable_textbox.insert("1.0", self.chosen_variable.variable_name + " {\n")
                 current_line = 2
-                splitter = ""
-                if self.chosen_variable.variable_type == "choice":
-                    all_items = self.chosen_variable.variable_items.split(",")
-                else:
-                    all_items = self.chosen_variable.variable_items.split(",")
-                    splitter = all_items.pop()
+                all_items = self.chosen_variable.variable_items.split("/")
 
                 for value in all_items:
                     self.variable_textbox.insert(f"{current_line}.0", f"\t{value},\n")
                     current_line += 1
 
-                if self.chosen_variable.variable_type == "choice":
-                    self.variable_textbox.insert(f"{current_line}.0", "}")
-                else:
-                    self.variable_textbox.insert(f"{current_line}.0", "}\nSplit: " + splitter)
+                self.variable_textbox.insert(f"{current_line}.0", "}")
 
         self.variable_textbox.configure(state="disabled")
+
+    def refresh_variable_dropdown(self, variable_to_watch: UserVariable | None):
+        self.select_variable.configure(values=[i.variable_name.capitalize() for i in self.variables_collection.values()])
+        if variable_to_watch is None:
+            self.select_variable.set("Choose...")
+            self.variable_selected(None)
+        else:
+            self.select_variable.set(variable_to_watch.variable_name.capitalize())
+            self.variable_selected(variable_to_watch.variable_name)

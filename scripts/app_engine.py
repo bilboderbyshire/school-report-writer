@@ -153,13 +153,15 @@ class AppEngine:
                                                        "report_set",
                                                        "template_sections",
                                                        "individual_reports",
-                                                       "report_pieces"]) -> int:
+                                                       "report_pieces",
+                                                       "user_variables"]) -> int:
         collections = {
             "templates": self.copy_of_template_collection,
             "template_sections": self.copy_of_section_collection,
             "report_set": self.copy_of_reports_set_collection,
             "individual_reports": self.copy_of_individual_report_collection,
-            "report_pieces": self.copy_of_piece_collection
+            "report_pieces": self.copy_of_piece_collection,
+            "user_variables": self.copy_of_user_variables_collection
         }
 
         current_ids: list[str] = list(collections[collection].keys())
@@ -180,3 +182,45 @@ class AppEngine:
             icon="cancel")
         error_box.wait_window()
         self.load_success = False
+
+    def upload_new_record(
+            self,
+            data: dict[str, str | int | float | bool],
+            collection: str,
+            container_type: Type[
+                ReportTemplate | TemplateSection | IndividualPiece | IndividualReport | SingleReportSet | UserVariable
+            ]) -> ReportTemplate | TemplateSection | IndividualPiece | IndividualReport | SingleReportSet | \
+            UserVariable | None:
+
+        response, result = self.db_instance.create_new_record(collection, data)
+
+        if not response["response"]:
+            self.run_load_error(response["message"])
+        else:
+            return container_type(result)
+
+    def update_record(
+            self,
+            record_id: str,
+            data: dict[str, str | int | float | bool],
+            collection: str,
+            container_type: Type[
+                ReportTemplate | TemplateSection | IndividualPiece | IndividualReport | SingleReportSet | UserVariable
+                ]) -> ReportTemplate | TemplateSection | IndividualPiece | IndividualReport | SingleReportSet | \
+            UserVariable | None:
+
+        response, result = self.db_instance.update_record(collection, record_id, data)
+
+        if not response["response"]:
+            self.run_load_error(response["message"])
+        else:
+            return container_type(result)
+
+    def delete_record(self, record_id: str, collection: str) -> None:
+
+        response = self.db_instance.delete_record(collection, record_id)
+
+        if not response["response"]:
+            self.run_load_error(response["message"])
+
+
