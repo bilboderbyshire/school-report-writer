@@ -8,7 +8,7 @@ class NewUserVariableRecord:
                  variable_name: str,
                  owner_id: str,
                  variable_items: str = None,
-                 variable_type: str = None,
+                 variable_type: str = "static",
                  ):
         self.id = var_id
         self.variable_name = variable_name

@@ -12,5 +12,5 @@ class SecondaryButton(ctk.CTkButton):
                          fg_color=fg_color,
                          hover_color=hover_color,
                          text_color=text_color,
-                         text_color_disabled="#737A82",
+                         text_color_disabled=DISABLED_TEXT_COLOR,
                          **kwargs)

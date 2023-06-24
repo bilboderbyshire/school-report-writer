@@ -1,7 +1,7 @@
 import customtkinter as ctk
 from ..settings import *
 from ..components import SecondaryOptionmenu, SecondaryButton
-from ..containers import UserVariable, NewUserVariableRecord
+from ..containers import UserVariable
 from typing import Callable
 
 
@@ -10,7 +10,8 @@ class UserVariablesButtonFrame(ctk.CTkFrame):
                  master,
                  variables_collection: dict[str, UserVariable],
                  insert_variable_command: Callable,
-                 create_variable_command: Callable):
+                 create_variable_command: Callable,
+                 edit_variable_command: Callable):
         super().__init__(master,
                          fg_color="transparent")
 
@@ -79,7 +80,8 @@ class UserVariablesButtonFrame(ctk.CTkFrame):
             self.variable_view_frame,
             font=ctk.CTkFont(**VERY_SMALL_FONT),
             text="Edit",
-            state="disabled"
+            state="disabled",
+            command=lambda: edit_variable_command(self.chosen_variable)
         )
         self.edit_button.grid(row=1, column=1, sticky="ew", padx=(0, SMALL_PAD), pady=(0, SMALL_PAD))
 
@@ -121,6 +123,7 @@ class UserVariablesButtonFrame(ctk.CTkFrame):
 
         self.variable_textbox.configure(state="normal")
         self.variable_textbox.delete("1.0", "end")
+        print(f"variable {self.chosen_variable.variable_name} selected")
 
         if self.chosen_variable is not None:
             self.insert_button.configure(state="normal")
@@ -131,20 +134,22 @@ class UserVariablesButtonFrame(ctk.CTkFrame):
             else:
                 self.variable_textbox.insert("1.0", self.chosen_variable.variable_name + " {\n")
                 current_line = 2
-                splitter = ""
-                if self.chosen_variable.variable_type == "choice":
-                    all_items = self.chosen_variable.variable_items.split("/")
-                else:
-                    all_items = self.chosen_variable.variable_items.split("/")
-                    splitter = all_items.pop()
+                all_items = self.chosen_variable.variable_items.split("/")
 
                 for value in all_items:
                     self.variable_textbox.insert(f"{current_line}.0", f"\t{value},\n")
                     current_line += 1
 
-                if self.chosen_variable.variable_type == "choice":
-                    self.variable_textbox.insert(f"{current_line}.0", "}")
-                else:
-                    self.variable_textbox.insert(f"{current_line}.0", "}\nSplit: " + splitter)
+                self.variable_textbox.insert(f"{current_line}.0", "}")
 
         self.variable_textbox.configure(state="disabled")
+
+    def refresh_variable_dropdown(self):
+        current_value = self.select_variable.get()
+        self.select_variable.configure(values=[i.variable_name.capitalize() for i in self.variables_collection.values()])
+        if current_value == "Choose variable":
+            self.select_variable.set(current_value)
+        else:
+            self.select_variable.set(current_value.capitalize())
+            print(current_value)
+            self.variable_selected(current_value)

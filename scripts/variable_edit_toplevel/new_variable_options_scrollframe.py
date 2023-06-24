@@ -13,7 +13,9 @@ class VariableOptionsScrollframe(AutohidingScrollableAndLoadingFrame):
                          label_text="Options:")
 
         self.options_list = options_list
-        self.all_cards: dict[int, ListCard] = {}
+        self.all_cards: dict[int, OptionListCard] = {}
+
+        self.frame_disabled: bool = False
 
         for index, value in enumerate(options_list):
             new_card = OptionListCard(
@@ -82,4 +84,25 @@ class VariableOptionsScrollframe(AutohidingScrollableAndLoadingFrame):
         card_to_delete = self.all_cards.pop(card_id)
         card_to_delete.destroy()
 
+    def disabled(self):
+        if not self.frame_disabled:
+            self.add_option_button.grid_remove()
+            self.check_scrollbar_needed()
 
+            for card in self.all_cards.values():
+                card.card_disabled()
+
+            self.configure(label_text_color=DISABLED_TEXT_COLOR)
+            self.frame_disabled = True
+
+    def enabled(self):
+        if self.frame_disabled:
+            self.add_option_button.grid()
+
+            self.check_scrollbar_needed()
+
+            for card in self.all_cards.values():
+                card.card_enabled()
+
+            self.configure(label_text_color=STANDARD_TEXT_COLOR)
+            self.frame_disabled = False

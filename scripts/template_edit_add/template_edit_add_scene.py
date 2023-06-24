@@ -62,7 +62,8 @@ class TemplateScene(ctk.CTkFrame):
         self.edit_piece_frame = EditPieceFrame(self,
                                                edit_command=self.piece_edited,
                                                variables_collection=self.app_engine.copy_of_user_variables_collection,
-                                               create_variable_command=self.create_variable)
+                                               create_variable_command=self.create_variable,
+                                               edit_variable_command=self.edit_variable)
         self.edit_piece_frame.grid(row=4, rowspan=2, column=2, sticky="nsew", padx=(0, DEFAULT_PAD),
                                    pady=(0, DEFAULT_PAD))
 
@@ -301,3 +302,9 @@ class TemplateScene(ctk.CTkFrame):
         ))
         VariableEditToplevel(self.master, new_variable, self.app_engine.copy_of_user_variables_collection)
         self.grab_set()
+        self.edit_piece_frame.user_inserts.refresh_variable_dropdown()
+
+    def edit_variable(self, variable: UserVariable):
+        VariableEditToplevel(self.master, variable, self.app_engine.copy_of_user_variables_collection)
+        self.grab_set()
+        self.edit_piece_frame.user_inserts.refresh_variable_dropdown()
