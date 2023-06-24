@@ -1,6 +1,5 @@
 import customtkinter as ctk
 from ..settings import *
-from ..containers import SingleReportSet
 from ..components import AutohidingScrollableAndLoadingFrame
 from .report_set_card import ReportSetCard
 from ..app_engine import AppEngine
