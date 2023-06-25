@@ -133,7 +133,6 @@ class TemplateScene(ctk.CTkFrame):
         self.master.show_frame(self.prev_scene_string)
         self.prev_scene_string = None
 
-
     def validate_name(self, P):
         if len(P) <= 40:
             self.app_engine.copy_of_template_collection[self.working_template.id].template_title = P
