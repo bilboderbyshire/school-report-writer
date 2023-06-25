@@ -12,7 +12,7 @@ class PiecesScrollableFrame(AutohidingScrollableAndLoadingFrame):
                  select_piece_command: Callable,
                  card_add_command: tuple[str, Callable],
                  card_delete_command: tuple[str, Callable],
-                 card_copy_command: tuple[str, Callable]):
+                 card_duplicate_command: tuple[str, Callable]):
         super().__init__(master,
                          label_font=ctk.CTkFont(**NORMAL_LABEL_FONT),
                          label_anchor="w",
@@ -25,7 +25,7 @@ class PiecesScrollableFrame(AutohidingScrollableAndLoadingFrame):
         self.select_piece_command = select_piece_command
         self.card_add = card_add_command
         self.card_delete = card_delete_command
-        self.card_copy = card_copy_command
+        self.card_duplicate = card_duplicate_command
 
         self.current_max_row = -1
 
@@ -52,7 +52,7 @@ class PiecesScrollableFrame(AutohidingScrollableAndLoadingFrame):
                                            select_piece_command=self.select_piece_command,
                                            card_add=self.card_add,
                                            card_delete=self.card_delete,
-                                           card_copy=self.card_copy)
+                                           card_duplicate=self.card_duplicate)
             self.all_cards[piece.id] = new_piece_card
             new_piece_card.grid(row=index, column=0, sticky="ew", padx=DEFAULT_PAD-7)
             self.current_max_row += 1
@@ -103,7 +103,7 @@ class PiecesScrollableFrame(AutohidingScrollableAndLoadingFrame):
                                        select_piece_command=self.select_piece_command,
                                        card_add=self.card_add,
                                        card_delete=self.card_delete,
-                                       card_copy=self.card_copy)
+                                       card_duplicate=self.card_duplicate)
 
         self.all_cards[piece_to_add.id] = new_piece_card
 

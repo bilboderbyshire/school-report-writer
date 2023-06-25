@@ -58,7 +58,7 @@ class TemplateScene(ctk.CTkFrame):
                                                   select_piece_command=self.new_piece_selected,
                                                   card_add_command=("Add piece", self.add_piece),
                                                   card_delete_command=("Delete", self.delete_piece),
-                                                  card_copy_command=("Copy", self.copy_piece))
+                                                  card_duplicate_command=("Duplicate", self.duplicate_piece))
         self.pieces_frame.grid(row=4, column=1, sticky="nsew", padx=(0, DEFAULT_PAD), pady=(0, DEFAULT_PAD))
 
         self.edit_piece_frame = EditPieceFrame(self,
@@ -274,7 +274,7 @@ class TemplateScene(ctk.CTkFrame):
         else:
             self.pieces_frame.all_cards[self.selected_piece].card_selected()
 
-    def copy_piece(self, piece: IndividualPiece):
+    def duplicate_piece(self, piece: IndividualPiece):
         new_piece_id = f"@{self.app_engine.create_new_record_id('report_pieces')}"
         new_piece = piece.copy()
         new_piece.id = new_piece_id
