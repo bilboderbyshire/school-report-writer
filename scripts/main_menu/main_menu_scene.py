@@ -155,6 +155,15 @@ class MainMenuScene(ctk.CTkFrame):
             self.app_engine.copy_of_template_collection.pop(card_info.id)
             self.template_frame.build_template_frame()
 
+        if card_info.owner.id != self.app_engine.get_user_id():
+            warning_box = ctkmb.CTkMessagebox(
+                title="Warning",
+                message=f"You can't delete this template as it does not belong to you",
+                icon="cancel",
+                option_1="OK")
+            warning_box.wait_window()
+            return
+
         warning_message = ctkmb.CTkMessagebox(
             title="Warning",
             message=f"Are you sure you want to delete the template {card_info.template_title} including "
