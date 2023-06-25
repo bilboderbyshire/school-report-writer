@@ -228,7 +228,7 @@ class TemplateScene(ctk.CTkFrame):
 
         self.section_frame.reload_card_subtitles()
 
-        self.pieces_frame.build_pieces_frame(self.selected_section)
+        self.pieces_frame.add_card(new_piece)
         self.new_piece_selected(new_piece)
         self.check_if_scroll_needed()
 
@@ -260,7 +260,7 @@ class TemplateScene(ctk.CTkFrame):
 
         self.section_frame.reload_card_subtitles()
 
-        self.pieces_frame.build_pieces_frame(self.selected_section)
+        self.pieces_frame.delete_card(piece)
 
         if piece.id == self.selected_piece:
             self.new_piece_selected()
@@ -277,7 +277,7 @@ class TemplateScene(ctk.CTkFrame):
 
         self.section_frame.reload_card_subtitles()
 
-        self.pieces_frame.build_pieces_frame(self.selected_section)
+        self.pieces_frame.add_card(new_piece)
         self.new_piece_selected(new_piece)
 
         self.check_if_scroll_needed()
