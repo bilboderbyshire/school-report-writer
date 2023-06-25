@@ -12,7 +12,8 @@ class PiecesScrollableFrame(AutohidingScrollableAndLoadingFrame):
                  select_piece_command: Callable,
                  card_add_command: tuple[str, Callable],
                  card_delete_command: tuple[str, Callable],
-                 card_duplicate_command: tuple[str, Callable]):
+                 card_duplicate_command: tuple[str, Callable],
+                 copy_from_command: Callable):
         super().__init__(master,
                          label_font=ctk.CTkFont(**NORMAL_LABEL_FONT),
                          label_anchor="w",
@@ -26,12 +27,14 @@ class PiecesScrollableFrame(AutohidingScrollableAndLoadingFrame):
         self.card_add = card_add_command
         self.card_delete = card_delete_command
         self.card_duplicate = card_duplicate_command
+        self.copy_from = copy_from_command
 
         self.current_max_row = -1
 
         self.all_cards: dict[str, PieceListCard] = {}
 
         self.add_piece_button = None
+        self.copy_from_button = None
 
     def build_pieces_frame(self, section: str | None = None):
         self.all_cards = {}
@@ -49,6 +52,11 @@ class PiecesScrollableFrame(AutohidingScrollableAndLoadingFrame):
             text="+ Add new..."
         )
 
+        self.copy_from_button = self.make_add_card_button(
+            add_command=self.copy_from,
+            text="Copy from..."
+        )
+
         for index, piece in enumerate(self.structured_pieces[section].values()):
             new_piece_card = PieceListCard(self,
                                            piece,
@@ -57,17 +65,24 @@ class PiecesScrollableFrame(AutohidingScrollableAndLoadingFrame):
                                            card_delete=self.card_delete,
                                            card_duplicate=self.card_duplicate)
             self.all_cards[piece.id] = new_piece_card
-            new_piece_card.grid(row=index, column=0, sticky="ew", padx=DEFAULT_PAD-7)
+            new_piece_card.grid(row=index, column=0, columnspan=2, sticky="ew", padx=DEFAULT_PAD-7)
             self.current_max_row += 1
 
         self.add_piece_button.grid(
             row=self.current_max_row + 1,
             column=0,
             sticky="ew",
-            padx=DEFAULT_PAD-7,
+            padx=(DEFAULT_PAD-7, 0),
             pady=(0, DEFAULT_PAD))
 
-        self.columnconfigure(0, weight=1)
+        self.copy_from_button.grid(
+            row=self.current_max_row + 1,
+            column=1,
+            sticky="ew",
+            padx=DEFAULT_PAD - 7,
+            pady=(0, DEFAULT_PAD))
+
+        self.columnconfigure([0, 1], weight=1, uniform="columns")
         self.rowconfigure("all", weight=0)
 
         self.update_all_text_displays()
@@ -91,12 +106,20 @@ class PiecesScrollableFrame(AutohidingScrollableAndLoadingFrame):
             row=self.current_max_row + 1,
             column=0,
             sticky="ew",
+            padx=(DEFAULT_PAD - 7, 0),
+            pady=(0, DEFAULT_PAD))
+
+        self.copy_from_button.grid(
+            row=self.current_max_row + 1,
+            column=1,
+            sticky="ew",
             padx=DEFAULT_PAD - 7,
             pady=(0, DEFAULT_PAD))
 
         new_piece_card.grid(
             row=self.current_max_row,
             column=0,
+            columnspan=2,
             sticky="ew",
             padx=DEFAULT_PAD - 7)
 

@@ -12,6 +12,7 @@ from ..containers import ReportTemplate, NewPieceRecord, IndividualPiece, Templa
     NewUserVariableRecord, UserVariable
 import CTkMessagebox as ctkmb
 from ..variable_edit_toplevel import VariableEditToplevel
+from ..copy_template_from_toplevel import CopyTemplateFromToplevel
 
 if TYPE_CHECKING:
     from ..root import ReportWriter
@@ -58,7 +59,8 @@ class TemplateScene(ctk.CTkFrame):
                                                   select_piece_command=self.new_piece_selected,
                                                   card_add_command=("Add piece", self.add_piece),
                                                   card_delete_command=("Delete", self.delete_piece),
-                                                  card_duplicate_command=("Duplicate", self.duplicate_piece))
+                                                  card_duplicate_command=("Duplicate", self.duplicate_piece),
+                                                  copy_from_command=self.copy_from)
         self.pieces_frame.grid(row=4, column=1, sticky="nsew", padx=(0, DEFAULT_PAD), pady=(0, DEFAULT_PAD))
 
         self.edit_piece_frame = EditPieceFrame(self,
@@ -139,6 +141,12 @@ class TemplateScene(ctk.CTkFrame):
             return True
         else:
             return False
+
+    def copy_from(self, _):
+        CopyTemplateFromToplevel(self,
+                                 app_engine=self.app_engine)
+        self.grab_set()
+        self.grab_release()
 
     def new_section_selected(self, section: TemplateSection):
         if self.selected_section is not None:
