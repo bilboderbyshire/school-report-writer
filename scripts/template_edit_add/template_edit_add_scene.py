@@ -310,6 +310,7 @@ class TemplateScene(ctk.CTkFrame):
                              edit_type="add",
                              top_level_choice_tracker=tracker_var)
         self.grab_set()
+        self.grab_release()
         if tracker_var.get() == "save":
             new_variable = self.app_engine.upload_new_record(
                 data=new_variable.data_to_create(),
@@ -328,6 +329,7 @@ class TemplateScene(ctk.CTkFrame):
                              edit_type="edit",
                              top_level_choice_tracker=tracker_var)
         self.grab_set()
+        self.grab_release()
         if tracker_var.get() == "delete":
             self.app_engine.delete_record(variable.id, "user_variables")
             self.app_engine.copy_of_user_variables_collection.pop(variable.id)
@@ -355,6 +357,7 @@ class TemplateScene(ctk.CTkFrame):
                              edit_type="copy",
                              top_level_choice_tracker=tracker_var)
         self.grab_set()
+        self.grab_release()
         if tracker_var.get() == "save":
             new_variable = self.app_engine.upload_new_record(
                 data=copied_variable.data_to_create(),
