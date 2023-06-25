@@ -1,3 +1,5 @@
+from __future__ import annotations
+from typing import TYPE_CHECKING
 import customtkinter as ctk
 from .. import title_bar as tbar
 from ..settings import *
@@ -7,6 +9,9 @@ import CTkMessagebox as ctkmb
 from ..components import Separator
 from ..containers import ReportTemplate, NewTemplateRecord
 from ..app_engine import AppEngine
+
+if TYPE_CHECKING:
+    from ..root import ReportWriter
 
 
 class MainMenuScene(ctk.CTkFrame):
@@ -193,9 +198,12 @@ class MainMenuScene(ctk.CTkFrame):
             else:
                 return
 
-        template_scene = self.master.show_frame("template-scene")
+        self.master: ReportWriter
+        template_scene = self.master.get_frame("template-scene")
 
         template_scene.previous_scene("main-menu")
         template_scene.setup_scene(template_to_view)
         template_scene.fill_frames()
+
+        self.master.show_frame("template-scene")
 

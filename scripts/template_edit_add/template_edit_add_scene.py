@@ -1,4 +1,6 @@
+from __future__ import annotations
 import customtkinter as ctk
+from typing import TYPE_CHECKING
 from .. import title_bar as tbar
 from ..settings import *
 from ..components import Separator, InvisibleEntry
@@ -10,6 +12,10 @@ from ..containers import ReportTemplate, NewPieceRecord, IndividualPiece, Templa
     NewUserVariableRecord, UserVariable
 import CTkMessagebox as ctkmb
 from ..variable_edit_toplevel import VariableEditToplevel
+from ..copy_template_from_toplevel import CopyTemplateFromToplevel
+
+if TYPE_CHECKING:
+    from ..root import ReportWriter
 
 
 class TemplateScene(ctk.CTkFrame):
@@ -27,7 +33,6 @@ class TemplateScene(ctk.CTkFrame):
     def __build_frame(self):
 
         title_bar = tbar.TitleBar(self, "Edit template",
-                                  refresh_command=self.refresh_scene,
                                   back_command=self.go_back)
         title_bar.grid(row=0, column=0, columnspan=4, sticky="nsew", pady=(DEFAULT_PAD, 0), padx=DEFAULT_PAD)
 
@@ -46,18 +51,16 @@ class TemplateScene(ctk.CTkFrame):
                                                     select_section_command=self.new_section_selected,
                                                     card_add_command=("Add section", self.add_section),
                                                     card_delete_command=("Delete", self.delete_section))
-        self.section_frame.grid(row=4, rowspan=2, column=0, sticky="nsew", padx=DEFAULT_PAD, pady=(0, DEFAULT_PAD))
+        self.section_frame.grid(row=4, column=0, sticky="nsew", padx=DEFAULT_PAD, pady=(0, DEFAULT_PAD))
 
         self.pieces_frame = PiecesScrollableFrame(self,
                                                   structured_pieces=self.structured_pieces,
                                                   select_piece_command=self.new_piece_selected,
                                                   card_add_command=("Add piece", self.add_piece),
                                                   card_delete_command=("Delete", self.delete_piece),
-                                                  card_copy_command=("Copy", self.copy_piece))
+                                                  card_duplicate_command=("Duplicate", self.duplicate_piece),
+                                                  copy_from_command=self.copy_from)
         self.pieces_frame.grid(row=4, column=1, sticky="nsew", padx=(0, DEFAULT_PAD), pady=(0, DEFAULT_PAD))
-
-        self.piece_info_frame = ctk.CTkFrame(self)
-        self.piece_info_frame.grid(row=5, column=1, sticky="nsew", padx=(0, DEFAULT_PAD), pady=(0, DEFAULT_PAD))
 
         self.edit_piece_frame = EditPieceFrame(self,
                                                edit_command=self.piece_edited,
@@ -65,11 +68,11 @@ class TemplateScene(ctk.CTkFrame):
                                                create_variable_command=self.create_variable,
                                                edit_variable_command=self.edit_variable,
                                                copy_variable_command=self.copy_variable)
-        self.edit_piece_frame.grid(row=4, rowspan=2, column=2, sticky="nsew", padx=(0, DEFAULT_PAD),
+        self.edit_piece_frame.grid(row=4, column=2, sticky="nsew", padx=(0, DEFAULT_PAD),
                                    pady=(0, DEFAULT_PAD))
 
         self.rowconfigure([0, 1, 2, 3], weight=0)
-        self.rowconfigure([4, 5], weight=1, uniform="rows")
+        self.rowconfigure([4], weight=1)
         self.columnconfigure(0, weight=1, uniform="columns")
         self.columnconfigure([1, 2], weight=2, uniform="columns")
 
@@ -80,8 +83,6 @@ class TemplateScene(ctk.CTkFrame):
             i.destroy()
 
         self.__build_frame()
-
-        self.section_frame.build_section_frame()
 
         all_sections = list(self.structured_pieces.keys())
         if all_sections:
@@ -104,16 +105,6 @@ class TemplateScene(ctk.CTkFrame):
         self.working_template = template
         self.structured_pieces = self.app_engine.create_piece_to_template(self.working_template.id)
 
-    def refresh_scene(self):
-        self.change_cursor("watch")
-        self.section_frame.loading_frame()
-        self.pieces_frame.loading_frame()
-
-        self.after(700, self.app_engine.load_data)
-
-        self.structured_pieces = self.app_engine.create_piece_to_template(self.working_template.id)
-        self.fill_frames()
-
     def check_if_scroll_needed(self):
         self.section_frame.check_scrollbar_needed()
         self.pieces_frame.check_scrollbar_needed()
@@ -127,8 +118,10 @@ class TemplateScene(ctk.CTkFrame):
         self.prev_scene_string = name_of_prev_frame
 
     def go_back(self):
-        new_scene = self.master.show_frame(self.prev_scene_string)
+        self.master: ReportWriter
+        new_scene = self.master.get_frame(self.prev_scene_string)
         new_scene.fill_frames()
+        self.after(10, self.master.show_frame, self.prev_scene_string)
         self.prev_scene_string = None
 
     def validate_name(self, P):
@@ -137,6 +130,58 @@ class TemplateScene(ctk.CTkFrame):
             return True
         else:
             return False
+
+    def copy_from(self, _) -> None:
+        choice_tracker = ctk.StringVar(value="cancel")
+        new_toplevel = CopyTemplateFromToplevel(
+            self,
+            app_engine=self.app_engine,
+            choice_tracker=choice_tracker
+        )
+        results = new_toplevel.get_results()
+
+        for collection, ids in results.items():
+            if collection == "section":
+                for section_id in ids:
+                    new_section_id = f"@{self.app_engine.create_new_record_id('template_sections')}"
+                    section_copy = self.app_engine.copy_of_section_collection[section_id].copy()
+                    old_id = section_copy.id
+                    section_copy.id = new_section_id
+                    section_copy.template = self.working_template.id
+
+                    self.structured_pieces[new_section_id] = {}
+                    self.app_engine.copy_of_section_collection[new_section_id] = section_copy
+
+                    ids_to_copy = []
+                    for piece in self.app_engine.copy_of_piece_collection.values():
+                        if piece.section == old_id:
+                            ids_to_copy.append(piece.id)
+
+                    for piece_id in ids_to_copy:
+                        new_piece_id = f"@{self.app_engine.create_new_record_id('report_pieces')}"
+                        piece_copy = self.app_engine.copy_of_piece_collection[piece_id].copy()
+                        piece_copy.id = new_piece_id
+                        piece_copy.section = new_section_id
+                        self.structured_pieces[new_section_id][new_piece_id] = piece_copy
+                        self.app_engine.copy_of_piece_collection[new_piece_id] = piece_copy
+
+                    self.section_frame.add_card(section_copy)
+            elif collection == "piece":
+                if self.selected_section is None:
+                    print("Oops, this shouldn't have happened. It looks like you tried copying pieces into an " +
+                          "unselected section")
+                    return
+                for piece_id in ids:
+                    new_piece_id = f"@{self.app_engine.create_new_record_id('report_pieces')}"
+                    piece_copy = self.app_engine.copy_of_piece_collection[piece_id]
+                    piece_copy.id = new_piece_id
+                    piece_copy.section = self.selected_section
+                    self.structured_pieces[self.selected_section][new_piece_id] = piece_copy
+                    self.app_engine.copy_of_piece_collection[new_piece_id] = piece_copy
+                    self.pieces_frame.add_card(piece_copy)
+
+        self.grab_set()
+        self.grab_release()
 
     def new_section_selected(self, section: TemplateSection):
         if self.selected_section is not None:
@@ -179,11 +224,10 @@ class TemplateScene(ctk.CTkFrame):
 
         self.structured_pieces[new_section_id] = {}
         self.app_engine.copy_of_section_collection[new_section_id] = new_section
-        self.section_frame.build_section_frame()
+        self.section_frame.add_card(new_section)
         self.pieces_frame.build_pieces_frame(new_section_id)
 
         self.new_section_selected(new_section)
-        self.new_piece_selected()
         self.check_if_scroll_needed()
 
         self.section_frame.all_cards[new_section_id].entry_enabled()
@@ -207,7 +251,7 @@ class TemplateScene(ctk.CTkFrame):
 
         self.structured_pieces.pop(section.id)
         self.app_engine.copy_of_section_collection.pop(section.id)
-        self.section_frame.build_section_frame()
+        self.section_frame.delete_card(section)
 
         if section.id == self.selected_section:
             all_sections = list(self.structured_pieces.keys())
@@ -233,7 +277,7 @@ class TemplateScene(ctk.CTkFrame):
 
         self.section_frame.reload_card_subtitles()
 
-        self.pieces_frame.build_pieces_frame(self.selected_section)
+        self.pieces_frame.add_card(new_piece)
         self.new_piece_selected(new_piece)
         self.check_if_scroll_needed()
 
@@ -265,14 +309,14 @@ class TemplateScene(ctk.CTkFrame):
 
         self.section_frame.reload_card_subtitles()
 
-        self.pieces_frame.build_pieces_frame(self.selected_section)
+        self.pieces_frame.delete_card(piece)
 
         if piece.id == self.selected_piece:
             self.new_piece_selected()
         else:
             self.pieces_frame.all_cards[self.selected_piece].card_selected()
 
-    def copy_piece(self, piece: IndividualPiece):
+    def duplicate_piece(self, piece: IndividualPiece):
         new_piece_id = f"@{self.app_engine.create_new_record_id('report_pieces')}"
         new_piece = piece.copy()
         new_piece.id = new_piece_id
@@ -282,7 +326,7 @@ class TemplateScene(ctk.CTkFrame):
 
         self.section_frame.reload_card_subtitles()
 
-        self.pieces_frame.build_pieces_frame(self.selected_section)
+        self.pieces_frame.add_card(new_piece)
         self.new_piece_selected(new_piece)
 
         self.check_if_scroll_needed()
@@ -308,6 +352,7 @@ class TemplateScene(ctk.CTkFrame):
                              edit_type="add",
                              top_level_choice_tracker=tracker_var)
         self.grab_set()
+        self.grab_release()
         if tracker_var.get() == "save":
             new_variable = self.app_engine.upload_new_record(
                 data=new_variable.data_to_create(),
@@ -326,6 +371,7 @@ class TemplateScene(ctk.CTkFrame):
                              edit_type="edit",
                              top_level_choice_tracker=tracker_var)
         self.grab_set()
+        self.grab_release()
         if tracker_var.get() == "delete":
             self.app_engine.delete_record(variable.id, "user_variables")
             self.app_engine.copy_of_user_variables_collection.pop(variable.id)
@@ -353,6 +399,7 @@ class TemplateScene(ctk.CTkFrame):
                              edit_type="copy",
                              top_level_choice_tracker=tracker_var)
         self.grab_set()
+        self.grab_release()
         if tracker_var.get() == "save":
             new_variable = self.app_engine.upload_new_record(
                 data=copied_variable.data_to_create(),
