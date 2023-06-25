@@ -143,8 +143,10 @@ class TemplateScene(ctk.CTkFrame):
             return False
 
     def copy_from(self, _):
+        choice_tracker = ctk.StringVar(value="cancel")
         CopyTemplateFromToplevel(self,
-                                 app_engine=self.app_engine)
+                                 app_engine=self.app_engine,
+                                 choice_tracker=choice_tracker)
         self.grab_set()
         self.grab_release()
 
@@ -193,7 +195,6 @@ class TemplateScene(ctk.CTkFrame):
         self.pieces_frame.build_pieces_frame(new_section_id)
 
         self.new_section_selected(new_section)
-        self.new_piece_selected()
         self.check_if_scroll_needed()
 
         self.section_frame.all_cards[new_section_id].entry_enabled()
