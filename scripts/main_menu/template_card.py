@@ -15,7 +15,7 @@ class TemplateCard(ListCard):
                  add_command: tuple[str, Callable],
                  copy_command: tuple[str, Callable],
                  delete_command: tuple[str, Callable],
-                 click_command=None):
+                 click_command: Callable):
         super().__init__(master, click_command=click_command)
         self.card_data = template
 
