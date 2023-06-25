@@ -24,6 +24,10 @@ class AutohidingScrollableAndLoadingFrame(ctk.CTkScrollableFrame):
         self._label.winfo_children()[1].configure(pady=0, anchor="w")
         self._label.winfo_children()[1].grid_configure(pady=0, sticky="nw")
 
+        self.bind("<Button-1>", lambda event: self.focus_set())
+        self._parent_canvas.bind("<Button-1>", lambda event: self.focus_set())
+        self._parent_frame.bind("<Button-1>", lambda event: self.focus_set())
+
         if self.button_command is not None:
             self.plus_image = ctk.CTkImage(
                 light_image=Image.open(os.path.join(os.getcwd(), "images/light-plus.png")),

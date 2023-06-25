@@ -37,9 +37,6 @@ class VariableOptionsScrollframe(AutohidingScrollableAndLoadingFrame):
         self.update()
         self.after(150, self.check_scrollbar_needed)
 
-        self._parent_canvas.bind("<Button-1>", lambda event: self.focus_set())
-        self._parent_frame.bind("<Button-1>", lambda event: self.focus_set())
-
     def make_add_option_button(self) -> ListCard:
         add_option_button = ListCard(
             self,
