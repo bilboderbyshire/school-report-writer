@@ -78,8 +78,6 @@ class TemplateScene(ctk.CTkFrame):
 
         self.__build_frame()
 
-        self.section_frame.build_section_frame()
-
         all_sections = list(self.structured_pieces.keys())
         if all_sections:
             self.selected_section = all_sections[0]
@@ -176,7 +174,7 @@ class TemplateScene(ctk.CTkFrame):
 
         self.structured_pieces[new_section_id] = {}
         self.app_engine.copy_of_section_collection[new_section_id] = new_section
-        self.section_frame.build_section_frame()
+        self.section_frame.add_card(new_section)
         self.pieces_frame.build_pieces_frame(new_section_id)
 
         self.new_section_selected(new_section)
@@ -204,7 +202,7 @@ class TemplateScene(ctk.CTkFrame):
 
         self.structured_pieces.pop(section.id)
         self.app_engine.copy_of_section_collection.pop(section.id)
-        self.section_frame.build_section_frame()
+        self.section_frame.delete_card(section)
 
         if section.id == self.selected_section:
             all_sections = list(self.structured_pieces.keys())
