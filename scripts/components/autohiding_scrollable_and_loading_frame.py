@@ -2,6 +2,8 @@ import customtkinter as ctk
 from ..settings import *
 import os
 from PIL import Image
+from .list_card import ListCard
+from typing import Callable
 
 
 class AutohidingScrollableAndLoadingFrame(ctk.CTkScrollableFrame):
@@ -91,7 +93,26 @@ class AutohidingScrollableAndLoadingFrame(ctk.CTkScrollableFrame):
             self.configure(scrollbar_button_color=self.scrollbar_color,
                            scrollbar_button_hover_color=self.scrollbar_hover_color)
 
+    def make_add_card_button(self, add_command: Callable, text: str) -> ListCard:
+        add_piece_button = ListCard(
+            self,
+            fg_color="transparent",
+            height=30,
+            click_command=add_command)
 
+        add_button_text = ctk.CTkLabel(
+            add_piece_button,
+            text=text,
+            font=ctk.CTkFont(**SMALL_LABEL_FONT, slant="italic"),
+            fg_color="transparent",
+            anchor="w",
+            pady=0,
+            padx=0
+        )
 
+        add_button_text.grid(row=0, column=0, sticky="ew", padx=DEFAULT_PAD)
+        add_piece_button.rowconfigure(0, weight=1)
+        add_piece_button.columnconfigure(0, weight=1)
+        add_piece_button.bind_frame()
 
-
+        return add_piece_button
