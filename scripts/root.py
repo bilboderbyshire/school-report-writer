@@ -1,4 +1,3 @@
-from tkinter import Misc
 import customtkinter as ctk
 from .settings import *
 import os
@@ -7,7 +6,7 @@ from .main_menu import MainMenuScene
 from .template_edit_add import TemplateScene
 from .database import ReportWriterInstance
 from .app_engine import AppEngine
-from typing import Type
+from typing import Type, Literal
 
 
 class ReportWriter(ctk.CTk):
@@ -63,7 +62,11 @@ class ReportWriter(ctk.CTk):
             self.frames[name] = new_frame
             new_frame.grid(row=0, column=0, sticky="nsew")
 
-    def show_frame(self, frame_to_show) -> TemplateScene | MainMenuScene:
+    def show_frame(self, frame_to_show: Literal["main-menu", "template-scene"]) -> TemplateScene | MainMenuScene:
         frame = self.frames[frame_to_show]
         frame.tkraise()
+        return frame
+
+    def get_frame(self, frame_name: Literal["main-menu", "template-scene"]) -> TemplateScene | MainMenuScene:
+        frame = self.frames[frame_name]
         return frame

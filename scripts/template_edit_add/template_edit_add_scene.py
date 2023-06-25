@@ -1,4 +1,6 @@
+from __future__ import annotations
 import customtkinter as ctk
+from typing import TYPE_CHECKING
 from .. import title_bar as tbar
 from ..settings import *
 from ..components import Separator, InvisibleEntry
@@ -10,6 +12,9 @@ from ..containers import ReportTemplate, NewPieceRecord, IndividualPiece, Templa
     NewUserVariableRecord, UserVariable
 import CTkMessagebox as ctkmb
 from ..variable_edit_toplevel import VariableEditToplevel
+
+if TYPE_CHECKING:
+    from ..root import ReportWriter
 
 
 class TemplateScene(ctk.CTkFrame):
@@ -122,9 +127,12 @@ class TemplateScene(ctk.CTkFrame):
         self.prev_scene_string = name_of_prev_frame
 
     def go_back(self):
-        new_scene = self.master.show_frame(self.prev_scene_string)
+        self.master: ReportWriter
+        new_scene = self.master.get_frame(self.prev_scene_string)
         new_scene.fill_frames()
+        self.master.show_frame(self.prev_scene_string)
         self.prev_scene_string = None
+
 
     def validate_name(self, P):
         if len(P) <= 40:
