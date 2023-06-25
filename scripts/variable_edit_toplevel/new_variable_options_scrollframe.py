@@ -1,6 +1,6 @@
 import customtkinter as ctk
 from ..settings import *
-from ..components import AutohidingScrollableAndLoadingFrame, ListCard
+from ..components import AutohidingScrollableAndLoadingFrame
 from .option_list_card import OptionListCard
 
 
@@ -28,7 +28,7 @@ class VariableOptionsScrollframe(AutohidingScrollableAndLoadingFrame):
             new_card.grid(row=index, column=0, sticky="nsew", padx=SMALL_PAD, pady=(0, SMALL_PAD))
             self.all_cards[index] = new_card
 
-        self.add_option_button = self.make_add_option_button()
+        self.add_option_button = self.make_add_card_button(self.add_option_command, "+ Add new...")
         self.add_option_button.grid(row=len(self.all_cards.keys()), column=0, sticky="nsew", padx=SMALL_PAD,
                                     pady=(0, SMALL_PAD))
 
@@ -36,30 +36,6 @@ class VariableOptionsScrollframe(AutohidingScrollableAndLoadingFrame):
 
         self.update()
         self.after(150, self.check_scrollbar_needed)
-
-    def make_add_option_button(self) -> ListCard:
-        add_option_button = ListCard(
-            self,
-            fg_color="transparent",
-            height=30,
-            click_command=self.add_option_command)
-
-        add_button_text = ctk.CTkLabel(
-            add_option_button,
-            text=f"+ Add new option...",
-            font=ctk.CTkFont(**SMALL_LABEL_FONT, slant="italic"),
-            fg_color="transparent",
-            anchor="w",
-            pady=0,
-            padx=0
-        )
-
-        add_button_text.grid(row=0, column=0, sticky="ew", padx=DEFAULT_PAD)
-        add_option_button.rowconfigure(0, weight=1)
-        add_option_button.columnconfigure(0, weight=1)
-        add_option_button.bind_frame()
-
-        return add_option_button
 
     def add_option_command(self, _):
         new_id = max(list(self.all_cards.keys()), default=-1) + 1

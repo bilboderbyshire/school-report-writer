@@ -1,6 +1,6 @@
 import customtkinter as ctk
 from ..settings import *
-from ..components import AutohidingScrollableAndLoadingFrame, ListCard
+from ..components import AutohidingScrollableAndLoadingFrame
 from ..containers import IndividualPiece, TemplateSection
 from .section_list_card import SectionCard
 from typing import Callable
@@ -43,7 +43,7 @@ class SectionScrollableFrame(AutohidingScrollableAndLoadingFrame):
             new_section_card.grid(row=index, column=0, sticky="ew", padx=DEFAULT_PAD-7)
             self.current_max_row += 1
 
-        self.add_section_button = self.make_add_section_button()
+        self.add_section_button = self.make_add_card_button(self.card_add[1], "+ Add new...")
         self.add_section_button.grid(
             row=self.current_max_row + 1,
             column=0,
@@ -54,31 +54,6 @@ class SectionScrollableFrame(AutohidingScrollableAndLoadingFrame):
 
         self.columnconfigure(0, weight=1)
         self.rowconfigure("all", weight=0)
-
-    def make_add_section_button(self) -> ListCard:
-        add_section_button = ListCard(
-            self,
-            fg_color="transparent",
-            hover_color=BUTTON_HOVER_COLOR,
-            height=30,
-            click_command=self.card_add[1])
-
-        add_button_text = ctk.CTkLabel(
-            add_section_button,
-            text=f"+ Add new section...",
-            font=ctk.CTkFont(**SMALL_LABEL_FONT, slant="italic"),
-            fg_color="transparent",
-            anchor="w",
-            pady=0,
-            padx=0
-        )
-
-        add_button_text.grid(row=0, column=0, sticky="ew", padx=DEFAULT_PAD)
-        add_section_button.rowconfigure(0, weight=1)
-        add_section_button.columnconfigure(0, weight=1)
-        add_section_button.bind_frame()
-
-        return add_section_button
 
     def reload_card_subtitles(self):
         for section_id, card in self.all_cards.items():

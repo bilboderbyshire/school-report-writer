@@ -73,5 +73,3 @@ class PieceListCard(ListCard):
     def configure_label_width(self):
         self.update_idletasks()
         self.subtitle_label.configure(wraplength=self.subtitle_label._current_width)
-        print("Card width: ", self.winfo_width())
-

@@ -1,6 +1,6 @@
 import customtkinter as ctk
 from ..settings import *
-from ..components import AutohidingScrollableAndLoadingFrame, ListCard
+from ..components import AutohidingScrollableAndLoadingFrame
 from ..containers import IndividualPiece
 from .pieces_list_card import PieceListCard
 from typing import Callable
@@ -44,7 +44,10 @@ class PiecesScrollableFrame(AutohidingScrollableAndLoadingFrame):
         if section is None:
             return
 
-        self.add_piece_button = self.make_add_piece_button()
+        self.add_piece_button = self.make_add_card_button(
+            add_command=self.card_add[1],
+            text="+ Add new..."
+        )
 
         for index, piece in enumerate(self.structured_pieces[section].values()):
             new_piece_card = PieceListCard(self,
@@ -68,30 +71,6 @@ class PiecesScrollableFrame(AutohidingScrollableAndLoadingFrame):
         self.rowconfigure("all", weight=0)
 
         self.update_all_text_displays()
-
-    def make_add_piece_button(self) -> ListCard:
-        add_piece_button = ListCard(
-            self,
-            fg_color="transparent",
-            height=30,
-            click_command=self.card_add[1])
-
-        add_button_text = ctk.CTkLabel(
-            add_piece_button,
-            text=f"+ Add new piece...",
-            font=ctk.CTkFont(**SMALL_LABEL_FONT, slant="italic"),
-            fg_color="transparent",
-            anchor="w",
-            pady=0,
-            padx=0
-        )
-
-        add_button_text.grid(row=0, column=0, sticky="ew", padx=DEFAULT_PAD)
-        add_piece_button.rowconfigure(0, weight=1)
-        add_piece_button.columnconfigure(0, weight=1)
-        add_piece_button.bind_frame()
-
-        return add_piece_button
 
     def update_all_text_displays(self):
         for card in self.all_cards.values():
