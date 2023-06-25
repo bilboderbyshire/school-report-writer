@@ -46,7 +46,7 @@ class TemplateScene(ctk.CTkFrame):
                                                     select_section_command=self.new_section_selected,
                                                     card_add_command=("Add section", self.add_section),
                                                     card_delete_command=("Delete", self.delete_section))
-        self.section_frame.grid(row=4, rowspan=2, column=0, sticky="nsew", padx=DEFAULT_PAD, pady=(0, DEFAULT_PAD))
+        self.section_frame.grid(row=4, column=0, sticky="nsew", padx=DEFAULT_PAD, pady=(0, DEFAULT_PAD))
 
         self.pieces_frame = PiecesScrollableFrame(self,
                                                   structured_pieces=self.structured_pieces,
@@ -56,20 +56,17 @@ class TemplateScene(ctk.CTkFrame):
                                                   card_copy_command=("Copy", self.copy_piece))
         self.pieces_frame.grid(row=4, column=1, sticky="nsew", padx=(0, DEFAULT_PAD), pady=(0, DEFAULT_PAD))
 
-        self.piece_info_frame = ctk.CTkFrame(self)
-        self.piece_info_frame.grid(row=5, column=1, sticky="nsew", padx=(0, DEFAULT_PAD), pady=(0, DEFAULT_PAD))
-
         self.edit_piece_frame = EditPieceFrame(self,
                                                edit_command=self.piece_edited,
                                                variables_collection=self.app_engine.copy_of_user_variables_collection,
                                                create_variable_command=self.create_variable,
                                                edit_variable_command=self.edit_variable,
                                                copy_variable_command=self.copy_variable)
-        self.edit_piece_frame.grid(row=4, rowspan=2, column=2, sticky="nsew", padx=(0, DEFAULT_PAD),
+        self.edit_piece_frame.grid(row=4, column=2, sticky="nsew", padx=(0, DEFAULT_PAD),
                                    pady=(0, DEFAULT_PAD))
 
         self.rowconfigure([0, 1, 2, 3], weight=0)
-        self.rowconfigure([4, 5], weight=1, uniform="rows")
+        self.rowconfigure([4], weight=1)
         self.columnconfigure(0, weight=1, uniform="columns")
         self.columnconfigure([1, 2], weight=2, uniform="columns")
 
