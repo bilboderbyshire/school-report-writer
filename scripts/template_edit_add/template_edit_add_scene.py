@@ -67,7 +67,7 @@ class TemplateScene(ctk.CTkFrame):
             template_name_and_actions_frame,
             fg_color="transparent",
             image=save_image,
-            command=lambda: print("Saved"),
+            command=self.save_clicked,
             text="",
             width=35,
             height=35,
@@ -161,9 +161,8 @@ class TemplateScene(ctk.CTkFrame):
         self.pieces_frame.check_scrollbar_needed()
 
     def change_cursor(self, cursor: str) -> None:
-        self.configure(cursor=cursor)
-        for i in self.winfo_children():
-            i.configure(cursor=cursor)
+        self.master: ReportWriter
+        self.master.configure(cursor=cursor)
 
     def previous_scene(self, name_of_prev_frame: str):
         self.prev_scene_string = name_of_prev_frame
@@ -410,6 +409,7 @@ class TemplateScene(ctk.CTkFrame):
                 collection="user_variables",
                 container_type=UserVariable)
             self.app_engine.copy_of_user_variables_collection[new_variable.id] = new_variable
+            self.app_engine.user_variables_collection[new_variable_id] = new_variable.copy()
             self.edit_piece_frame.user_inserts.refresh_variable_dropdown(new_variable)
         else:
             self.edit_piece_frame.user_inserts.refresh_variable_dropdown(None)
@@ -426,17 +426,20 @@ class TemplateScene(ctk.CTkFrame):
         if tracker_var.get() == "delete":
             self.app_engine.delete_record(variable.id, "user_variables")
             self.app_engine.copy_of_user_variables_collection.pop(variable.id)
+            self.app_engine.user_variables_collection.pop(variable.id)
             self.edit_piece_frame.user_inserts.refresh_variable_dropdown(None)
         elif tracker_var.get() == "cancel":
             self.edit_piece_frame.user_inserts.refresh_variable_dropdown(variable)
         else:
-            self.app_engine.update_record(
+            updated_variable = self.app_engine.update_record(
                 record_id=variable.id,
                 data=variable.data_to_create(),
                 collection="user_variables",
                 container_type=UserVariable
             )
             self.edit_piece_frame.user_inserts.refresh_variable_dropdown(variable)
+            self.app_engine.copy_of_user_variables_collection[variable.id] = variable
+            self.app_engine.user_variables_collection[variable.id] = updated_variable.copy()
 
     def copy_variable(self, variable: UserVariable):
         tracker_var = ctk.StringVar(value="cancel")
@@ -457,6 +460,56 @@ class TemplateScene(ctk.CTkFrame):
                 collection="user_variables",
                 container_type=UserVariable)
             self.app_engine.copy_of_user_variables_collection[new_variable.id] = new_variable
+            self.app_engine.user_variables_collection[new_variable_id] = new_variable.copy()
             self.edit_piece_frame.user_inserts.refresh_variable_dropdown(new_variable)
         else:
             self.edit_piece_frame.user_inserts.refresh_variable_dropdown(variable)
+
+    def save_clicked(self):
+        self.change_cursor("watch")
+        self.after(300, self.save_template)
+        self.change_cursor("arrow")
+
+    def save_template(self):
+        current_template_titles = [i.template_title for i in self.app_engine.copy_of_template_collection.values()
+                                   if i.id != self.working_template.id]
+        if self.working_template.template_title in current_template_titles:
+            warning_box = ctkmb.CTkMessagebox(
+                title="Warning",
+                message=f"Template title '{self.working_template.template_title}' already exists. Please try a new one",
+                icon="cancel",
+                option_1="OK")
+            warning_box.wait_window()
+            return
+
+        if "@" in self.working_template.id:
+            old_template_id = self.working_template.id
+            old_owner = self.working_template.owner
+            new_template = self.app_engine.upload_new_record(
+                data=self.working_template.data_to_create(),
+                collection="templates",
+                container_type=ReportTemplate
+            )
+            new_template.owner = old_owner
+
+            self.app_engine.copy_of_template_collection.pop(old_template_id)
+            self.app_engine.copy_of_template_collection[new_template.id] = new_template
+            self.working_template = new_template
+
+            self.app_engine.template_collection[new_template.id] = new_template.copy()
+        else:
+            if self.app_engine.copy_of_template_collection[self.working_template.id] != \
+                    self.app_engine.template_collection[self.working_template.id]:
+
+                old_owner = self.working_template.owner
+                updated_template = self.app_engine.update_record(
+                    record_id=self.working_template.id,
+                    data=self.working_template.data_to_create(),
+                    collection="templates",
+                    container_type=ReportTemplate
+                )
+                updated_template.owner = old_owner
+
+                self.app_engine.copy_of_template_collection[self.working_template.id] = updated_template
+                self.working_template = updated_template
+                self.app_engine.template_collection[self.working_template.id] = updated_template.copy()
