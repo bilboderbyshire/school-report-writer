@@ -14,6 +14,7 @@ class CopyTemplateFromToplevel(ctk.CTkToplevel):
                          fg_color=ROOT_BG)
 
         self.update_idletasks()
+        self.results = {}
         ws = self.winfo_screenwidth()
         hs = self.winfo_screenheight()
 
@@ -82,7 +83,8 @@ class CopyTemplateFromToplevel(ctk.CTkToplevel):
             self.button_frame,
             text="Copy section",
             font=ctk.CTkFont(**NORMAL_LABEL_FONT),
-            state="disabled"
+            state="disabled",
+            command=self.copy_sections_clicked
         )
         self.copy_section_button.grid(row=0, column=2, sticky="ew", padx=(0, SMALL_PAD))
 
@@ -90,14 +92,16 @@ class CopyTemplateFromToplevel(ctk.CTkToplevel):
             self.button_frame,
             text="Copy piece",
             font=ctk.CTkFont(**NORMAL_LABEL_FONT),
-            state="disabled"
+            state="disabled",
+            command=self.copy_pieces_clicked
         )
         self.copy_pieces_button.grid(row=0, column=3, sticky="ew", padx=(0, SMALL_PAD))
 
         cancel_button = SecondaryButton(
             self.button_frame,
             text="Cancel",
-            font=ctk.CTkFont(**NORMAL_LABEL_FONT)
+            font=ctk.CTkFont(**NORMAL_LABEL_FONT),
+            command=self.cancel_clicked
         )
         cancel_button.grid(row=0, column=4, sticky="ew")
 
@@ -173,3 +177,29 @@ class CopyTemplateFromToplevel(ctk.CTkToplevel):
             self.copy_pieces_button.configure(state="disabled", text="Copy piece")
 
         self.check_all_scrollbars()
+
+    def copy_sections_clicked(self):
+        selected_ids = []
+        for card_id, card in self.section_scrollframe.all_cards.items():
+            if card.selected:
+                selected_ids.append(card_id)
+
+        self.results["section"] = selected_ids
+        self.destroy()
+
+    def copy_pieces_clicked(self):
+        selected_ids = []
+        for card_id, card in self.pieces_scrollframe.all_cards.items():
+            if card.selected:
+                selected_ids.append(card_id)
+
+        self.results["piece"] = selected_ids
+        self.destroy()
+
+    def cancel_clicked(self):
+        self.results["cancel"] = []
+        self.destroy()
+
+    def get_results(self) -> dict[str, list[str]]:
+        return self.results
+

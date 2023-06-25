@@ -33,7 +33,6 @@ class TemplateScene(ctk.CTkFrame):
     def __build_frame(self):
 
         title_bar = tbar.TitleBar(self, "Edit template",
-                                  refresh_command=self.refresh_scene,
                                   back_command=self.go_back)
         title_bar.grid(row=0, column=0, columnspan=4, sticky="nsew", pady=(DEFAULT_PAD, 0), padx=DEFAULT_PAD)
 
@@ -106,16 +105,6 @@ class TemplateScene(ctk.CTkFrame):
         self.working_template = template
         self.structured_pieces = self.app_engine.create_piece_to_template(self.working_template.id)
 
-    def refresh_scene(self):
-        self.change_cursor("watch")
-        self.section_frame.loading_frame()
-        self.pieces_frame.loading_frame()
-
-        self.after(700, self.app_engine.load_data)
-
-        self.structured_pieces = self.app_engine.create_piece_to_template(self.working_template.id)
-        self.fill_frames()
-
     def check_if_scroll_needed(self):
         self.section_frame.check_scrollbar_needed()
         self.pieces_frame.check_scrollbar_needed()
@@ -132,7 +121,7 @@ class TemplateScene(ctk.CTkFrame):
         self.master: ReportWriter
         new_scene = self.master.get_frame(self.prev_scene_string)
         new_scene.fill_frames()
-        self.master.show_frame(self.prev_scene_string)
+        self.after(10, self.master.show_frame, self.prev_scene_string)
         self.prev_scene_string = None
 
     def validate_name(self, P):
@@ -142,11 +131,55 @@ class TemplateScene(ctk.CTkFrame):
         else:
             return False
 
-    def copy_from(self, _):
+    def copy_from(self, _) -> None:
         choice_tracker = ctk.StringVar(value="cancel")
-        CopyTemplateFromToplevel(self,
-                                 app_engine=self.app_engine,
-                                 choice_tracker=choice_tracker)
+        new_toplevel = CopyTemplateFromToplevel(
+            self,
+            app_engine=self.app_engine,
+            choice_tracker=choice_tracker
+        )
+        results = new_toplevel.get_results()
+
+        for collection, ids in results.items():
+            if collection == "section":
+                for section_id in ids:
+                    new_section_id = f"@{self.app_engine.create_new_record_id('template_sections')}"
+                    section_copy = self.app_engine.copy_of_section_collection[section_id].copy()
+                    old_id = section_copy.id
+                    section_copy.id = new_section_id
+                    section_copy.template = self.working_template.id
+
+                    self.structured_pieces[new_section_id] = {}
+                    self.app_engine.copy_of_section_collection[new_section_id] = section_copy
+
+                    ids_to_copy = []
+                    for piece in self.app_engine.copy_of_piece_collection.values():
+                        if piece.section == old_id:
+                            ids_to_copy.append(piece.id)
+
+                    for piece_id in ids_to_copy:
+                        new_piece_id = f"@{self.app_engine.create_new_record_id('report_pieces')}"
+                        piece_copy = self.app_engine.copy_of_piece_collection[piece_id].copy()
+                        piece_copy.id = new_piece_id
+                        piece_copy.section = new_section_id
+                        self.structured_pieces[new_section_id][new_piece_id] = piece_copy
+                        self.app_engine.copy_of_piece_collection[new_piece_id] = piece_copy
+
+                    self.section_frame.add_card(section_copy)
+            elif collection == "piece":
+                if self.selected_section is None:
+                    print("Oops, this shouldn't have happened. It looks like you tried copying pieces into an " +
+                          "unselected section")
+                    return
+                for piece_id in ids:
+                    new_piece_id = f"@{self.app_engine.create_new_record_id('report_pieces')}"
+                    piece_copy = self.app_engine.copy_of_piece_collection[piece_id]
+                    piece_copy.id = new_piece_id
+                    piece_copy.section = self.selected_section
+                    self.structured_pieces[self.selected_section][new_piece_id] = piece_copy
+                    self.app_engine.copy_of_piece_collection[new_piece_id] = piece_copy
+                    self.pieces_frame.add_card(piece_copy)
+
         self.grab_set()
         self.grab_release()
 
