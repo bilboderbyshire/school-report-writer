@@ -13,6 +13,8 @@ from ..containers import ReportTemplate, NewPieceRecord, IndividualPiece, Templa
 import CTkMessagebox as ctkmb
 from ..variable_edit_toplevel import VariableEditToplevel
 from ..copy_template_from_toplevel import CopyTemplateFromToplevel
+from PIL import Image
+import os
 
 if TYPE_CHECKING:
     from ..root import ReportWriter
@@ -39,11 +41,60 @@ class TemplateScene(ctk.CTkFrame):
         title_sep = Separator(self, "hor")
         title_sep.grid(row=2, column=0, columnspan=4, sticky="nsew", padx=DEFAULT_PAD * 3, pady=DEFAULT_PAD)
 
-        name_entry = InvisibleEntry(self,
+        template_name_and_actions_frame = ctk.CTkFrame(self, fg_color="transparent")
+        template_name_and_actions_frame.grid(row=3,
+                                             column=0,
+                                             columnspan=4,
+                                             sticky="nsew",
+                                             padx=DEFAULT_PAD * 2,
+                                             pady=(0, DEFAULT_PAD+6))
+        template_name_and_actions_frame.rowconfigure(0, weight=0)
+        template_name_and_actions_frame.columnconfigure(0, weight=1)
+        template_name_and_actions_frame.columnconfigure([1, 2], weight=0)
+
+        name_entry = InvisibleEntry(template_name_and_actions_frame,
                                     placeholder_text=self.working_template.template_title,
                                     validate="key",
                                     validatecommand=(self.register(self.validate_name), "%P"))
-        name_entry.grid(row=3, column=0, columnspan=2, sticky="ew", padx=DEFAULT_PAD * 2, pady=(0, DEFAULT_PAD+6))
+        name_entry.grid(row=0, column=0, sticky="ew")
+
+        save_image = ctk.CTkImage(
+            light_image=Image.open(os.path.join(os.getcwd(), "images/light-save.png")),
+            dark_image=Image.open(os.path.join(os.getcwd(), "images/dark-save.png")),
+            size=(25, 25)
+        )
+        save_button = ctk.CTkButton(
+            template_name_and_actions_frame,
+            fg_color="transparent",
+            image=save_image,
+            command=lambda: print("Saved"),
+            text="",
+            width=35,
+            height=35,
+            hover_color=BUTTON_HOVER_COLOR,
+            corner_radius=5
+        )
+
+        save_button.grid(row=0, column=1, sticky="e", padx=SMALL_PAD)
+
+        share_image = ctk.CTkImage(
+            light_image=Image.open(os.path.join(os.getcwd(), "images/light-share.png")),
+            dark_image=Image.open(os.path.join(os.getcwd(), "images/dark-share.png")),
+            size=(25, 25)
+        )
+        share_button = ctk.CTkButton(
+            template_name_and_actions_frame,
+            fg_color="transparent",
+            image=share_image,
+            command=lambda: print("Shared"),
+            text="",
+            width=35,
+            height=35,
+            hover_color=BUTTON_HOVER_COLOR,
+            corner_radius=5
+        )
+
+        share_button.grid(row=0, column=2, sticky="e", padx=(0, SMALL_PAD))
 
         self.section_frame = SectionScrollableFrame(self,
                                                     app_engine=self.app_engine,
