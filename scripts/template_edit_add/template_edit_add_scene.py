@@ -470,7 +470,11 @@ class TemplateScene(ctk.CTkFrame):
         self.after(300, self.save_template)
         self.change_cursor("arrow")
 
-    def save_template(self):
+    def save_template(self) -> None:
+        # Keep track of old IDs for matching sections made in new templates
+        old_template_id = self.working_template.id
+
+        # Save template name
         current_template_titles = [i.template_title for i in self.app_engine.copy_of_template_collection.values()
                                    if i.id != self.working_template.id]
         if self.working_template.template_title in current_template_titles:
@@ -483,7 +487,6 @@ class TemplateScene(ctk.CTkFrame):
             return
 
         if "@" in self.working_template.id:
-            old_template_id = self.working_template.id
             old_owner = self.working_template.owner
             new_template = self.app_engine.upload_new_record(
                 data=self.working_template.data_to_create(),
@@ -513,3 +516,13 @@ class TemplateScene(ctk.CTkFrame):
                 self.app_engine.copy_of_template_collection[self.working_template.id] = updated_template
                 self.working_template = updated_template
                 self.app_engine.template_collection[self.working_template.id] = updated_template.copy()
+
+        # Save sections
+        relevant_sections = [i for i in self.app_engine.copy_of_section_collection.values()
+                             if i.template == old_template_id]
+
+        for section in relevant_sections:
+            # Get all pieces related to the current section
+            relevant_pieces = [i for i in self.app_engine.copy_of_piece_collection.values() if i.section == section.id]
+
+            #
