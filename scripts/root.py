@@ -4,6 +4,7 @@ import os
 from .login_window import LoginWindow
 from .main_menu import MainMenuScene
 from .template_edit_add import TemplateScene
+from .write_report import ReportScene
 from .database import ReportWriterInstance
 from .app_engine import AppEngine
 from typing import Type, Literal
@@ -32,12 +33,13 @@ class ReportWriter(ctk.CTk):
         self.rowconfigure(0, weight=1)
         self.columnconfigure(0, weight=1)
 
-        self.frames: dict[str, MainMenuScene | TemplateScene] = {}
+        self.frames: dict[str, MainMenuScene | TemplateScene | ReportScene] = {}
         self.db_instance = ReportWriterInstance()
         self.app_engine: AppEngine | None = None
-        # self.show_frame("main-menu")
-
-        self.__login()
+        self.__setup_frames()
+        new_frame = self.show_frame("write-report-scene")
+        new_frame.fill_frames()
+        # self.__login()
 
     def __login(self):
         user_accepted = ctk.BooleanVar(value=False)
@@ -53,20 +55,23 @@ class ReportWriter(ctk.CTk):
             self.destroy()
 
     def __setup_frames(self):
-        current_frame_list: dict[str, Type[MainMenuScene | TemplateScene]] = {
+        current_frame_list: dict[str, Type[MainMenuScene | TemplateScene | ReportScene]] = {
             "main-menu": MainMenuScene,
-            "template-scene": TemplateScene
+            "template-scene": TemplateScene,
+            "write-report-scene": ReportScene
         }
         for name, frame in current_frame_list.items():
             new_frame = frame(self, self.app_engine)
             self.frames[name] = new_frame
             new_frame.grid(row=0, column=0, sticky="nsew")
 
-    def show_frame(self, frame_to_show: Literal["main-menu", "template-scene"]) -> TemplateScene | MainMenuScene:
+    def show_frame(self, frame_to_show: Literal["main-menu", "template-scene", "write-report-scene"]) \
+            -> TemplateScene | MainMenuScene | ReportScene:
         frame = self.frames[frame_to_show]
         frame.tkraise()
         return frame
 
-    def get_frame(self, frame_name: Literal["main-menu", "template-scene"]) -> TemplateScene | MainMenuScene:
+    def get_frame(self, frame_name: Literal["main-menu", "template-scene", "write-report-scene"]) \
+            -> TemplateScene | MainMenuScene | ReportScene:
         frame = self.frames[frame_name]
         return frame
