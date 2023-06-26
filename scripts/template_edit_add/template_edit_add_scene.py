@@ -147,7 +147,7 @@ class TemplateScene(ctk.CTkFrame):
         if self.selected_section is not None:
             self.new_piece_selected()
 
-        self.change_cursor("arrow")
+        self.change_cursor("")
 
         self.check_if_scroll_needed()
         self.focus_set()
@@ -161,8 +161,7 @@ class TemplateScene(ctk.CTkFrame):
         self.pieces_frame.check_scrollbar_needed()
 
     def change_cursor(self, cursor: str) -> None:
-        self.master: ReportWriter
-        self.master.configure(cursor=cursor)
+        self.configure(cursor=cursor)
 
     def previous_scene(self, name_of_prev_frame: str):
         self.prev_scene_string = name_of_prev_frame
@@ -467,21 +466,30 @@ class TemplateScene(ctk.CTkFrame):
 
     def save_clicked(self):
         self.change_cursor("watch")
-        self.after(300, self.save_template)
-        self.change_cursor("arrow")
+        self.update()
+        self.after(700, self.save_template)
 
     def save_template(self) -> None:
         # Keep track of old IDs for matching sections made in new templates
         old_template_id = self.working_template.id
 
         # Save changes to template record first
-        self.save_template_record(old_template_id)
+        template_save = self.save_template_record(old_template_id)
+        if not template_save:
+            self.change_cursor("")
+            return
 
         # Save changes to any sections (and the pieces inside them)
-        self.save_section_records(old_template_id)
+        section_save = self.save_section_records(old_template_id)
+        if not section_save:
+            self.change_cursor("")
+            return
 
         # Check if any pieces or sections were deleted, and save that action to the database
-        self.save_deleted_records(old_template_id)
+        deletion_save = self.save_deleted_records(old_template_id)
+        if not deletion_save:
+            self.change_cursor("")
+            return
 
         # Refresh the current structured pieces with new/updated data
         self.structured_pieces = self.app_engine.create_piece_to_template(self.working_template.id)
@@ -489,7 +497,9 @@ class TemplateScene(ctk.CTkFrame):
         # Rebuild the scene
         self.fill_frames()
 
-    def save_template_record(self, old_template_id: str):
+        self.change_cursor("")
+
+    def save_template_record(self, old_template_id: str) -> bool:
         # Save template name
         current_template_titles = [i.template_title for i in self.app_engine.copy_of_template_collection.values()
                                    if i.id != self.working_template.id]
@@ -501,7 +511,7 @@ class TemplateScene(ctk.CTkFrame):
                 icon="cancel",
                 option_1="OK")
             warning_box.wait_window()
-            return
+            return False
         else:
             self.name_entry.text_entry.configure(border_width=0)
 
@@ -512,6 +522,10 @@ class TemplateScene(ctk.CTkFrame):
                 collection="templates",
                 container_type=ReportTemplate
             )
+
+            if new_template is None:
+                return False
+
             new_template.owner = old_owner
 
             self.app_engine.copy_of_template_collection.pop(old_template_id)
@@ -529,13 +543,18 @@ class TemplateScene(ctk.CTkFrame):
                 collection="templates",
                 container_type=ReportTemplate
             )
+            if updated_template is None:
+                return False
+
             updated_template.owner = old_owner
 
             self.app_engine.copy_of_template_collection[self.working_template.id] = updated_template
             self.working_template = updated_template
             self.app_engine.template_collection[self.working_template.id] = updated_template.copy()
 
-    def save_section_records(self, old_template_id: str):
+        return True
+
+    def save_section_records(self, old_template_id: str) -> bool:
         # Save sections
         relevant_sections = [i for i in self.app_engine.copy_of_section_collection.values()
                              if i.template == old_template_id]
@@ -557,7 +576,7 @@ class TemplateScene(ctk.CTkFrame):
                 icon="cancel",
                 option_1="OK")
             warning_box.wait_window()
-            return
+            return False
 
         # Upload sections first
         for section in relevant_sections:
@@ -570,6 +589,9 @@ class TemplateScene(ctk.CTkFrame):
                     collection="template_sections",
                     container_type=TemplateSection
                 )
+                if new_section is None:
+                    return False
+
                 self.app_engine.copy_of_section_collection.pop(old_section_id)
                 self.app_engine.copy_of_section_collection[new_section.id] = new_section
 
@@ -585,12 +607,15 @@ class TemplateScene(ctk.CTkFrame):
                     container_type=TemplateSection
                 )
 
+                if updated_section is None:
+                    return False
+
                 self.app_engine.copy_of_section_collection[updated_section.id] = updated_section
                 self.app_engine.section_collection[updated_section.id] = updated_section.copy()
 
-            self.save_piece_records(old_section_id, new_section_id)
+            return self.save_piece_records(old_section_id, new_section_id)
 
-    def save_piece_records(self, old_section_id, new_section_id):
+    def save_piece_records(self, old_section_id, new_section_id) -> bool:
         relevant_pieces = [i for i in self.app_engine.copy_of_piece_collection.values()
                            if i.section == old_section_id]
 
@@ -606,6 +631,8 @@ class TemplateScene(ctk.CTkFrame):
                     collection="report_pieces",
                     container_type=IndividualPiece
                 )
+                if new_piece is None:
+                    return False
 
                 self.app_engine.copy_of_piece_collection.pop(old_piece_id)
                 self.app_engine.copy_of_piece_collection[new_piece.id] = new_piece
@@ -618,21 +645,27 @@ class TemplateScene(ctk.CTkFrame):
                     collection="report_pieces",
                     container_type=IndividualPiece
                 )
+                if updated_piece is None:
+                    return False
 
                 self.app_engine.copy_of_piece_collection[updated_piece.id] = updated_piece
                 self.app_engine.piece_collection[updated_piece.id] = updated_piece.copy()
 
-    def save_deleted_records(self, old_template_id: str):
+        return True
+
+    def save_deleted_records(self, old_template_id: str) -> bool:
         # Catch database records that have been deleted
         deleted_sections = [i for i in self.app_engine.section_collection.values()
                             if i.template == old_template_id
                             and i.id not in self.app_engine.copy_of_section_collection.keys()]
         if deleted_sections:
             for section in deleted_sections:
-                self.app_engine.delete_record(
+                response = self.app_engine.delete_record(
                     record_id=section.id,
                     collection="template_sections"
                 )
+                if not response:
+                    return response
 
                 self.app_engine.section_collection.pop(section.id)
 
@@ -647,9 +680,13 @@ class TemplateScene(ctk.CTkFrame):
 
         if deleted_pieces:
             for piece in deleted_pieces:
-                self.app_engine.delete_record(
+                response = self.app_engine.delete_record(
                     record_id=piece.id,
                     collection="report_pieces"
                 )
+                if not response:
+                    return response
 
                 self.app_engine.piece_collection.pop(piece.id)
+
+        return True
