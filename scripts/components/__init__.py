@@ -11,3 +11,4 @@ from .invisible_entry import InvisibleEntry
 from .small_entry import SmallEntry
 from .secondary_optionmenu import SecondaryOptionmenu
 from .warning_button import WarningButton
+from .large_option_menu import LargeOptionMenu
