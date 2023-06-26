@@ -53,9 +53,9 @@ class TemplateScene(ctk.CTkFrame):
         template_name_and_actions_frame.columnconfigure([1, 2], weight=0)
 
         self.name_entry = InvisibleEntry(template_name_and_actions_frame,
-                                    placeholder_text=self.working_template.template_title,
-                                    validate="key",
-                                    validatecommand=(self.register(self.validate_name), "%P"))
+                                         placeholder_text=self.working_template.template_title,
+                                         validate="key",
+                                         validatecommand=(self.register(self.validate_name), "%P"))
         self.name_entry.grid(row=0, column=0, sticky="ew")
 
         save_image = ctk.CTkImage(
@@ -174,9 +174,9 @@ class TemplateScene(ctk.CTkFrame):
         self.after(10, self.master.show_frame, self.prev_scene_string)
         self.prev_scene_string = None
 
-    def validate_name(self, P):
-        if len(P) <= 40:
-            self.app_engine.copy_of_template_collection[self.working_template.id].template_title = P
+    def validate_name(self, p):
+        if len(p) <= 40:
+            self.app_engine.copy_of_template_collection[self.working_template.id].template_title = p
             return True
         else:
             return False
@@ -474,6 +474,22 @@ class TemplateScene(ctk.CTkFrame):
         # Keep track of old IDs for matching sections made in new templates
         old_template_id = self.working_template.id
 
+        # Save changes to template record first
+        self.save_template_record(old_template_id)
+
+        # Save changes to any sections (and the pieces inside them)
+        self.save_section_records(old_template_id)
+
+        # Check if any pieces or sections were deleted, and save that action to the database
+        self.save_deleted_records(old_template_id)
+
+        # Refresh the current structured pieces with new/updated data
+        self.structured_pieces = self.app_engine.create_piece_to_template(self.working_template.id)
+
+        # Rebuild the scene
+        self.fill_frames()
+
+    def save_template_record(self, old_template_id: str):
         # Save template name
         current_template_titles = [i.template_title for i in self.app_engine.copy_of_template_collection.values()
                                    if i.id != self.working_template.id]
@@ -519,6 +535,7 @@ class TemplateScene(ctk.CTkFrame):
             self.working_template = updated_template
             self.app_engine.template_collection[self.working_template.id] = updated_template.copy()
 
+    def save_section_records(self, old_template_id: str):
         # Save sections
         relevant_sections = [i for i in self.app_engine.copy_of_section_collection.values()
                              if i.template == old_template_id]
@@ -571,37 +588,41 @@ class TemplateScene(ctk.CTkFrame):
                 self.app_engine.copy_of_section_collection[updated_section.id] = updated_section
                 self.app_engine.section_collection[updated_section.id] = updated_section.copy()
 
-            relevant_pieces = [i for i in self.app_engine.copy_of_piece_collection.values()
-                               if i.section == old_section_id]
+            self.save_piece_records(old_section_id, new_section_id)
 
-            for piece in relevant_pieces:
-                old_piece_id = piece.id
+    def save_piece_records(self, old_section_id, new_section_id):
+        relevant_pieces = [i for i in self.app_engine.copy_of_piece_collection.values()
+                           if i.section == old_section_id]
 
-                if piece.section != new_section_id:
-                    piece.section = new_section_id
+        for piece in relevant_pieces:
+            old_piece_id = piece.id
 
-                if "@" in piece.id:
-                    new_piece = self.app_engine.upload_new_record(
-                        data=piece.data_to_create(),
-                        collection="report_pieces",
-                        container_type=IndividualPiece
-                    )
+            if piece.section != new_section_id:
+                piece.section = new_section_id
 
-                    self.app_engine.copy_of_piece_collection.pop(old_piece_id)
-                    self.app_engine.copy_of_piece_collection[new_piece.id] = new_piece
+            if "@" in piece.id:
+                new_piece = self.app_engine.upload_new_record(
+                    data=piece.data_to_create(),
+                    collection="report_pieces",
+                    container_type=IndividualPiece
+                )
 
-                    self.app_engine.piece_collection[new_piece.id] = new_piece.copy()
-                elif piece != self.app_engine.piece_collection[piece.id]:
-                    updated_piece = self.app_engine.update_record(
-                        record_id=piece.id,
-                        data=piece.data_to_create(),
-                        collection="report_pieces",
-                        container_type=IndividualPiece
-                    )
+                self.app_engine.copy_of_piece_collection.pop(old_piece_id)
+                self.app_engine.copy_of_piece_collection[new_piece.id] = new_piece
 
-                    self.app_engine.copy_of_piece_collection[updated_piece.id] = updated_piece
-                    self.app_engine.piece_collection[updated_piece.id] = updated_piece.copy()
+                self.app_engine.piece_collection[new_piece.id] = new_piece.copy()
+            elif piece != self.app_engine.piece_collection[piece.id]:
+                updated_piece = self.app_engine.update_record(
+                    record_id=piece.id,
+                    data=piece.data_to_create(),
+                    collection="report_pieces",
+                    container_type=IndividualPiece
+                )
 
+                self.app_engine.copy_of_piece_collection[updated_piece.id] = updated_piece
+                self.app_engine.piece_collection[updated_piece.id] = updated_piece.copy()
+
+    def save_deleted_records(self, old_template_id: str):
         # Catch database records that have been deleted
         deleted_sections = [i for i in self.app_engine.section_collection.values()
                             if i.template == old_template_id
@@ -632,15 +653,3 @@ class TemplateScene(ctk.CTkFrame):
                 )
 
                 self.app_engine.piece_collection.pop(piece.id)
-
-        # Refresh the current structured pieces with new/updated data
-        self.structured_pieces = self.app_engine.create_piece_to_template(self.working_template.id)
-
-        # Rebuild the scene
-        self.fill_frames()
-
-
-
-
-
-
