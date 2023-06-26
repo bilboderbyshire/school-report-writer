@@ -547,6 +547,7 @@ class TemplateScene(ctk.CTkFrame):
             old_section_id = section.id
             new_section_id = section.id
             if "@" in section.id:
+                section.template = self.working_template.id
                 new_section = self.app_engine.upload_new_record(
                     data=section.data_to_create(),
                     collection="template_sections",
