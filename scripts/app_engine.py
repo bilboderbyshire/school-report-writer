@@ -216,11 +216,13 @@ class AppEngine:
         else:
             return container_type(result)
 
-    def delete_record(self, record_id: str, collection: str) -> None:
+    def delete_record(self, record_id: str, collection: str) -> bool:
 
         response = self.db_instance.delete_record(collection, record_id)
 
         if not response["response"]:
             self.run_load_error(response["message"])
+
+        return response["response"]
 
 
