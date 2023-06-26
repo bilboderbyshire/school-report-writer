@@ -3,7 +3,7 @@ from ..settings import *
 from ..app_engine import AppEngine
 from ..containers import ReportTemplate
 from ..title_bar import TitleBar
-from ..components import Separator, SecondaryButton
+from ..components import Separator, SecondaryButton, LargeOptionMenu
 from typing import TYPE_CHECKING
 
 if TYPE_CHECKING:
@@ -103,6 +103,11 @@ class ReportScene(ctk.CTkFrame):
 
         section_piece_frame = ctk.CTkFrame(self)
         section_piece_frame.grid(row=3, column=0, sticky="nsew", padx=DEFAULT_PAD, pady=(0, DEFAULT_PAD))
+        section_piece_frame.rowconfigure(0, weight=0)
+        section_piece_frame.columnconfigure(0, weight=1)
+
+        section_menu = LargeOptionMenu(section_piece_frame, height=40)
+        section_menu.grid(row=0, column=0, sticky="w", **DEFAULT_PAD_COMPLETE)
 
         report_frame = ctk.CTkFrame(self)
         report_frame.grid(row=3, column=1, sticky="nsew", padx=(0, DEFAULT_PAD), pady=(0, DEFAULT_PAD))
