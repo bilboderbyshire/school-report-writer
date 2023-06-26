@@ -28,7 +28,9 @@ class SectionCard(ListCard):
             self,
             placeholder_text=self.entry_text,
             font=ctk.CTkFont(**NORMAL_LABEL_FONT),
-            show_image=False
+            show_image=False,
+            validate="key",
+            validatecommand=(self.register(self.title_edited), "%P")
         )
 
         if "@" in self.card_data.id:
@@ -128,3 +130,7 @@ class SectionCard(ListCard):
     def entry_clicked(self):
         if self.section_name.text_entry.cget("state") == "readonly":
             self.card_clicked()
+
+    def title_edited(self, p: str):
+        self.card_data.section_title = p
+        return True

@@ -160,15 +160,16 @@ class ReportTemplate:
     def data_to_create(self) -> dict:
         return {
             "template_title": self.template_title,
-            "owner": self.owner.id if self.owner is not None else None
+            "owner": self.owner if isinstance(self.owner, str) else self.owner.id
         }
 
     @staticmethod
     def _is_valid_operand(other):
         return hasattr(other, "template_title") and \
-               hasattr(other, "created") and \
-               hasattr(other, "updated") and \
-               hasattr(other, "id")
+            hasattr(other, "owner") and \
+            hasattr(other, "created") and \
+            hasattr(other, "updated") and \
+            hasattr(other, "id")
 
     def __eq__(self, other):
         if not self._is_valid_operand(other):

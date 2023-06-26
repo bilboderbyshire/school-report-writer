@@ -59,3 +59,6 @@ class InvisibleEntry(ctk.CTkFrame):
         self.rowconfigure(0, weight=1)
 
         self.text_entry.bind("<Return>", lambda e: self.focus())
+
+    def configure(self, require_redraw=False, **kwargs):
+        self.text_entry.configure(require_redraw, **kwargs)

@@ -13,6 +13,8 @@ from ..containers import ReportTemplate, NewPieceRecord, IndividualPiece, Templa
 import CTkMessagebox as ctkmb
 from ..variable_edit_toplevel import VariableEditToplevel
 from ..copy_template_from_toplevel import CopyTemplateFromToplevel
+from PIL import Image
+import os
 
 if TYPE_CHECKING:
     from ..root import ReportWriter
@@ -39,11 +41,60 @@ class TemplateScene(ctk.CTkFrame):
         title_sep = Separator(self, "hor")
         title_sep.grid(row=2, column=0, columnspan=4, sticky="nsew", padx=DEFAULT_PAD * 3, pady=DEFAULT_PAD)
 
-        name_entry = InvisibleEntry(self,
-                                    placeholder_text=self.working_template.template_title,
-                                    validate="key",
-                                    validatecommand=(self.register(self.validate_name), "%P"))
-        name_entry.grid(row=3, column=0, columnspan=2, sticky="ew", padx=DEFAULT_PAD * 2, pady=(0, DEFAULT_PAD+6))
+        template_name_and_actions_frame = ctk.CTkFrame(self, fg_color="transparent")
+        template_name_and_actions_frame.grid(row=3,
+                                             column=0,
+                                             columnspan=4,
+                                             sticky="nsew",
+                                             padx=DEFAULT_PAD * 2,
+                                             pady=(0, DEFAULT_PAD+6))
+        template_name_and_actions_frame.rowconfigure(0, weight=0)
+        template_name_and_actions_frame.columnconfigure(0, weight=1)
+        template_name_and_actions_frame.columnconfigure([1, 2], weight=0)
+
+        self.name_entry = InvisibleEntry(template_name_and_actions_frame,
+                                         placeholder_text=self.working_template.template_title,
+                                         validate="key",
+                                         validatecommand=(self.register(self.validate_name), "%P"))
+        self.name_entry.grid(row=0, column=0, sticky="ew")
+
+        save_image = ctk.CTkImage(
+            light_image=Image.open(os.path.join(os.getcwd(), "images/light-save.png")),
+            dark_image=Image.open(os.path.join(os.getcwd(), "images/dark-save.png")),
+            size=(25, 25)
+        )
+        save_button = ctk.CTkButton(
+            template_name_and_actions_frame,
+            fg_color="transparent",
+            image=save_image,
+            command=self.save_clicked,
+            text="",
+            width=35,
+            height=35,
+            hover_color=BUTTON_HOVER_COLOR,
+            corner_radius=5
+        )
+
+        save_button.grid(row=0, column=1, sticky="e", padx=SMALL_PAD)
+
+        share_image = ctk.CTkImage(
+            light_image=Image.open(os.path.join(os.getcwd(), "images/light-share.png")),
+            dark_image=Image.open(os.path.join(os.getcwd(), "images/dark-share.png")),
+            size=(25, 25)
+        )
+        share_button = ctk.CTkButton(
+            template_name_and_actions_frame,
+            fg_color="transparent",
+            image=share_image,
+            command=lambda: print("Shared"),
+            text="",
+            width=35,
+            height=35,
+            hover_color=BUTTON_HOVER_COLOR,
+            corner_radius=5
+        )
+
+        share_button.grid(row=0, column=2, sticky="e", padx=(0, SMALL_PAD))
 
         self.section_frame = SectionScrollableFrame(self,
                                                     app_engine=self.app_engine,
@@ -96,7 +147,7 @@ class TemplateScene(ctk.CTkFrame):
         if self.selected_section is not None:
             self.new_piece_selected()
 
-        self.change_cursor("arrow")
+        self.change_cursor("")
 
         self.check_if_scroll_needed()
         self.focus_set()
@@ -111,8 +162,6 @@ class TemplateScene(ctk.CTkFrame):
 
     def change_cursor(self, cursor: str) -> None:
         self.configure(cursor=cursor)
-        for i in self.winfo_children():
-            i.configure(cursor=cursor)
 
     def previous_scene(self, name_of_prev_frame: str):
         self.prev_scene_string = name_of_prev_frame
@@ -124,9 +173,9 @@ class TemplateScene(ctk.CTkFrame):
         self.after(10, self.master.show_frame, self.prev_scene_string)
         self.prev_scene_string = None
 
-    def validate_name(self, P):
-        if len(P) <= 40:
-            self.app_engine.copy_of_template_collection[self.working_template.id].template_title = P
+    def validate_name(self, p):
+        if len(p) <= 40:
+            self.app_engine.copy_of_template_collection[self.working_template.id].template_title = p
             return True
         else:
             return False
@@ -359,6 +408,7 @@ class TemplateScene(ctk.CTkFrame):
                 collection="user_variables",
                 container_type=UserVariable)
             self.app_engine.copy_of_user_variables_collection[new_variable.id] = new_variable
+            self.app_engine.user_variables_collection[new_variable_id] = new_variable.copy()
             self.edit_piece_frame.user_inserts.refresh_variable_dropdown(new_variable)
         else:
             self.edit_piece_frame.user_inserts.refresh_variable_dropdown(None)
@@ -375,17 +425,20 @@ class TemplateScene(ctk.CTkFrame):
         if tracker_var.get() == "delete":
             self.app_engine.delete_record(variable.id, "user_variables")
             self.app_engine.copy_of_user_variables_collection.pop(variable.id)
+            self.app_engine.user_variables_collection.pop(variable.id)
             self.edit_piece_frame.user_inserts.refresh_variable_dropdown(None)
         elif tracker_var.get() == "cancel":
             self.edit_piece_frame.user_inserts.refresh_variable_dropdown(variable)
         else:
-            self.app_engine.update_record(
+            updated_variable = self.app_engine.update_record(
                 record_id=variable.id,
                 data=variable.data_to_create(),
                 collection="user_variables",
                 container_type=UserVariable
             )
             self.edit_piece_frame.user_inserts.refresh_variable_dropdown(variable)
+            self.app_engine.copy_of_user_variables_collection[variable.id] = variable
+            self.app_engine.user_variables_collection[variable.id] = updated_variable.copy()
 
     def copy_variable(self, variable: UserVariable):
         tracker_var = ctk.StringVar(value="cancel")
@@ -406,6 +459,234 @@ class TemplateScene(ctk.CTkFrame):
                 collection="user_variables",
                 container_type=UserVariable)
             self.app_engine.copy_of_user_variables_collection[new_variable.id] = new_variable
+            self.app_engine.user_variables_collection[new_variable_id] = new_variable.copy()
             self.edit_piece_frame.user_inserts.refresh_variable_dropdown(new_variable)
         else:
             self.edit_piece_frame.user_inserts.refresh_variable_dropdown(variable)
+
+    def save_clicked(self):
+        self.change_cursor("watch")
+        self.update()
+        self.after(700, self.save_template)
+
+    def save_template(self) -> None:
+        # Keep track of old IDs for matching sections made in new templates
+        old_template_id = self.working_template.id
+
+        # Save changes to template record first
+        template_save = self.save_template_record(old_template_id)
+        if not template_save:
+            self.change_cursor("")
+            return
+
+        # Save changes to any sections (and the pieces inside them)
+        section_save = self.save_section_records(old_template_id)
+        if not section_save:
+            self.change_cursor("")
+            return
+
+        # Check if any pieces or sections were deleted, and save that action to the database
+        deletion_save = self.save_deleted_records(old_template_id)
+        if not deletion_save:
+            self.change_cursor("")
+            return
+
+        # Refresh the current structured pieces with new/updated data
+        self.structured_pieces = self.app_engine.create_piece_to_template(self.working_template.id)
+
+        # Rebuild the scene
+        self.fill_frames()
+
+        self.change_cursor("")
+
+    def save_template_record(self, old_template_id: str) -> bool:
+        # Save template name
+        current_template_titles = [i.template_title for i in self.app_engine.copy_of_template_collection.values()
+                                   if i.id != self.working_template.id]
+        if self.working_template.template_title in current_template_titles:
+            self.name_entry.text_entry.configure(border_width=2, border_color=BAD_COLOR)
+            warning_box = ctkmb.CTkMessagebox(
+                title="Warning",
+                message=f"Template title '{self.working_template.template_title}' already exists. Please try a new one",
+                icon="cancel",
+                option_1="OK")
+            warning_box.wait_window()
+            return False
+        else:
+            self.name_entry.text_entry.configure(border_width=0)
+
+        if "@" in self.working_template.id:
+            old_owner = self.working_template.owner
+            new_template = self.app_engine.upload_new_record(
+                data=self.working_template.data_to_create(),
+                collection="templates",
+                container_type=ReportTemplate
+            )
+
+            if new_template is None:
+                return False
+
+            new_template.owner = old_owner
+
+            self.app_engine.copy_of_template_collection.pop(old_template_id)
+            self.app_engine.copy_of_template_collection[new_template.id] = new_template
+            self.working_template = new_template
+
+            self.app_engine.template_collection[new_template.id] = new_template.copy()
+        elif self.app_engine.copy_of_template_collection[self.working_template.id] != \
+                self.app_engine.template_collection[self.working_template.id]:
+
+            old_owner = self.working_template.owner
+            updated_template = self.app_engine.update_record(
+                record_id=self.working_template.id,
+                data=self.working_template.data_to_create(),
+                collection="templates",
+                container_type=ReportTemplate
+            )
+            if updated_template is None:
+                return False
+
+            updated_template.owner = old_owner
+
+            self.app_engine.copy_of_template_collection[self.working_template.id] = updated_template
+            self.working_template = updated_template
+            self.app_engine.template_collection[self.working_template.id] = updated_template.copy()
+
+        return True
+
+    def save_section_records(self, old_template_id: str) -> bool:
+        # Save sections
+        relevant_sections = [i for i in self.app_engine.copy_of_section_collection.values()
+                             if i.template == old_template_id]
+
+        # Validate section titles first
+        all_titles_valid = True
+        for section in relevant_sections:
+            current_section_names = [i.section_title.lower() for i in relevant_sections if i.id != section.id]
+            if section.section_title.lower() in current_section_names:
+                all_titles_valid = False
+                self.section_frame.all_cards[section.id].section_name.configure(text_color=BAD_COLOR)
+            else:
+                self.section_frame.all_cards[section.id].section_name.configure(text_color=STANDARD_TEXT_COLOR)
+
+        if not all_titles_valid:
+            warning_box = ctkmb.CTkMessagebox(
+                title="Warning",
+                message=f"Some section names are not unique. Please rename them",
+                icon="cancel",
+                option_1="OK")
+            warning_box.wait_window()
+            return False
+
+        # Upload sections first
+        for section in relevant_sections:
+            old_section_id = section.id
+            new_section_id = section.id
+            if "@" in section.id:
+                section.template = self.working_template.id
+                new_section = self.app_engine.upload_new_record(
+                    data=section.data_to_create(),
+                    collection="template_sections",
+                    container_type=TemplateSection
+                )
+                if new_section is None:
+                    return False
+
+                self.app_engine.copy_of_section_collection.pop(old_section_id)
+                self.app_engine.copy_of_section_collection[new_section.id] = new_section
+
+                self.app_engine.section_collection[new_section.id] = new_section.copy()
+
+                new_section_id = new_section.id
+
+            elif section != self.app_engine.section_collection[section.id]:
+                updated_section = self.app_engine.update_record(
+                    record_id=section.id,
+                    data=section.data_to_create(),
+                    collection="template_sections",
+                    container_type=TemplateSection
+                )
+
+                if updated_section is None:
+                    return False
+
+                self.app_engine.copy_of_section_collection[updated_section.id] = updated_section
+                self.app_engine.section_collection[updated_section.id] = updated_section.copy()
+
+            return self.save_piece_records(old_section_id, new_section_id)
+
+    def save_piece_records(self, old_section_id, new_section_id) -> bool:
+        relevant_pieces = [i for i in self.app_engine.copy_of_piece_collection.values()
+                           if i.section == old_section_id]
+
+        for piece in relevant_pieces:
+            old_piece_id = piece.id
+
+            if piece.section != new_section_id:
+                piece.section = new_section_id
+
+            if "@" in piece.id:
+                new_piece = self.app_engine.upload_new_record(
+                    data=piece.data_to_create(),
+                    collection="report_pieces",
+                    container_type=IndividualPiece
+                )
+                if new_piece is None:
+                    return False
+
+                self.app_engine.copy_of_piece_collection.pop(old_piece_id)
+                self.app_engine.copy_of_piece_collection[new_piece.id] = new_piece
+
+                self.app_engine.piece_collection[new_piece.id] = new_piece.copy()
+            elif piece != self.app_engine.piece_collection[piece.id]:
+                updated_piece = self.app_engine.update_record(
+                    record_id=piece.id,
+                    data=piece.data_to_create(),
+                    collection="report_pieces",
+                    container_type=IndividualPiece
+                )
+                if updated_piece is None:
+                    return False
+
+                self.app_engine.copy_of_piece_collection[updated_piece.id] = updated_piece
+                self.app_engine.piece_collection[updated_piece.id] = updated_piece.copy()
+
+        return True
+
+    def save_deleted_records(self, old_template_id: str) -> bool:
+        # Catch database records that have been deleted
+        deleted_sections = [i for i in self.app_engine.section_collection.values()
+                            if i.template == old_template_id
+                            and i.id not in self.app_engine.copy_of_section_collection.keys()]
+        if deleted_sections:
+            for section in deleted_sections:
+                response = self.app_engine.delete_record(
+                    record_id=section.id,
+                    collection="template_sections"
+                )
+                if not response:
+                    return response
+
+                self.app_engine.section_collection.pop(section.id)
+
+                pieces_to_cascade_delete = [i.id for i in self.app_engine.piece_collection.values()
+                                            if i.section == section.id]
+                for piece_id in pieces_to_cascade_delete:
+                    self.app_engine.piece_collection.pop(piece_id)
+
+        deleted_pieces = [i for i in self.app_engine.piece_collection.values()
+                          if self.app_engine.section_collection[i.section].template == old_template_id
+                          and i.id not in self.app_engine.copy_of_piece_collection.keys()]
+
+        if deleted_pieces:
+            for piece in deleted_pieces:
+                response = self.app_engine.delete_record(
+                    record_id=piece.id,
+                    collection="report_pieces"
+                )
+                if not response:
+                    return response
+
+                self.app_engine.piece_collection.pop(piece.id)
+
+        return True

@@ -37,7 +37,20 @@ class PieceListCard(ListCard):
             padx=0
         )
 
-        self.subtitle_label.grid(row=0, column=0, sticky="nsew", padx=(DEFAULT_PAD, SMALL_PAD), pady=DEFAULT_PAD)
+        if "@" in self.card_data.id:
+            unsaved_label = ctk.CTkLabel(
+                self,
+                fg_color="transparent",
+                text="*",
+                anchor="ne",
+                font=ctk.CTkFont(**SMALL_LABEL_FONT),
+                pady=0,
+                padx=0
+            )
+            unsaved_label.grid(row=0, column=0, sticky="e", padx=(DEFAULT_PAD, 0), pady=DEFAULT_PAD)
+            self.subtitle_label.grid(row=0, column=1, sticky="nsew", padx=(0, SMALL_PAD), pady=DEFAULT_PAD)
+        else:
+            self.subtitle_label.grid(row=0, column=1, sticky="nsew", padx=(DEFAULT_PAD, SMALL_PAD), pady=DEFAULT_PAD)
         self.bind_frame()
 
         delete_image = ctk.CTkImage(
@@ -57,13 +70,13 @@ class PieceListCard(ListCard):
             corner_radius=5
         )
 
-        delete_button.grid(row=0, column=1, sticky="ne", padx=(0, DEFAULT_PAD), pady=(DEFAULT_PAD, 0))
+        delete_button.grid(row=0, column=2, sticky="ne", padx=(0, DEFAULT_PAD), pady=(DEFAULT_PAD, 0))
 
         self.bind("<Configure>", lambda event: self.configure_label_width())
 
         self.rowconfigure(0, weight=0)
-        self.columnconfigure(0, weight=1)
-        self.columnconfigure(1, weight=0)
+        self.columnconfigure([0, 2], weight=0)
+        self.columnconfigure(1, weight=1)
 
     def update_display_text(self):
         self.display_text_sv.set(self.card_data.piece_text)
