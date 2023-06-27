@@ -47,7 +47,7 @@ class PieceListCard(ListCard):
                 pady=0,
                 padx=0
             )
-            unsaved_label.grid(row=0, column=0, sticky="e", padx=(DEFAULT_PAD, 0), pady=DEFAULT_PAD)
+            unsaved_label.grid(row=0, column=0, sticky="ne", padx=(DEFAULT_PAD, 0), pady=DEFAULT_PAD)
             self.subtitle_label.grid(row=0, column=1, sticky="nsew", padx=(0, SMALL_PAD), pady=DEFAULT_PAD)
         else:
             self.subtitle_label.grid(row=0, column=1, sticky="nsew", padx=(DEFAULT_PAD, SMALL_PAD), pady=DEFAULT_PAD)
