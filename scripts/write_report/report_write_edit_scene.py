@@ -1,9 +1,10 @@
 import customtkinter as ctk
 from ..settings import *
 from ..app_engine import AppEngine
-from ..containers import ReportTemplate
+from ..containers import ReportTemplate, IndividualPiece, TemplateSection, NewPieceRecord
 from ..title_bar import TitleBar
-from ..components import Separator, SecondaryButton, LargeOptionMenu
+from ..components import Separator, SecondaryButton, LargeOptionMenu, NormalLabel, HoverTooltip
+from .report_piece_scrollframe import ReportPieceScrollframe
 from typing import TYPE_CHECKING
 
 if TYPE_CHECKING:
@@ -11,15 +12,21 @@ if TYPE_CHECKING:
 
 
 class ReportScene(ctk.CTkFrame):
-    def __init__(self, master, app_engine: AppEngine):
+    def __init__(self,
+                 master,
+                 app_engine: AppEngine):
         super().__init__(master, fg_color=ROOT_BG)
 
         self.app_engine = app_engine
         self.prev_scene_string = None
-        self.report_template: ReportTemplate = None
+        self.report_sections: list[TemplateSection] | None = None
+        self.report_template: ReportTemplate | None = None
+        self.structured_pieces: dict[str, dict[str, IndividualPiece]] | None = None
 
         self.pupil_name_sv = ctk.StringVar(value="Sally")
         self.pupil_gender_sv = ctk.StringVar(value="NB")
+        self.next_pupil_sv = ctk.StringVar(value="Barry")
+        self.prev_pupil_sv = ctk.StringVar(value="Sally")
 
     def __build_frame(self):
 
@@ -100,28 +107,67 @@ class ReportScene(ctk.CTkFrame):
             width=0,
         )
         next_pupil_button.grid(row=0, column=3, sticky="nsew")
+        HoverTooltip(next_pupil_button, text_variable=self.next_pupil_sv)
 
         section_piece_frame = ctk.CTkFrame(self)
         section_piece_frame.grid(row=3, column=0, sticky="nsew", padx=DEFAULT_PAD, pady=(0, DEFAULT_PAD))
         section_piece_frame.rowconfigure(0, weight=0)
+        section_piece_frame.rowconfigure(1, weight=1)
         section_piece_frame.columnconfigure(0, weight=1)
 
-        section_menu = LargeOptionMenu(section_piece_frame, height=40)
-        section_menu.grid(row=0, column=0, sticky="w", **DEFAULT_PAD_COMPLETE)
+        section_menu = LargeOptionMenu(
+            section_piece_frame,
+            height=40,
+            values=[i.section_title.capitalize() for i in self.report_sections],
+            command=self.section_selected
+        )
+        section_menu.grid(row=0, column=0, sticky="w", padx=DEFAULT_PAD, pady=(DEFAULT_PAD, SMALL_PAD))
 
-        report_frame = ctk.CTkFrame(self)
-        report_frame.grid(row=3, column=1, sticky="nsew", padx=(0, DEFAULT_PAD), pady=(0, DEFAULT_PAD))
+        self.piece_scrollframe = ReportPieceScrollframe(section_piece_frame)
+        self.piece_scrollframe.grid(row=1, column=0, sticky="nsew", padx=(3, SMALL_PAD))
+
+        report_and_variables_frame = ctk.CTkFrame(self)
+        report_and_variables_frame.grid(row=3, column=1, sticky="nsew", padx=(0, DEFAULT_PAD), pady=(0, DEFAULT_PAD))
+        report_and_variables_frame.rowconfigure(0, weight=0)
+        report_and_variables_frame.rowconfigure(1, weight=1)
+        report_and_variables_frame.columnconfigure(0, weight=2, uniform="columns")
+        report_and_variables_frame.columnconfigure(1, weight=3, uniform="columns")
+
+        variables_frame_title = NormalLabel(
+                report_and_variables_frame,
+                anchor="w",
+                text="Variables")
+
+        variables_frame_title.grid(row=0, column=0, sticky="nw", padx=15, pady=15)
+
+        report_frame_title = NormalLabel(
+            report_and_variables_frame,
+            anchor="w",
+            text="Report")
+
+        report_frame_title.grid(row=0, column=1, sticky="nw", padx=15, pady=15)
 
         self.rowconfigure([0, 1, 2], weight=0)
         self.rowconfigure(3, weight=1)
         self.columnconfigure(0, weight=2)
         self.columnconfigure(1, weight=5)
 
+        self.after(1, self.check_all_scrollbars)
+
     def fill_frames(self):
         for i in self.winfo_children():
             i.destroy()
 
         self.__build_frame()
+
+        if self.report_sections:
+            self.piece_scrollframe.build_pieces_frame(self.structured_pieces[self.report_sections[0].id])
+
+    def setup_scene(self, template: ReportTemplate):
+        self.report_template = template
+        self.report_sections = [i for i in self.app_engine.section_collection.values()
+                                if i.template == self.report_template.id]
+        self.structured_pieces = self.app_engine.create_piece_to_template(self.report_template.id, copy=False)
 
     def previous_scene(self, name_of_prev_frame: str):
         self.prev_scene_string = name_of_prev_frame
@@ -132,3 +178,16 @@ class ReportScene(ctk.CTkFrame):
         new_scene.fill_frames()
         self.after(10, self.master.show_frame, self.prev_scene_string)
         self.prev_scene_string = None
+
+    def check_all_scrollbars(self):
+        self.piece_scrollframe.check_scrollbar_needed()
+
+    def section_selected(self, option: str):
+        id_of_section = ""
+        for section in self.report_sections:
+            if section.section_title.lower() == option.lower():
+                id_of_section = section.id
+                break
+
+        self.piece_scrollframe.build_pieces_frame(self.structured_pieces[id_of_section])
+
