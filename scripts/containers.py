@@ -294,9 +294,9 @@ class IndividualReport:
     def __init__(self, record) -> None:
         self.response_object = record
         self.id = record.id
-        self.pupil_name = record.pupil_name
-        self.pronouns = record.pronouns
-        self.other_variables = record.other_variables
+        self.pupil_forename = record.pupil_forename
+        self.pupil_surname = record.pupil_surname
+        self.gender = record.gender
         self.report_text = record.report_text
         self.completed = record.completed
         self.user = None
@@ -328,21 +328,21 @@ class IndividualReport:
 
     def data_to_create(self) -> dict:
         return {
-            "pupil_name": self.pupil_name,
-            "pronouns": self.pronouns,
-            "other_variables": self.other_variables,
+            "pupil_forename": self.pupil_forename,
+            "pupil_surname": self.pupil_surname,
+            "gender": self.gender,
             "report_text": self.report_text,
             "completed": self.completed,
-            "user": self.user.id if self.user is not None else None,
-            "report_set": self.report_set.id if self.report_set is not None else None
+            "user": self.user if isinstance(self.user, str) else self.user.id,
+            "report_set": self.report_set if isinstance(self.report_set, str) else self.report_set.id
         }
 
     @staticmethod
     def _is_valid_operand(other):
         return hasattr(other, "id") and \
-               hasattr(other, "pupil_name") and \
-               hasattr(other, "pronouns") and \
-               hasattr(other, "other_variables") and \
+               hasattr(other, "pupil_forename") and \
+               hasattr(other, "pupil_surname") and \
+               hasattr(other, "gender") and \
                hasattr(other, "report_text") and \
                hasattr(other, "completed") and \
                hasattr(other, "user") and \
@@ -355,9 +355,9 @@ class IndividualReport:
             return NotImplemented
 
         return ((self.id,
-                 self.pupil_name,
-                 self.pronouns,
-                 self.other_variables,
+                 self.pupil_forename,
+                 self.pupil_surname,
+                 self.gender,
                  self.report_text,
                  self.user,
                  self.report_set,
@@ -365,9 +365,9 @@ class IndividualReport:
                  self.created,
                  self.updated) == (
             other.id,
-            other.pupil_name,
-            other.pronouns,
-            other.other_variables,
+            other.pupil_forename,
+            other.pupil_surname,
+            other.gender,
             other.report_text,
             other.user,
             other.report_set,
@@ -378,9 +378,9 @@ class IndividualReport:
     def __repr__(self):
         return str({
             "id": self.id,
-            "pupil_name": self.pupil_name,
-            "pronouns": self.pronouns,
-            "other_variables": self.other_variables,
+            "pupil_forename": self.pupil_forename,
+            "pupil_surname": self.pupil_surname,
+            "gender": self.gender,
             "report_text": self.report_text,
             "completed": self.completed,
             "user": repr(self.user),
