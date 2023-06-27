@@ -98,7 +98,7 @@ class EditPieceFrame(ctk.CTkFrame):
 
         variable = ""
         # iterate them pairwise (start and end index)
-        for start, end in zip(tag_indices[0::2], tag_indices[1::2]):
+        for tag_index, (start, end) in enumerate(zip(tag_indices[0::2], tag_indices[1::2])):
             # check if the tag matches the mouse click index
             if self.piece_textbox.compare(start, '<=', index) and self.piece_textbox.compare(index, '<', end):
                 # return string between tag start and end

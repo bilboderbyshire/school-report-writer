@@ -1,10 +1,11 @@
 import customtkinter as ctk
 from ..settings import *
 from ..app_engine import AppEngine
-from ..containers import ReportTemplate, IndividualPiece, TemplateSection, NewPieceRecord
+from ..containers import ReportTemplate, IndividualPiece, TemplateSection, PupilInfo
 from ..title_bar import TitleBar
 from ..components import Separator, SecondaryButton, LargeOptionMenu, NormalLabel, HoverTooltip
 from .report_piece_scrollframe import ReportPieceScrollframe
+from .report_text_frame import ReportTextFrame
 from typing import TYPE_CHECKING
 
 if TYPE_CHECKING:
@@ -26,7 +27,11 @@ class ReportScene(ctk.CTkFrame):
         self.pupil_name_sv = ctk.StringVar(value="Sally")
         self.pupil_gender_sv = ctk.StringVar(value="NB")
         self.next_pupil_sv = ctk.StringVar(value="Barry")
-        self.prev_pupil_sv = ctk.StringVar(value="Sally")
+        self.prev_pupil_sv = ctk.StringVar(value="Mary")
+
+        self.pupil_info: PupilInfo = {"forename": "Sally",
+                                      "surname": "Hawkins",
+                                      "gender": "NB"}
 
     def __build_frame(self):
 
@@ -123,7 +128,7 @@ class ReportScene(ctk.CTkFrame):
         )
         section_menu.grid(row=0, column=0, sticky="w", padx=DEFAULT_PAD, pady=(DEFAULT_PAD, SMALL_PAD))
 
-        self.piece_scrollframe = ReportPieceScrollframe(section_piece_frame)
+        self.piece_scrollframe = ReportPieceScrollframe(section_piece_frame, insert_piece_command=self.insert_piece)
         self.piece_scrollframe.grid(row=1, column=0, sticky="nsew", padx=(3, SMALL_PAD))
 
         report_and_variables_frame = ctk.CTkFrame(self)
@@ -147,12 +152,17 @@ class ReportScene(ctk.CTkFrame):
 
         report_frame_title.grid(row=0, column=1, sticky="nw", padx=15, pady=15)
 
+        self.report_text_frame = ReportTextFrame(report_and_variables_frame,
+                                                 pupil_info=self.pupil_info,
+                                                 variables_collection=self.app_engine.user_variables_collection)
+        self.report_text_frame.grid(row=1, column=1, sticky="nsew", padx=(0, DEFAULT_PAD), pady=(0, DEFAULT_PAD))
+
         self.rowconfigure([0, 1, 2], weight=0)
         self.rowconfigure(3, weight=1)
         self.columnconfigure(0, weight=2)
         self.columnconfigure(1, weight=5)
 
-        self.after(1, self.check_all_scrollbars)
+        self.after(10, self.check_all_scrollbars)
 
     def fill_frames(self):
         for i in self.winfo_children():
@@ -160,7 +170,7 @@ class ReportScene(ctk.CTkFrame):
 
         self.__build_frame()
 
-        if self.report_sections:
+        if self.report_sections is not None and self.report_sections:
             self.piece_scrollframe.build_pieces_frame(self.structured_pieces[self.report_sections[0].id])
 
     def setup_scene(self, template: ReportTemplate):
@@ -191,3 +201,6 @@ class ReportScene(ctk.CTkFrame):
 
         self.piece_scrollframe.build_pieces_frame(self.structured_pieces[id_of_section])
 
+    def insert_piece(self, piece: IndividualPiece):
+        new_variables = self.report_text_frame.insert_piece(piece)
+        print(new_variables)

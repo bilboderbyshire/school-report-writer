@@ -3,13 +3,15 @@ from ..components import ListCard
 from ..settings import *
 from ..containers import IndividualPiece
 from PIL import Image
+from typing import Callable
 import os
 
 
 class ReportPieceListCard(ListCard):
     def __init__(self,
                  master,
-                 piece: IndividualPiece):
+                 piece: IndividualPiece,
+                 insert_piece_command: Callable):
         super().__init__(master, fg_color=SECONDARY_LABEL_CARD_COLOR)
 
         self.card_data = piece
@@ -39,7 +41,7 @@ class ReportPieceListCard(ListCard):
             self,
             fg_color="transparent",
             image=add_piece_image,
-            command=lambda: print("Added"),
+            command=lambda: insert_piece_command(self.card_data),
             text="",
             width=30,
             height=30,

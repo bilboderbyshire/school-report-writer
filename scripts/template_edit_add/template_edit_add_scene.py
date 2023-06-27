@@ -613,7 +613,9 @@ class TemplateScene(ctk.CTkFrame):
                 self.app_engine.copy_of_section_collection[updated_section.id] = updated_section
                 self.app_engine.section_collection[updated_section.id] = updated_section.copy()
 
-            return self.save_piece_records(old_section_id, new_section_id)
+            piece_save = self.save_piece_records(old_section_id, new_section_id)
+            if not piece_save:
+                return False
 
     def save_piece_records(self, old_section_id, new_section_id) -> bool:
         relevant_pieces = [i for i in self.app_engine.copy_of_piece_collection.values()

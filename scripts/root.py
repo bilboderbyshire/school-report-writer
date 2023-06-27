@@ -36,10 +36,10 @@ class ReportWriter(ctk.CTk):
         self.frames: dict[str, MainMenuScene | TemplateScene | ReportScene] = {}
         self.db_instance = ReportWriterInstance()
         self.app_engine: AppEngine | None = None
-        self.__setup_frames()
-        new_frame = self.show_frame("write-report-scene")
-        new_frame.fill_frames()
-        # self.__login()
+        # self.__setup_frames()
+        # new_frame = self.show_frame("write-report-scene")
+        # new_frame.fill_frames()
+        self.__login()
 
     def __login(self):
         user_accepted = ctk.BooleanVar(value=False)
