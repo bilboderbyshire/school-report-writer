@@ -13,6 +13,7 @@ class LargeOptionMenu(ctk.CTkOptionMenu):
                          button_hover_color=hover_color,
                          font=ctk.CTkFont(**NORMAL_LABEL_FONT),
                          dropdown_font=ctk.CTkFont(**SMALL_LABEL_FONT),
+                         text_color=STANDARD_TEXT_COLOR,
                          **kwargs)
 
         self.hover_color = hover_color
