@@ -119,20 +119,31 @@ class AppEngine:
         self.copy_of_user_variables_collection: dict[str, UserVariable] = \
             create_copy_of_collection(self.user_variables_collection)
 
-    def create_piece_to_template(self, template_id: str) -> dict[str, dict[str, IndividualPiece]]:
+    def create_piece_to_template(self, template_id: str, copy: bool = True) -> dict[str, dict[str, IndividualPiece]]:
         """Create template and piece relationship"""
 
         new_relationship: dict[str, dict[str, IndividualPiece]] = {}
 
-        for section in self.copy_of_section_collection.values():
-            if section.template == template_id:
-                new_relationship[section.id] = {}
+        if copy:
+            for section in self.copy_of_section_collection.values():
+                if section.template == template_id:
+                    new_relationship[section.id] = {}
 
-        for piece in self.copy_of_piece_collection.values():
-            if self.copy_of_section_collection[piece.section].template == template_id:
-                # Create a new key, value pair using the piece's id and the piece itself, place that inside the relevant
-                #  section key, which is then inside the relevant template key.
-                new_relationship[piece.section][piece.id] = piece
+            for piece in self.copy_of_piece_collection.values():
+                if self.copy_of_section_collection[piece.section].template == template_id:
+                    # Create a new key, value pair using the piece's id and the piece itself, place that inside the
+                    #  relevant section key, which is then inside the relevant template key.
+                    new_relationship[piece.section][piece.id] = piece
+        else:
+            for section in self.section_collection.values():
+                if section.template == template_id:
+                    new_relationship[section.id] = {}
+
+            for piece in self.piece_collection.values():
+                if self.section_collection[piece.section].template == template_id:
+                    # Create a new key, value pair using the piece's id and the piece itself, place that inside the
+                    #  relevant section key, which is then inside the relevant template key.
+                    new_relationship[piece.section][piece.id] = piece
 
         return new_relationship
 
