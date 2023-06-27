@@ -56,6 +56,12 @@ class Response(TypedDict):
     message: str
 
 
+class PupilInfo(TypedDict):
+    forename: str
+    surname: str
+    gender: str
+
+
 class UserCreation(TypedDict):
     forename: str
     surname: str
