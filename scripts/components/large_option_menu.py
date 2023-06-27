@@ -20,8 +20,6 @@ class LargeOptionMenu(ctk.CTkOptionMenu):
         self.bind("<Enter>", lambda event: self.on_hover())
         self.bind("<Leave>", lambda event: self.on_leave())
 
-        print(self.winfo_children())
-
     def on_hover(self):
         self.configure(fg_color=self.hover_color, button_color=self.hover_color)
 
