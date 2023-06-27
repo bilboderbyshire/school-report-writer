@@ -12,3 +12,4 @@ from .small_entry import SmallEntry
 from .secondary_optionmenu import SecondaryOptionmenu
 from .warning_button import WarningButton
 from .large_option_menu import LargeOptionMenu
+from .hover_tooltip import HoverTooltip
