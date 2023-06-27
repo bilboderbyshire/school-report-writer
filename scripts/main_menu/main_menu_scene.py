@@ -86,7 +86,12 @@ class MainMenuScene(ctk.CTkFrame):
             i.configure(cursor=cursor)
 
     def add_report(self):
-        print("Adding report")
+        self.master: ReportWriter
+        next_scene = self.master.get_frame("write-report-scene")
+        next_scene.previous_scene("main-menu")
+        next_scene.setup_scene(list(self.app_engine.copy_of_template_collection.values())[0])
+        next_scene.fill_frames()
+        self.master.show_frame("write-report-scene")
 
     def add_template(self):
         current_template_titles: list[str] = [i.template_title
