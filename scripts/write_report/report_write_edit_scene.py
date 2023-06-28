@@ -160,7 +160,8 @@ class ReportScene(ctk.CTkFrame):
 
         self.insert_variables_frame = InsertVariablesFrame(
             report_and_variables_frame,
-            variables_collection=self.app_engine.user_variables_collection
+            variables_collection=self.app_engine.user_variables_collection,
+            edit_static_command=self.edit_static_variable
         )
         self.insert_variables_frame.grid(row=1, column=0, sticky="nsew", padx=(3, SMALL_PAD), pady=(0, DEFAULT_PAD))
 
@@ -210,3 +211,14 @@ class ReportScene(ctk.CTkFrame):
 
     def insert_piece(self, piece: IndividualPiece):
         new_variables = self.report_text_frame.insert_piece(piece)
+
+        self.insert_variables_frame.build_variable_inserts(new_variables)
+
+    def edit_static_variable(self, variable_name: str, index: int, new_text: str):
+        print(variable_name, index, new_text)
+        self.report_text_frame.edit_variable(
+            variable_type="static",
+            variable_name=variable_name,
+            index=index,
+            new_text=new_text
+        )

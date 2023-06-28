@@ -50,7 +50,7 @@ class ReportTextFrame(ctk.CTkFrame):
         self.rowconfigure(1, weight=1, uniform="rows")
         self.columnconfigure(0, weight=1)
 
-    def insert_piece(self, piece: IndividualPiece) -> dict[str, list[UserVariable]]:
+    def insert_piece(self, piece: IndividualPiece) -> dict[str, list[str]]:
         variables_found: dict[str, list[UserVariable]] = {
             "static": [],
             "choice": [],
@@ -117,4 +117,20 @@ class ReportTextFrame(ctk.CTkFrame):
         self.piece_textbox.insert("insert", " ")
 
         return variables_found
+
+    def edit_variable(self, variable_type: str, variable_name: str, index: int, new_text: str):
+        tag_ranges = self.piece_textbox.tag_ranges(variable_type)
+
+        tag_range = list(zip(tag_ranges[0::2], tag_ranges[1::2]))[index]
+
+        self.piece_textbox.delete(tag_range[0], tag_range[1])
+
+        if new_text != "":
+            self.piece_textbox.insert(tag_range[0], new_text, variable_type)
+        else:
+            self.piece_textbox.insert(tag_range[0], "{" + f"{variable_type}:" + variable_name + "}", variable_type)
+
+        print(tag_range)
+
+
 
