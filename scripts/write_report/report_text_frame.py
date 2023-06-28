@@ -57,8 +57,6 @@ class ReportTextFrame(ctk.CTkFrame):
             "chain": []
         }
 
-        starting_index = self.piece_textbox.index("insert")
-
         current_tag = ""
         in_tag = False
         first_char_in_sentence = True
@@ -117,10 +115,6 @@ class ReportTextFrame(ctk.CTkFrame):
                 first_char_in_sentence = False
 
         self.piece_textbox.insert("insert", " ")
-        ending_index = self.piece_textbox.index("insert")
-
-        print(starting_index)
-        print(ending_index)
 
         return variables_found
 

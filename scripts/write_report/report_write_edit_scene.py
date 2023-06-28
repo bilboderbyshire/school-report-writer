@@ -6,6 +6,7 @@ from ..title_bar import TitleBar
 from ..components import Separator, SecondaryButton, LargeOptionMenu, NormalLabel, HoverTooltip
 from .report_piece_scrollframe import ReportPieceScrollframe
 from .report_text_frame import ReportTextFrame
+from .insert_variables_frame import InsertVariablesFrame
 from typing import TYPE_CHECKING
 
 if TYPE_CHECKING:
@@ -157,6 +158,12 @@ class ReportScene(ctk.CTkFrame):
                                                  variables_collection=self.app_engine.user_variables_collection)
         self.report_text_frame.grid(row=1, column=1, sticky="nsew", padx=(0, DEFAULT_PAD), pady=(0, DEFAULT_PAD))
 
+        self.insert_variables_frame = InsertVariablesFrame(
+            report_and_variables_frame,
+            variables_collection=self.app_engine.user_variables_collection
+        )
+        self.insert_variables_frame.grid(row=1, column=0, sticky="nsew", padx=(3, SMALL_PAD), pady=(0, DEFAULT_PAD))
+
         self.rowconfigure([0, 1, 2], weight=0)
         self.rowconfigure(3, weight=1)
         self.columnconfigure(0, weight=2)
@@ -203,4 +210,3 @@ class ReportScene(ctk.CTkFrame):
 
     def insert_piece(self, piece: IndividualPiece):
         new_variables = self.report_text_frame.insert_piece(piece)
-        print(new_variables)
