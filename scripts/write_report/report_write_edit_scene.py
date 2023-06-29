@@ -155,7 +155,8 @@ class ReportScene(ctk.CTkFrame):
 
         self.report_text_frame = ReportTextFrame(report_and_variables_frame,
                                                  pupil_info=self.pupil_info,
-                                                 variables_collection=self.app_engine.user_variables_collection)
+                                                 variables_collection=self.app_engine.user_variables_collection,
+                                                 text_box_edited_command=self.text_box_edited)
         self.report_text_frame.grid(row=1, column=1, sticky="nsew", padx=(0, DEFAULT_PAD), pady=(0, DEFAULT_PAD))
 
         self.insert_variables_frame = InsertVariablesFrame(
@@ -214,11 +215,24 @@ class ReportScene(ctk.CTkFrame):
 
         self.insert_variables_frame.build_variable_inserts(new_variables)
 
-    def edit_static_variable(self, variable_name: str, index: int, new_text: str):
-        print(variable_name, index, new_text)
-        self.report_text_frame.edit_variable(
-            variable_type="static",
+    def edit_static_variable(self, variable_name: str, new_text: str):
+        self.report_text_frame.edit_static_variable(
             variable_name=variable_name,
-            index=index,
             new_text=new_text
         )
+
+    def text_box_edited(self, new_variables: dict[str, list[str]]):
+        for var_type, var_info_list in new_variables.items():
+            if var_type == "static":
+                current_static_vars = list(self.insert_variables_frame.static_vars.instance_dict.keys())
+
+                print(var_info_list)
+                print(current_static_vars)
+
+                for new_var in var_info_list:
+                    if new_var not in current_static_vars:
+                        self.insert_variables_frame.static_vars.add_variable(new_var)
+
+                for existing_var in current_static_vars:
+                    if existing_var not in var_info_list:
+                        self.insert_variables_frame.static_vars.delete_variable(existing_var)

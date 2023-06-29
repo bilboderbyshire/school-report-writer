@@ -33,9 +33,9 @@ class UserVariableListCard(ListCard):
         self.rowconfigure("all", weight=0)
         self.columnconfigure(0, weight=1)
 
-    def add_variable(self, variable_to_add: UserVariable):
+    def add_variable(self, variable_to_add):
         pass
 
-    def delete_variable(self, index: int):
+    def delete_variable(self, variable_to_delete):
         pass
 

@@ -1,17 +1,21 @@
 import customtkinter as ctk
 from ..settings import *
 from ..containers import IndividualPiece, UserVariable, PupilInfo
+from typing import Callable
 
 
 class ReportTextFrame(ctk.CTkFrame):
     def __init__(self,
                  master,
                  variables_collection: dict[str, UserVariable],
-                 pupil_info: PupilInfo):
+                 pupil_info: PupilInfo,
+                 text_box_edited_command: Callable):
         super().__init__(master, fg_color=DARK_FRAME_COLOR)
 
         self.variables_collection = variables_collection
         self.pupil_info = pupil_info
+        self.text_box_edited_command = text_box_edited_command
+        self.edit_after_id = None
 
         self.piece_textbox = ctk.CTkTextbox(
             self,
@@ -46,12 +50,14 @@ class ReportTextFrame(ctk.CTkFrame):
         )
         info_title_label.grid(row=0, column=0, sticky="w", padx=SMALL_PAD, pady=(0, SMALL_PAD))
 
+        self.piece_textbox.bind("<KeyRelease>", lambda event: self.delayed_text_edit_refresh())
+
         self.rowconfigure(0, weight=2, uniform="rows")
         self.rowconfigure(1, weight=1, uniform="rows")
         self.columnconfigure(0, weight=1)
 
     def insert_piece(self, piece: IndividualPiece) -> dict[str, list[str]]:
-        variables_found: dict[str, list[UserVariable]] = {
+        variables_found: dict[str, list[str]] = {
             "static": [],
             "choice": [],
             "chain": []
@@ -102,7 +108,7 @@ class ReportTextFrame(ctk.CTkFrame):
                     elif tag_name in ["static", "choice", "chain"]:
                         if tag_info in [i.variable_name for i in self.variables_collection.values()]:
                             variables_found[tag_name].append(tag_info)
-                            self.piece_textbox.insert("insert", current_tag, tag_name)
+                            self.piece_textbox.insert("insert", current_tag, (tag_name, tag_info))
                         else:
                             self.piece_textbox.insert("insert", current_tag)
                     else:
@@ -130,7 +136,43 @@ class ReportTextFrame(ctk.CTkFrame):
         else:
             self.piece_textbox.insert(tag_range[0], "{" + f"{variable_type}:" + variable_name + "}", variable_type)
 
-        print(tag_range)
+    def edit_static_variable(self, variable_name: str, new_text: str):
+        tag_ranges = self.piece_textbox.tag_ranges(variable_name)
+        print(tag_ranges)
 
+        current_tag_start = tag_ranges[0]
+        current_tag_end = tag_ranges[1]
+        for i in range(len(tag_ranges)//2):
+            self.piece_textbox.delete(current_tag_start, current_tag_end)
 
+            if new_text != "":
+                self.piece_textbox.insert(current_tag_start, new_text, ("static", variable_name))
+            else:
+                self.piece_textbox.insert(current_tag_start, "{static:" + variable_name + "}", ("static", variable_name))
+            try:
+                current_tag_start, current_tag_end = self.piece_textbox.tag_nextrange(variable_name, current_tag_end)
+            except ValueError:
+                break
 
+    def text_box_edited(self):
+        variables_found: dict[str, list[str]] = {
+            "static": [],
+            "choice": [],
+            "chain": []
+        }
+
+        for var_type in ["static", "choice", "chain"]:
+            tag_ranges = self.piece_textbox.tag_ranges(var_type)
+            for start, end in zip(tag_ranges[0::2], tag_ranges[1::2]):
+                tag_info = self.piece_textbox.get(start, end)
+                tag_name = self.piece_textbox.tag_names(start)[1]
+                variables_found[var_type].append(tag_name)
+
+        self.text_box_edited_command(variables_found)
+        self.edit_after_id = None
+
+    def delayed_text_edit_refresh(self):
+        if self.edit_after_id is not None:
+            self.after_cancel(self.edit_after_id)
+
+        self.edit_after_id = self.after(1000, self.text_box_edited)

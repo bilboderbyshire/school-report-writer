@@ -1,6 +1,5 @@
 from .user_variable_list_card import UserVariableListCard
 import customtkinter as ctk
-from ..containers import UserVariable
 from ..components import SmallLabel
 from ..settings import *
 from typing import Callable
@@ -11,34 +10,39 @@ class StaticVariableListCard(UserVariableListCard):
                  edit_static_command: Callable):
         super().__init__(master, variable_type="static")
 
-        self.instance_dict: dict[int, ctk.CTkEntry]
+        self.instance_dict: dict[str, StaticVariableListCard]
         self.edit_command = edit_static_command
+        self.current_max_rows = 1
 
     def add_variable(self, variable_to_add: str):
-        next_index = max(list(self.instance_dict.keys()), default=-1) + 1
+        if variable_to_add in self.instance_dict.keys():
+            return
 
         new_var_entry = StaticVariableEdit(
             self,
             variable_name=variable_to_add,
             entry_edited_command=self.validation_test,
-            index=next_index
         )
-
-        new_var_entry.grid(row=next_index+1, column=0, sticky="nsew", padx=SMALL_PAD, pady=(0, SMALL_PAD))
-        self.instance_dict[next_index] = new_var_entry
+        self.current_max_rows += 1
+        new_var_entry.grid(row=self.current_max_rows, column=0, sticky="nsew", padx=SMALL_PAD, pady=(0, SMALL_PAD))
+        self.instance_dict[variable_to_add] = new_var_entry
 
         self.variable_count_iv.set(self.variable_count_iv.get() + 1)
 
-    def validation_test(self, p: str, index: int, variable_name: str):
-        self.edit_command(variable_name, int(index), p)
+    def delete_variable(self, variable_to_delete: str):
+        instance_to_delete = self.instance_dict.pop(variable_to_delete)
+        instance_to_delete.destroy()
+        self.variable_count_iv.set(self.variable_count_iv.get() - 1)
+
+    def validation_test(self, p: str, variable_name: str):
+        self.edit_command(variable_name, p)
         return True
 
 
 class StaticVariableEdit(ctk.CTkFrame):
-    def __init__(self, master, variable_name: str, entry_edited_command: Callable, index: int):
+    def __init__(self, master, variable_name: str, entry_edited_command: Callable):
         super().__init__(master, fg_color="transparent")
 
-        self.instance_index = index
         self.variable_name = variable_name
 
         name_label = SmallLabel(
@@ -48,12 +52,15 @@ class StaticVariableEdit(ctk.CTkFrame):
         )
         name_label.grid(row=0, column=0, sticky="nsew", pady=(0, SMALL_PAD))
 
-        name_entry = ctk.CTkEntry(
+        self.name_entry = ctk.CTkEntry(
             self,
             validate="key",
-            validatecommand=(self.register(entry_edited_command), "%P", self.instance_index, self.variable_name)
+            validatecommand=(self.register(entry_edited_command), "%P", self.variable_name)
         )
-        name_entry.grid(row=1, column=0, sticky="nsew")
+        self.name_entry.grid(row=1, column=0, sticky="nsew")
 
         self.rowconfigure("all", weight=0)
         self.columnconfigure(0, weight=1)
+
+    def get_entry_text(self):
+        return self.name_entry.get()
