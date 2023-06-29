@@ -1,7 +1,7 @@
 import customtkinter as ctk
 from ..settings import *
 from ..app_engine import AppEngine
-from ..containers import ReportTemplate, IndividualPiece, TemplateSection, PupilInfo
+from ..containers import ReportTemplate, IndividualPiece, TemplateSection, PupilInfo, UserVariable
 from ..title_bar import TitleBar
 from ..components import Separator, SecondaryButton, LargeOptionMenu, NormalLabel, HoverTooltip
 from .report_piece_scrollframe import ReportPieceScrollframe
@@ -162,7 +162,8 @@ class ReportScene(ctk.CTkFrame):
         self.insert_variables_frame = InsertVariablesFrame(
             report_and_variables_frame,
             variables_collection=self.app_engine.user_variables_collection,
-            edit_static_command=self.edit_static_variable
+            edit_static_command=self.edit_static_variable,
+            edit_choice_command=self.edit_choice_variable
         )
         self.insert_variables_frame.grid(row=1, column=0, sticky="nsew", padx=(3, SMALL_PAD), pady=(0, DEFAULT_PAD))
 
@@ -221,18 +222,45 @@ class ReportScene(ctk.CTkFrame):
             new_text=new_text
         )
 
+    def edit_choice_variable(self, chosen_value: str, variable: UserVariable, index: int):
+        self.report_text_frame.edit_variable(
+            variable_type="choice",
+            variable_name=variable.variable_name,
+            new_text=chosen_value,
+            index=index
+        )
+
     def text_box_edited(self, new_variables: dict[str, list[str]]):
         for var_type, var_info_list in new_variables.items():
             if var_type == "static":
                 current_static_vars = list(self.insert_variables_frame.static_vars.instance_dict.keys())
 
-                print(var_info_list)
-                print(current_static_vars)
-
-                for new_var in var_info_list:
-                    if new_var not in current_static_vars:
-                        self.insert_variables_frame.static_vars.add_variable(new_var)
+                # for new_var in var_info_list:
+                #     if new_var not in current_static_vars:
+                #         self.insert_variables_frame.static_vars.add_variable(new_var)
 
                 for existing_var in current_static_vars:
                     if existing_var not in var_info_list:
                         self.insert_variables_frame.static_vars.delete_variable(existing_var)
+            elif var_type == "choice":
+                current_choice_vars = self.insert_variables_frame.choice_vars.get_all_choices()
+                current_choice_keys = list(self.insert_variables_frame.choice_vars.instance_dict.keys())
+
+                if not current_choice_keys:
+                    continue
+
+                collapsed_index = 0
+                for i in var_info_list:
+                    while i.lower() != current_choice_vars[collapsed_index].lower():
+                        self.insert_variables_frame.choice_vars.delete_variable(current_choice_keys[collapsed_index])
+                        collapsed_index += 1
+                    collapsed_index += 1
+
+                current_choice_keys = list(self.insert_variables_frame.choice_vars.instance_dict.keys())
+                collapsed_index = len(current_choice_keys) - 1
+                while len(var_info_list) < len(current_choice_keys):
+                    self.insert_variables_frame.choice_vars.delete_variable(current_choice_keys[collapsed_index])
+                    current_choice_keys = list(self.insert_variables_frame.choice_vars.instance_dict.keys())
+                    collapsed_index = len(current_choice_keys) - 1
+
+                self.insert_variables_frame.choice_vars.reorganize_instance_dict()

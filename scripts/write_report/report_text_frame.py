@@ -126,19 +126,26 @@ class ReportTextFrame(ctk.CTkFrame):
 
     def edit_variable(self, variable_type: str, variable_name: str, index: int, new_text: str):
         tag_ranges = self.piece_textbox.tag_ranges(variable_type)
-
         tag_range = list(zip(tag_ranges[0::2], tag_ranges[1::2]))[index]
 
         self.piece_textbox.delete(tag_range[0], tag_range[1])
 
         if new_text != "":
+            if tag_range[0] == "1.0":
+                new_text = new_text.capitalize()
+            else:
+                prev_char = self.piece_textbox.get(tag_range[0].string + "-1c")
+                prev_2_char = self.piece_textbox.get(tag_range[0].string + "-2c")
+
+                if prev_char in ["!?.\n"] or prev_2_char in ["!?.\n"]:
+                    new_text = new_text.capitalize()
+
             self.piece_textbox.insert(tag_range[0], new_text, variable_type)
         else:
-            self.piece_textbox.insert(tag_range[0], "{" + f"{variable_type}:" + variable_name + "}", variable_type)
+            self.piece_textbox.insert(tag_range[0], "{static:" + variable_name + "}", variable_type)
 
     def edit_static_variable(self, variable_name: str, new_text: str):
         tag_ranges = self.piece_textbox.tag_ranges(variable_name)
-        print(tag_ranges)
 
         current_tag_start = tag_ranges[0]
         current_tag_end = tag_ranges[1]
@@ -146,9 +153,19 @@ class ReportTextFrame(ctk.CTkFrame):
             self.piece_textbox.delete(current_tag_start, current_tag_end)
 
             if new_text != "":
+                if current_tag_start == "1.0":
+                    new_text = new_text.capitalize()
+                else:
+                    prev_char = self.piece_textbox.get(current_tag_start + "-1c")
+                    prev_2_char = self.piece_textbox.get(current_tag_start + "-2c")
+
+                    if prev_char in ["!?.\n"] or prev_2_char in ["!?.\n"]:
+                        new_text = new_text.capitalize()
+
                 self.piece_textbox.insert(current_tag_start, new_text, ("static", variable_name))
             else:
-                self.piece_textbox.insert(current_tag_start, "{static:" + variable_name + "}", ("static", variable_name))
+                self.piece_textbox.insert(current_tag_start, "{static:" + variable_name + "}",
+                                          ("static", variable_name))
             try:
                 current_tag_start, current_tag_end = self.piece_textbox.tag_nextrange(variable_name, current_tag_end)
             except ValueError:
@@ -163,10 +180,14 @@ class ReportTextFrame(ctk.CTkFrame):
 
         for var_type in ["static", "choice", "chain"]:
             tag_ranges = self.piece_textbox.tag_ranges(var_type)
-            for start, end in zip(tag_ranges[0::2], tag_ranges[1::2]):
-                tag_info = self.piece_textbox.get(start, end)
-                tag_name = self.piece_textbox.tag_names(start)[1]
-                variables_found[var_type].append(tag_name)
+            if var_type == "static":
+                for start in tag_ranges[0::2]:
+                    tag_name = self.piece_textbox.tag_names(start)[1]
+                    variables_found[var_type].append(tag_name)
+            elif var_type == "choice":
+                for start, end in zip(tag_ranges[0::2], tag_ranges[1::2]):
+                    tag_value = self.piece_textbox.get(start, end)
+                    variables_found[var_type].append(tag_value)
 
         self.text_box_edited_command(variables_found)
         self.edit_after_id = None

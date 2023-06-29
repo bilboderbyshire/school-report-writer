@@ -1,6 +1,5 @@
 import customtkinter as ctk
 from ..settings import *
-from ..containers import UserVariable
 from ..components import ListCard, Separator, NormalLabel
 
 

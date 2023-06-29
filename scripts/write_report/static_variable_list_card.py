@@ -10,7 +10,7 @@ class StaticVariableListCard(UserVariableListCard):
                  edit_static_command: Callable):
         super().__init__(master, variable_type="static")
 
-        self.instance_dict: dict[str, StaticVariableListCard]
+        self.instance_dict: dict[str, StaticVariableEdit]
         self.edit_command = edit_static_command
         self.current_max_rows = 1
 
