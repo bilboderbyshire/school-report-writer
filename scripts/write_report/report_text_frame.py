@@ -139,6 +139,8 @@ class ReportTextFrame(ctk.CTkFrame):
 
                 if prev_char in ["!?.\n"] or prev_2_char in ["!?.\n"]:
                     new_text = new_text.capitalize()
+                else:
+                    new_text = new_text.lower()
 
             self.piece_textbox.insert(tag_range[0], new_text, variable_type)
         else:
@@ -156,11 +158,13 @@ class ReportTextFrame(ctk.CTkFrame):
                 if current_tag_start == "1.0":
                     new_text = new_text.capitalize()
                 else:
-                    prev_char = self.piece_textbox.get(current_tag_start + "-1c")
-                    prev_2_char = self.piece_textbox.get(current_tag_start + "-2c")
+                    prev_char = self.piece_textbox.get(current_tag_start.string + "-1c")
+                    prev_2_char = self.piece_textbox.get(current_tag_start.string + "-2c")
 
                     if prev_char in ["!?.\n"] or prev_2_char in ["!?.\n"]:
                         new_text = new_text.capitalize()
+                    else:
+                        new_text = new_text.lower()
 
                 self.piece_textbox.insert(current_tag_start, new_text, ("static", variable_name))
             else:
@@ -185,6 +189,10 @@ class ReportTextFrame(ctk.CTkFrame):
                     tag_name = self.piece_textbox.tag_names(start)[1]
                     variables_found[var_type].append(tag_name)
             elif var_type == "choice":
+                for start, end in zip(tag_ranges[0::2], tag_ranges[1::2]):
+                    tag_value = self.piece_textbox.get(start, end)
+                    variables_found[var_type].append(tag_value)
+            else:
                 for start, end in zip(tag_ranges[0::2], tag_ranges[1::2]):
                     tag_value = self.piece_textbox.get(start, end)
                     variables_found[var_type].append(tag_value)

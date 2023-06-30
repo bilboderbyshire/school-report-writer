@@ -1,2 +1,4 @@
 from .report_write_edit_scene import ReportScene
 from .static_variable_list_card import StaticVariableListCard
+from .choice_variable_list_card import ChoiceVariableListCard
+from .chain_variable_list_card import ChainVariableListCard

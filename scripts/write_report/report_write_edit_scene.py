@@ -163,7 +163,8 @@ class ReportScene(ctk.CTkFrame):
             report_and_variables_frame,
             variables_collection=self.app_engine.user_variables_collection,
             edit_static_command=self.edit_static_variable,
-            edit_choice_command=self.edit_choice_variable
+            edit_choice_command=self.edit_choice_variable,
+            edit_chain_command=self.edit_chain_variable
         )
         self.insert_variables_frame.grid(row=1, column=0, sticky="nsew", padx=(3, SMALL_PAD), pady=(0, DEFAULT_PAD))
 
@@ -230,6 +231,14 @@ class ReportScene(ctk.CTkFrame):
             index=index
         )
 
+    def edit_chain_variable(self, new_text: str, variable: UserVariable, index: int):
+        self.report_text_frame.edit_variable(
+            variable_type="chain",
+            variable_name=variable.variable_name,
+            new_text=new_text,
+            index=index
+        )
+
     def text_box_edited(self, new_variables: dict[str, list[str]]):
         for var_type, var_info_list in new_variables.items():
             if var_type == "static":
@@ -252,6 +261,11 @@ class ReportScene(ctk.CTkFrame):
                 collapsed_index = 0
                 for i in var_info_list:
                     while i.lower() != current_choice_vars[collapsed_index].lower():
+                        if "{" in i \
+                                and var_type in i \
+                                and ":" in i \
+                                and current_choice_vars[collapsed_index] == "Choose variable":
+                            break
                         self.insert_variables_frame.choice_vars.delete_variable(current_choice_keys[collapsed_index])
                         collapsed_index += 1
                     collapsed_index += 1
@@ -264,3 +278,30 @@ class ReportScene(ctk.CTkFrame):
                     collapsed_index = len(current_choice_keys) - 1
 
                 self.insert_variables_frame.choice_vars.reorganize_instance_dict()
+            else:
+                current_chain_vars = self.insert_variables_frame.chain_vars.get_all_choices()
+                current_chain_keys = list(self.insert_variables_frame.chain_vars.instance_dict.keys())
+
+                if not current_chain_keys:
+                    continue
+
+                collapsed_index = 0
+                for i in var_info_list:
+                    while i.lower() != current_chain_vars[collapsed_index].lower():
+                        if "{" in i \
+                                and var_type in i \
+                                and ":" in i \
+                                and current_chain_vars[collapsed_index] == "none":
+                            break
+                        self.insert_variables_frame.chain_vars.delete_variable(current_chain_keys[collapsed_index])
+                        collapsed_index += 1
+                    collapsed_index += 1
+
+                current_chain_keys = list(self.insert_variables_frame.chain_vars.instance_dict.keys())
+                collapsed_index = len(current_chain_keys) - 1
+                while len(var_info_list) < len(current_chain_keys):
+                    self.insert_variables_frame.chain_vars.delete_variable(current_chain_keys[collapsed_index])
+                    current_chain_keys = list(self.insert_variables_frame.chain_vars.instance_dict.keys())
+                    collapsed_index = len(current_chain_keys) - 1
+
+                self.insert_variables_frame.chain_vars.reorganize_instance_dict()
