@@ -13,11 +13,12 @@ class PupilListCard(ListCard):
                  report: IndividualReport,
                  delete_command: Callable,
                  edit_command: Callable):
-        super().__init__(master, fg_color=SECONDARY_LABEL_CARD_COLOR, click_command=edit_command)
+        super().__init__(master, fg_color=SECONDARY_LABEL_CARD_COLOR)
 
         self.card_data = report
         self.pupil_info = report.get_pupil_info()
         self.delete_command = delete_command
+        self.edit_command = edit_command
 
         self.grid_propagate(True)
 
@@ -51,6 +52,31 @@ class PupilListCard(ListCard):
         )
         self.gender_label.grid(row=2, column=0, sticky="nsew", padx=SMALL_PAD, pady=(0, SMALL_PAD))
 
+        if self.card_data.completed:
+            completed_image = ctk.CTkImage(
+                light_image=Image.open(os.path.join(os.getcwd(), "images/checked.png")),
+                dark_image=Image.open(os.path.join(os.getcwd(), "images/checked.png")),
+                size=(15, 15)
+            )
+        else:
+            completed_image = ctk.CTkImage(
+                light_image=Image.open(os.path.join(os.getcwd(), "images/unchecked.png")),
+                dark_image=Image.open(os.path.join(os.getcwd(), "images/unchecked.png")),
+                size=(15, 15)
+            )
+
+        completed_label = ctk.CTkLabel(
+            self,
+            width=30,
+            height=30,
+            image=completed_image,
+            fg_color="transparent",
+            corner_radius=5,
+            text="",
+            anchor="center"
+        )
+        completed_label.grid(row=0, rowspan=3, column=1, sticky="nsew", padx=(0, SMALL_PAD), pady=SMALL_PAD)
+
         self.bind_frame()
 
         delete_image = ctk.CTkImage(
@@ -58,6 +84,7 @@ class PupilListCard(ListCard):
             dark_image=Image.open(os.path.join(os.getcwd(), "images/dark-close.png")),
             size=(15, 15)
         )
+
         delete_button = ctk.CTkButton(
             self,
             fg_color="transparent",
@@ -70,11 +97,31 @@ class PupilListCard(ListCard):
             corner_radius=5
         )
 
-        delete_button.grid(row=0, rowspan=3, column=1, sticky="ne", padx=(0, SMALL_PAD), pady=SMALL_PAD)
+        delete_button.grid(row=0, column=2, sticky="ne", padx=(0, SMALL_PAD), pady=SMALL_PAD)
+
+        edit_image = ctk.CTkImage(
+            light_image=Image.open(os.path.join(os.getcwd(), "images/light-pencil.png")),
+            dark_image=Image.open(os.path.join(os.getcwd(), "images/dark-pencil.png")),
+            size=(15, 15)
+        )
+
+        edit_button = ctk.CTkButton(
+            self,
+            fg_color="transparent",
+            image=edit_image,
+            command=lambda: self.edit_command(self.card_data),
+            text="",
+            width=30,
+            height=30,
+            hover_color=BUTTON_HOVER_COLOR,
+            corner_radius=5
+        )
+
+        edit_button.grid(row=1, column=2, sticky="ne", padx=(0, SMALL_PAD), pady=SMALL_PAD)
 
         self.rowconfigure("all", weight=0)
         self.columnconfigure(0, weight=1)
-        self.columnconfigure(1, weight=0)
+        self.columnconfigure([1, 2], weight=0)
 
     def refresh_info(self, new_info: PupilInfo):
         self.pupil_info = new_info

@@ -13,6 +13,7 @@ class PupilScrollframe(AutohidingScrollableAndLoadingFrame):
 
         self.all_cards: dict[str, PupilListCard] = {}
         self.current_max_row = 0
+        self.currently_selected = None
 
         self.rowconfigure("all", weight=0)
         self.columnconfigure(0, weight=1)
