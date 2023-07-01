@@ -3,6 +3,7 @@ from ..settings import *
 from ..title_bar import TitleLabel
 from ..components import SingleLineEntry, NormalLabel, SecondaryButton, LargeOptionMenu
 from .add_one_top_level import AddOneToplevel
+from .add_many_toplevel import AddManyToplevel
 import os
 from PIL import Image
 
@@ -119,7 +120,7 @@ class ReportSetupToplevel(ctk.CTkToplevel):
             pupils_label_and_action_frame,
             fg_color="transparent",
             image=add_many_image,
-            command=lambda: print("Add many"),
+            command=self.add_many_clicked,
             text="",
             width=25,
             height=25,
@@ -169,3 +170,9 @@ class ReportSetupToplevel(ctk.CTkToplevel):
         self.grab_set()
         self.grab_release()
 
+    def add_many_clicked(self):
+        add_many_tl = AddManyToplevel(self)
+        pupil_info_list = add_many_tl.get_pupil_info()
+        print(pupil_info_list)
+        self.grab_set()
+        self.grab_release()
