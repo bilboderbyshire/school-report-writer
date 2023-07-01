@@ -285,8 +285,8 @@ class SingleReportSet:
             "class_name": self.class_name,
             "report_number": self.report_number,
             "report_completed": self.report_completed,
-            "user": self.user.id if self.user is not None else None,
-            "template": self.template.id if self. template is not None else None
+            "user": self.user if isinstance(self.user, str) else self.user.id,
+            "template": self.template if isinstance(self.template, str) else self.template.id
         }
 
     @staticmethod

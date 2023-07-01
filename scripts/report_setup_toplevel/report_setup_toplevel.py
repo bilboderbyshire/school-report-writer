@@ -21,6 +21,7 @@ class ReportSetupToplevel(ctk.CTkToplevel):
 
         self.report_set = report_set
         self.app_engine = app_engine
+        self.new_individual_report_tracker = 0
 
         self.update_idletasks()
         ws = self.winfo_screenwidth()
@@ -56,7 +57,7 @@ class ReportSetupToplevel(ctk.CTkToplevel):
         self.report_name_entry.grid(row=2, column=0, sticky="ew", pady=(0, DEFAULT_PAD), padx=DEFAULT_PAD)
 
         if self.report_set is not None:
-            self.report_name_entry.insert(0, self.report_set.report_title)
+            self.report_name_entry.insert(0, self.report_set.report_title.capitalize())
 
         class_entry_label = NormalLabel(
             self,
@@ -72,7 +73,7 @@ class ReportSetupToplevel(ctk.CTkToplevel):
         self.class_entry.grid(row=4, column=0, sticky="ew", pady=(0, DEFAULT_PAD), padx=DEFAULT_PAD)
 
         if self.report_set is not None:
-            self.class_entry.insert(0, self.report_set.class_name)
+            self.class_entry.insert(0, self.report_set.class_name.capitalize())
 
         self.template_selection = LargeOptionMenu(
             self,
@@ -150,7 +151,7 @@ class ReportSetupToplevel(ctk.CTkToplevel):
         if self.report_set is not None:
             for report in self.app_engine.individual_report_collection.values():
                 if report.report_set == self.report_set.id:
-                    self.pupils_in_report.add_pupil(report.get_pupil_info())
+                    self.pupils_in_report.add_pupil(report)
 
         save_report_frame = ctk.CTkFrame(self, fg_color="transparent")
         save_report_frame.grid(row=8, column=0, sticky="nsew", pady=(0, DEFAULT_PAD), padx=DEFAULT_PAD)
@@ -187,7 +188,21 @@ class ReportSetupToplevel(ctk.CTkToplevel):
         pupil_info = add_one_tl.get_pupil_info()
 
         if pupil_info is not None:
-            self.pupils_in_report.add_pupil(pupil_info)
+            new_individual_report_id = self.new_individual_report_tracker
+            self.new_individual_report_tracker += 1
+
+            new_individual_report = IndividualReport(
+                NewIndividualReport(
+                    report_id=new_individual_report_id,
+                    forename=pupil_info["forename"].lower(),
+                    surname=pupil_info["surname"].lower(),
+                    gender=pupil_info["gender"].lower(),
+                    user=self.app_engine.get_user_id(),
+                    report_set="@0",
+                    report_text=""
+                )
+            )
+            self.pupils_in_report.add_pupil(new_individual_report)
 
         self.grab_set()
 
@@ -197,7 +212,159 @@ class ReportSetupToplevel(ctk.CTkToplevel):
 
         if pupil_info_list is not None:
             for pupil in pupil_info_list:
-                self.pupils_in_report.add_pupil(pupil)
+                new_individual_report_id = self.new_individual_report_tracker
+                self.new_individual_report_tracker += 1
+
+                new_individual_report = IndividualReport(
+                    NewIndividualReport(
+                        report_id=new_individual_report_id,
+                        forename=pupil["forename"].lower(),
+                        surname=pupil["surname"].lower(),
+                        gender=pupil["gender"].lower(),
+                        user=self.app_engine.get_user_id(),
+                        report_set="@0",
+                        report_text=""
+                    )
+                )
+                self.pupils_in_report.add_pupil(new_individual_report)
 
         self.grab_set()
-        self.grab_release()
+
+    def save_clicked(self):
+        no_errors = True
+
+        if self.report_name_entry.get() == "":
+            no_errors = False
+            self.report_name_entry.configure(border_color=BAD_COLOR)
+        else:
+            self.report_name_entry.configure(border_color=("#979DA2", "#565B5E"))
+
+        if self.class_entry.get() == "":
+            no_errors = False
+            self.class_entry.configure(border_color=BAD_COLOR)
+        else:
+            self.class_entry.configure(border_color=("#979DA2", "#565B5E"))
+
+        if self.template_selection.get() == "Choose template...":
+            self.template_selection.configure(button_color=BAD_COLOR, fg_color=BAD_COLOR)
+            no_errors = False
+        else:
+            self.template_selection.configure(button_color=LABEL_CARD_COLOR, fg_color=LABEL_CARD_COLOR)
+
+        if not no_errors:
+            return
+        else:
+            if self.report_set is None:
+                new_set_report_id = f"@{self.app_engine.create_new_record_id('report_set')}"
+
+                template_used = ""
+                for template in self.app_engine.template_collection.values():
+                    if template.template_title.lower() == self.template_selection.get().lower():
+                        template_used = template.id
+
+                new_set_report = SingleReportSet(
+                    NewReportSet(
+                        record_id=new_set_report_id,
+                        report_title=self.report_name_entry.get().strip().lower(),
+                        class_name=self.class_entry.get().strip().lower(),
+                        user=self.app_engine.get_user_id(),
+                        template=template_used
+                    )
+                )
+
+                new_set_report.report_number = len(self.pupils_in_report.all_cards.values())
+
+                created_set_report = self.app_engine.upload_new_record(
+                    data=new_set_report.data_to_create(),
+                    collection="report_set",
+                    container_type=SingleReportSet
+                )
+
+                if created_set_report is None:
+                    self.report_set = None
+                    return
+
+                self.report_set = created_set_report
+
+                self.app_engine.reports_set_collection[self.report_set.id] = created_set_report
+                self.app_engine.copy_of_reports_set_collection[self.report_set.id] = created_set_report.copy()
+
+                for card in self.pupils_in_report.all_cards.values():
+                    card.card_data.report_set = self.report_set.id
+                    created_individual_report = self.app_engine.upload_new_record(
+                        data=card.card_data.data_to_create(),
+                        collection="individual_reports",
+                        container_type=IndividualReport
+                    )
+
+                    if created_individual_report is None:
+                        return
+
+                    self.app_engine.individual_report_collection[created_individual_report.id] = \
+                        created_individual_report
+
+                    self.app_engine.copy_of_individual_report_collection[created_individual_report.id] = \
+                        created_individual_report.copy()
+            else:
+                working_report = self.app_engine.copy_of_reports_set_collection[self.report_set.id]
+
+                working_report.report_title = self.report_name_entry.get().strip().lower()
+                working_report.class_name = self.class_entry.get().strip().lower()
+                working_report.report_number = len(self.pupils_in_report.all_cards.values())
+
+                if working_report != self.report_set:
+                    updated_report = self.app_engine.update_record(
+                        record_id=working_report.id,
+                        data=working_report.data_to_create(),
+                        collection="report_set",
+                        container_type=SingleReportSet
+                    )
+
+                    if updated_report is None:
+                        self.report_set = None
+                        return
+
+                    self.app_engine.reports_set_collection[updated_report.id] = updated_report
+                    self.report_set = updated_report
+                    self.app_engine.copy_of_reports_set_collection[updated_report.id] = updated_report.copy()
+
+                for report_id, report in self.pupils_in_report.all_cards.items():
+                    if report_id not in self.app_engine.individual_report_collection.keys():
+                        report.card_data.report_set = self.report_set.id
+                        created_individual_report = self.app_engine.upload_new_record(
+                            data=report.card_data.data_to_create(),
+                            collection="individual_reports",
+                            container_type=IndividualReport
+                        )
+
+                        if created_individual_report is None:
+                            return
+
+                        self.app_engine.individual_report_collection[created_individual_report.id] = \
+                            created_individual_report
+
+                        self.app_engine.copy_of_individual_report_collection[created_individual_report.id] = \
+                            created_individual_report.copy()
+
+                    elif report.card_data != self.app_engine.individual_report_collection[report_id]:
+                        updated_individual_report = self.app_engine.update_record(
+                            record_id=report_id,
+                            data=report.card_data.data_to_create(),
+                            collection="individual_reports",
+                            container_type=IndividualReport
+                        )
+
+                        if updated_individual_report is None:
+                            return
+
+                        self.app_engine.individual_report_collection[report_id] = updated_individual_report
+                        self.app_engine.copy_of_individual_report_collection[report_id] = \
+                            updated_individual_report.copy()
+        self.destroy()
+
+    def cancel_clicked(self):
+        self.report_set = None
+        self.destroy()
+
+    def get_report(self) -> SingleReportSet | None:
+        return self.report_set

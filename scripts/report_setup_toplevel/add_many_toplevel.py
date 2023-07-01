@@ -93,7 +93,7 @@ class AddManyToplevel(ctk.CTkToplevel):
         self.columnconfigure(0, weight=1)
 
         self.grab_set()
-        # self.after(10, self.forename_entry.focus_set)
+        self.after(10, self.paste_box.focus_set)
         self.wait_window()
 
     def configure_info_label(self):
