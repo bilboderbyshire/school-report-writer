@@ -2,6 +2,7 @@ import customtkinter as ctk
 from ..settings import *
 from ..title_bar import TitleLabel
 from ..components import SingleLineEntry, NormalLabel, SecondaryButton, LargeOptionMenu
+from .add_one_top_level import AddOneToplevel
 import os
 from PIL import Image
 
@@ -99,7 +100,7 @@ class ReportSetupToplevel(ctk.CTkToplevel):
             pupils_label_and_action_frame,
             fg_color="transparent",
             image=add_one_image,
-            command=lambda: print("Add one"),
+            command=self.add_one_clicked,
             text="",
             width=25,
             height=25,
@@ -159,4 +160,12 @@ class ReportSetupToplevel(ctk.CTkToplevel):
         self.grab_set()
         self.after(10, self.report_name_entry.focus_set)
         self.wait_window()
+
+    def add_one_clicked(self):
+        add_one_tl = AddOneToplevel(self)
+
+        pupil_info = add_one_tl.get_pupil_info()
+        print(pupil_info)
+        self.grab_set()
+        self.grab_release()
 
