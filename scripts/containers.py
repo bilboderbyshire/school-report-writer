@@ -1,4 +1,4 @@
-from typing import TypedDict
+from typing import TypedDict, Literal
 from . import utils
 import customtkinter as ctk
 
@@ -48,6 +48,48 @@ class NewTemplateRecord:
         self.created = "Just now"
         self.updated = "Now"
         self.owner: User = owner
+        self.expand = {}
+
+
+class NewIndividualReport:
+    def __init__(self,
+                 report_id: str,
+                 forename: str,
+                 surname: str,
+                 gender: Literal["m", "f", "nb"],
+                 user: str,
+                 report_set: str,
+                 report_text: str = "New report",
+                ):
+        self.id = report_id
+        self.pupil_forename = forename
+        self.pupil_surname = surname
+        self.gender = gender
+        self.report_text = report_text
+        self.completed = False
+        self.user = user
+        self.report_set = report_set
+        self.created = "Just now"
+        self.updated = "Now"
+        self.expand = {}
+
+
+class NewReportSet:
+    def __init__(self,
+                 record_id: str,
+                 report_title: str,
+                 class_name: str,
+                 user: str,
+                 template: str):
+        self.id = record_id
+        self.report_title = report_title
+        self.class_name = class_name
+        self.report_number = 0
+        self.report_completed = 0
+        self.user = user
+        self.template = template
+        self.created = "Just now"
+        self.updated = "Now"
         self.expand = {}
 
 
@@ -331,6 +373,13 @@ class IndividualReport:
 
     def copy(self):
         return IndividualReport(self)
+
+    def get_pupil_info(self) -> PupilInfo:
+        return {
+            "forename": self.pupil_forename,
+            "surname": self.pupil_surname,
+            "gender": self.gender
+        }
 
     def data_to_create(self) -> dict:
         return {

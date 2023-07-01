@@ -8,11 +8,12 @@ import os
 
 class AddOneToplevel(ctk.CTkToplevel):
     def __init__(self,
-                 master):
+                 master,
+                 pupil_info: PupilInfo | None = None):
         super().__init__(master,
                          fg_color=ROOT_BG)
 
-        self.pupil_info: PupilInfo | None = None
+        self.pupil_info: PupilInfo | None = pupil_info
 
         self.update_idletasks()
         ws = self.winfo_screenwidth()
@@ -45,11 +46,17 @@ class AddOneToplevel(ctk.CTkToplevel):
         self.forename_entry = SingleLineEntry(name_entry_frame)
         self.forename_entry.grid(row=1, column=0, sticky="ew", padx=(0, SMALL_PAD))
 
+        if self.pupil_info is not None:
+            self.forename_entry.insert(0, self.pupil_info["forename"].capitalize())
+
         surname_entry_label = NormalLabel(name_entry_frame, text="Surname")
         surname_entry_label.grid(row=0, column=1, sticky="w", pady=(0, SMALL_PAD))
 
         self.surname_entry = SingleLineEntry(name_entry_frame)
         self.surname_entry.grid(row=1, column=1, sticky="ew")
+
+        if self.pupil_info is not None:
+            self.surname_entry.insert(0, self.pupil_info["surname"].capitalize())
 
         self.gender_entry = LargeOptionMenu(
             self,
@@ -58,7 +65,11 @@ class AddOneToplevel(ctk.CTkToplevel):
             command=self.check_save_possible
         )
         self.gender_entry.grid(row=2, column=0, sticky="nsew", padx=DEFAULT_PAD, pady=(0, DEFAULT_PAD))
-        self.gender_entry.set("Select pupils' gender...")
+
+        if self.pupil_info is not None:
+            self.gender_entry.set(self.pupil_info["gender"].upper())
+        else:
+            self.gender_entry.set("Select pupils' gender...")
 
         blank_frame = ctk.CTkFrame(self, fg_color="transparent")
         blank_frame.grid(row=3, column=0, sticky="nsew")

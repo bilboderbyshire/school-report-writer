@@ -4,6 +4,9 @@ from ..title_bar import TitleLabel
 from ..components import SingleLineEntry, NormalLabel, SecondaryButton, LargeOptionMenu
 from .add_one_top_level import AddOneToplevel
 from .add_many_toplevel import AddManyToplevel
+from .pupil_scrollframe import PupilScrollframe
+from ..containers import SingleReportSet, NewReportSet, NewIndividualReport, IndividualReport
+from ..app_engine import AppEngine
 import os
 from PIL import Image
 
@@ -11,11 +14,13 @@ from PIL import Image
 class ReportSetupToplevel(ctk.CTkToplevel):
     def __init__(self,
                  master,
-                 template_selectable: bool = True):
+                 app_engine: AppEngine,
+                 report_set: SingleReportSet | None):
         super().__init__(master,
                          fg_color=ROOT_BG)
 
-        self.template_selectable = template_selectable
+        self.report_set = report_set
+        self.app_engine = app_engine
 
         self.update_idletasks()
         ws = self.winfo_screenwidth()
@@ -50,6 +55,9 @@ class ReportSetupToplevel(ctk.CTkToplevel):
         )
         self.report_name_entry.grid(row=2, column=0, sticky="ew", pady=(0, DEFAULT_PAD), padx=DEFAULT_PAD)
 
+        if self.report_set is not None:
+            self.report_name_entry.insert(0, self.report_set.report_title)
+
         class_entry_label = NormalLabel(
             self,
             anchor="sw",
@@ -63,16 +71,22 @@ class ReportSetupToplevel(ctk.CTkToplevel):
         )
         self.class_entry.grid(row=4, column=0, sticky="ew", pady=(0, DEFAULT_PAD), padx=DEFAULT_PAD)
 
+        if self.report_set is not None:
+            self.class_entry.insert(0, self.report_set.class_name)
+
         self.template_selection = LargeOptionMenu(
             self,
             height=40,
-            values=["hi", "there", "bye"]
+            values=[i.template_title.capitalize() for i in self.app_engine.template_collection.values()]
         )
         self.template_selection.grid(row=5, column=0, sticky="ew", pady=(0, DEFAULT_PAD), padx=DEFAULT_PAD)
-        self.template_selection.set("Choose template...")
-
-        if not self.template_selectable:
+        if self.report_set is not None:
+            self.template_selection.set(
+                self.app_engine.template_collection[self.report_set.template].template_title.capitalize()
+            )
             self.template_selection.configure(state="disabled")
+        else:
+            self.template_selection.set("Choose template...")
 
         pupils_label_and_action_frame = ctk.CTkFrame(
             self,
@@ -130,8 +144,13 @@ class ReportSetupToplevel(ctk.CTkToplevel):
 
         add_many_button.grid(row=0, column=2, sticky="e")
 
-        self.pupils_in_report = ctk.CTkFrame(self)
+        self.pupils_in_report = PupilScrollframe(self)
         self.pupils_in_report.grid(row=7, column=0, sticky="nsew", pady=(0, DEFAULT_PAD), padx=DEFAULT_PAD)
+
+        if self.report_set is not None:
+            for report in self.app_engine.individual_report_collection.values():
+                if report.report_set == self.report_set.id:
+                    self.pupils_in_report.add_pupil(report.get_pupil_info())
 
         save_report_frame = ctk.CTkFrame(self, fg_color="transparent")
         save_report_frame.grid(row=8, column=0, sticky="nsew", pady=(0, DEFAULT_PAD), padx=DEFAULT_PAD)
@@ -142,7 +161,7 @@ class ReportSetupToplevel(ctk.CTkToplevel):
             save_report_frame,
             text="Save",
             font=ctk.CTkFont(**NORMAL_LABEL_FONT),
-            command=lambda: print("Saved")
+            command=self.save_clicked
         )
         save_button.grid(row=0, column=2, sticky="nsew", padx=(0, SMALL_PAD))
 
@@ -150,7 +169,7 @@ class ReportSetupToplevel(ctk.CTkToplevel):
             save_report_frame,
             text="Cancel",
             font=ctk.CTkFont(**NORMAL_LABEL_FONT),
-            command=lambda: print("Cancelled")
+            command=self.cancel_clicked
         )
         cancel_button.grid(row=0, column=3, sticky="nsew")
 
@@ -166,13 +185,19 @@ class ReportSetupToplevel(ctk.CTkToplevel):
         add_one_tl = AddOneToplevel(self)
 
         pupil_info = add_one_tl.get_pupil_info()
-        print(pupil_info)
+
+        if pupil_info is not None:
+            self.pupils_in_report.add_pupil(pupil_info)
+
         self.grab_set()
-        self.grab_release()
 
     def add_many_clicked(self):
         add_many_tl = AddManyToplevel(self)
         pupil_info_list = add_many_tl.get_pupil_info()
-        print(pupil_info_list)
+
+        if pupil_info_list is not None:
+            for pupil in pupil_info_list:
+                self.pupils_in_report.add_pupil(pupil)
+
         self.grab_set()
         self.grab_release()

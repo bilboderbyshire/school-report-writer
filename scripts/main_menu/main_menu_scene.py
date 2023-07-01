@@ -7,7 +7,7 @@ from .reports_scrollframe import ReportsScrollableFrame
 from .templates_scrollframe import TemplatesScrollableFrame
 import CTkMessagebox as ctkmb
 from ..components import Separator
-from ..containers import ReportTemplate, NewTemplateRecord
+from ..containers import ReportTemplate, NewTemplateRecord, NewReportSet, SingleReportSet
 from ..app_engine import AppEngine
 from ..report_setup_toplevel import ReportSetupToplevel
 
@@ -87,7 +87,7 @@ class MainMenuScene(ctk.CTkFrame):
             i.configure(cursor=cursor)
 
     def add_report(self):
-        ReportSetupToplevel(self)
+        ReportSetupToplevel(self, self.app_engine, None)
 
         self.master: ReportWriter
         next_scene = self.master.get_frame("write-report-scene")
