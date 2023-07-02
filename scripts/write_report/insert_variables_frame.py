@@ -55,3 +55,8 @@ class InsertVariablesFrame(AutohidingScrollableAndLoadingFrame):
                         if i.variable_name == var_name and i.variable_type == "chain":
                             self.chain_vars.add_variable(i)
                             break
+
+    def clear_all_frames(self):
+        self.static_vars.clear_frame()
+        self.chain_vars.clear_frame()
+        self.choice_vars.clear_frame()

@@ -7,7 +7,7 @@ from ..app_engine import AppEngine
 
 
 class ReportSetCard(ListCard):
-    def __init__(self, master, app_engine: AppEngine, report_set: SingleReportSet, click_command=None):
+    def __init__(self, master, app_engine: AppEngine, report_set: SingleReportSet, click_command):
         super().__init__(master, click_command=click_command)
 
         self.card_data = report_set

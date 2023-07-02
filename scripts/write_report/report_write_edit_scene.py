@@ -1,13 +1,15 @@
 import customtkinter as ctk
 from ..settings import *
 from ..app_engine import AppEngine
-from ..containers import ReportTemplate, IndividualPiece, TemplateSection, PupilInfo, UserVariable
+from ..containers import ReportTemplate, IndividualPiece, TemplateSection, UserVariable, IndividualReport, \
+    SingleReportSet
 from ..title_bar import TitleBar
 from ..components import Separator, SecondaryButton, LargeOptionMenu, NormalLabel, HoverTooltip
 from .report_piece_scrollframe import ReportPieceScrollframe
 from .report_text_frame import ReportTextFrame
 from .insert_variables_frame import InsertVariablesFrame
 from typing import TYPE_CHECKING
+import CTkMessagebox as ctkmb
 
 if TYPE_CHECKING:
     from ..root import ReportWriter
@@ -23,16 +25,19 @@ class ReportScene(ctk.CTkFrame):
         self.prev_scene_string = None
         self.report_sections: list[TemplateSection] | None = None
         self.report_template: ReportTemplate | None = None
+        self.report_set: SingleReportSet | None = None
         self.structured_pieces: dict[str, dict[str, IndividualPiece]] | None = None
+        self.all_reports: list[IndividualReport] | None = None
 
-        self.pupil_name_sv = ctk.StringVar(value="Sally")
-        self.pupil_gender_sv = ctk.StringVar(value="NB")
-        self.next_pupil_sv = ctk.StringVar(value="Barry")
-        self.prev_pupil_sv = ctk.StringVar(value="Mary")
+        self.current_report: IndividualReport | None = None
+        self.current_report_index = 0
+        self.prev_report_index = None
+        self.next_report_index = 1
+        self.next_pupil_sv = ctk.StringVar()
+        self.prev_pupil_sv = ctk.StringVar()
 
-        self.pupil_info: PupilInfo = {"forename": "Sally",
-                                      "surname": "Hawkins",
-                                      "gender": "NB"}
+        self.pupil_name_sv = ctk.StringVar()
+        self.pupil_gender_sv = ctk.StringVar()
 
     def __build_frame(self):
 
@@ -90,30 +95,34 @@ class ReportScene(ctk.CTkFrame):
         )
         show_pupils_button.grid(row=0, column=0, sticky="nsew", padx=(0, SMALL_PAD))
 
-        previous_pupil_button = SecondaryButton(
+        self.previous_pupil_button = SecondaryButton(
             pupil_button_frame,
             text="Prev",
             font=ctk.CTkFont(**NORMAL_LABEL_FONT),
             width=0,
+            command=self.prev_pupil_clicked
         )
-        previous_pupil_button.grid(row=0, column=1, sticky="nsew", padx=(0, SMALL_PAD))
+        self.previous_pupil_button.grid(row=0, column=1, sticky="nsew", padx=(0, SMALL_PAD))
+        HoverTooltip(self.previous_pupil_button, text_variable=self.prev_pupil_sv)
 
         save_pupil_button = ctk.CTkButton(
             pupil_button_frame,
             text="Save",
             font=ctk.CTkFont(**NORMAL_LABEL_FONT),
             width=0,
+            command=self.save_clicked
         )
         save_pupil_button.grid(row=0, column=2, sticky="nsew", padx=(0, SMALL_PAD))
 
-        next_pupil_button = SecondaryButton(
+        self.next_pupil_button = SecondaryButton(
             pupil_button_frame,
             text="Next",
             font=ctk.CTkFont(**NORMAL_LABEL_FONT),
             width=0,
+            command=self.next_pupil_clicked
         )
-        next_pupil_button.grid(row=0, column=3, sticky="nsew")
-        HoverTooltip(next_pupil_button, text_variable=self.next_pupil_sv)
+        self.next_pupil_button.grid(row=0, column=3, sticky="nsew")
+        HoverTooltip(self.next_pupil_button, text_variable=self.next_pupil_sv)
 
         section_piece_frame = ctk.CTkFrame(self)
         section_piece_frame.grid(row=3, column=0, sticky="nsew", padx=DEFAULT_PAD, pady=(0, DEFAULT_PAD))
@@ -154,7 +163,6 @@ class ReportScene(ctk.CTkFrame):
         report_frame_title.grid(row=0, column=1, sticky="nw", padx=15, pady=15)
 
         self.report_text_frame = ReportTextFrame(report_and_variables_frame,
-                                                 pupil_info=self.pupil_info,
                                                  variables_collection=self.app_engine.user_variables_collection,
                                                  text_box_edited_command=self.text_box_edited)
         self.report_text_frame.grid(row=1, column=1, sticky="nsew", padx=(0, DEFAULT_PAD), pady=(0, DEFAULT_PAD))
@@ -184,11 +192,71 @@ class ReportScene(ctk.CTkFrame):
         if self.report_sections is not None and self.report_sections:
             self.piece_scrollframe.build_pieces_frame(self.structured_pieces[self.report_sections[0].id])
 
-    def setup_scene(self, template: ReportTemplate):
-        self.report_template = template
+        starting_report = None
+        for report in self.all_reports:
+            if not report.completed:
+                starting_report = report
+                break
+
+        self.refresh_current_report(starting_report)
+
+    def setup_scene(self, report_set: SingleReportSet):
+        self.report_set = report_set
+        unsorted_reports = [i for i in self.app_engine.copy_of_individual_report_collection.values()
+                            if i.report_set == self.report_set.id]
+        self.all_reports = sorted(unsorted_reports, key=lambda x: x.pupil_surname)
+
+        self.report_template = self.app_engine.template_collection[report_set.template]
         self.report_sections = [i for i in self.app_engine.section_collection.values()
                                 if i.template == self.report_template.id]
         self.structured_pieces = self.app_engine.create_piece_to_template(self.report_template.id, copy=False)
+
+    def refresh_current_report(self, new_report: IndividualReport):
+        self.current_report = new_report
+        self.pupil_name_sv.set((new_report.pupil_forename.capitalize() + " " + new_report.pupil_surname.capitalize()))
+        self.pupil_gender_sv.set(new_report.gender.upper())
+
+        self.report_text_frame.change_report(self.current_report)
+        self.insert_variables_frame.clear_all_frames()
+
+        self.current_report_index = self.all_reports.index(self.current_report)
+
+        self.prev_report_index = self.current_report_index - 1 if self.current_report_index > 0 else None
+        self.next_report_index = self.current_report_index + 1 if self.current_report_index < len(
+            self.all_reports) - 1 else None
+
+        if self.prev_report_index is not None:
+            self.previous_pupil_button.configure(state="normal")
+            self.prev_pupil_sv.set(f"{self.all_reports[self.prev_report_index].pupil_forename.capitalize()} " +
+                                   f"{self.all_reports[self.prev_report_index].pupil_surname.capitalize()}")
+        else:
+            self.prev_pupil_sv.set("None")
+            self.previous_pupil_button.configure(state="disabled")
+
+        if self.next_report_index is not None:
+            self.next_pupil_button.configure(state="normal")
+            self.next_pupil_sv.set(f"{self.all_reports[self.next_report_index].pupil_forename.capitalize()} " +
+                                   f"{self.all_reports[self.next_report_index].pupil_surname.capitalize()}")
+        else:
+            self.next_pupil_sv.set("None")
+            self.next_pupil_button.configure(state="disabled")
+
+    def next_pupil_clicked(self):
+        if not self.check_for_save():
+            return
+        self.save_report()
+        self.refresh_current_report(self.all_reports[self.next_report_index])
+
+    def prev_pupil_clicked(self):
+        if not self.check_for_save():
+            return
+        self.save_report()
+        self.refresh_current_report(self.all_reports[self.prev_report_index])
+
+    def save_clicked(self):
+        if not self.check_for_save():
+            return
+        self.save_report()
 
     def previous_scene(self, name_of_prev_frame: str):
         self.prev_scene_string = name_of_prev_frame
@@ -238,6 +306,58 @@ class ReportScene(ctk.CTkFrame):
             new_text=new_text,
             index=index
         )
+
+    def check_for_save(self) -> bool:
+        all_tags_filled = True
+        for tag in self.report_text_frame.piece_textbox.tag_names():
+            tag_ranges = self.report_text_frame.piece_textbox.tag_ranges(tag)
+
+            for start, end in zip(tag_ranges[0::2], tag_ranges[1::2]):
+                current_tag = self.report_text_frame.piece_textbox.get(start, end)
+                if "{" in current_tag or "}" in current_tag:
+                    all_tags_filled = False
+
+        if not all_tags_filled:
+            warning_box = ctkmb.CTkMessagebox(
+                title="Warning",
+                message=f"You haven't filled in all the variables for this report. Are you sure you want to move on?"
+                        f"\n\nYou will not be able to fill them in the future.",
+                icon="cancel",
+                option_1="No",
+                option_2="Yes")
+            warning_box.wait_window()
+
+            if warning_box.get() == "Yes":
+                return True
+            else:
+                return False
+        else:
+            return True
+
+    def save_report(self):
+        self.current_report.report_text = self.report_text_frame.piece_textbox.get("1.0", "end").strip()
+
+        if self.current_report == self.app_engine.individual_report_collection[self.current_report.id]:
+            return
+
+        updated_report = self.app_engine.update_record(
+            record_id=self.current_report.id,
+            data=self.current_report.data_to_create(),
+            collection="individual_reports",
+            container_type=IndividualReport
+        )
+
+        if updated_report is None:
+            return
+
+        self.current_report = updated_report
+        self.all_reports[self.current_report_index] = updated_report
+        self.app_engine.copy_of_individual_report_collection[self.current_report.id] = updated_report
+        self.app_engine.individual_report_collection[self.current_report.id] = updated_report.copy()
+
+        self.report_text_frame.change_report(self.current_report)
+        self.insert_variables_frame.clear_all_frames()
+
 
     def text_box_edited(self, new_variables: dict[str, list[str]]):
         for var_type, var_info_list in new_variables.items():
