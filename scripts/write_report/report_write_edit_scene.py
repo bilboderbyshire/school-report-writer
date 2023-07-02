@@ -4,12 +4,16 @@ from ..app_engine import AppEngine
 from ..containers import ReportTemplate, IndividualPiece, TemplateSection, UserVariable, IndividualReport, \
     SingleReportSet
 from ..title_bar import TitleBar
-from ..components import Separator, SecondaryButton, LargeOptionMenu, NormalLabel, HoverTooltip
+from ..components import Separator, LargeOptionMenu, NormalLabel, HoverTooltip
 from .report_piece_scrollframe import ReportPieceScrollframe
 from .report_text_frame import ReportTextFrame
 from .insert_variables_frame import InsertVariablesFrame
 from typing import TYPE_CHECKING
 import CTkMessagebox as ctkmb
+from PIL import Image
+from ..report_setup_toplevel import AddOneToplevel, ReportSetupToplevel
+from .select_pupil_toplevel import SelectPupilToplevel
+import os
 
 if TYPE_CHECKING:
     from ..root import ReportWriter
@@ -58,8 +62,27 @@ class ReportScene(ctk.CTkFrame):
             pady=(0, DEFAULT_PAD))
 
         name_and_actions.rowconfigure(0, weight=0)
-        name_and_actions.columnconfigure([0, 2], weight=0)
-        name_and_actions.columnconfigure(1, weight=1)
+        name_and_actions.columnconfigure([0, 1, 3], weight=0)
+        name_and_actions.columnconfigure(2, weight=1)
+
+        edit_pupil_image = ctk.CTkImage(
+            light_image=Image.open(os.path.join(os.getcwd(), "images/light-pencil.png")),
+            dark_image=Image.open(os.path.join(os.getcwd(), "images/dark-pencil.png")),
+            size=(25, 25)
+        )
+        edit_pupil_button = ctk.CTkButton(
+            name_and_actions,
+            fg_color="transparent",
+            image=edit_pupil_image,
+            command=self.edit_current_pupil_info,
+            text="",
+            width=35,
+            height=35,
+            hover_color=BUTTON_HOVER_COLOR,
+            corner_radius=5
+        )
+
+        edit_pupil_button.grid(row=0, column=0, sticky="e", padx=(0, SMALL_PAD))
 
         self.pupil_gender_label = ctk.CTkLabel(
             name_and_actions,
@@ -71,7 +94,7 @@ class ReportScene(ctk.CTkFrame):
             padx=5,
             pady=3
         )
-        self.pupil_gender_label.grid(row=0, column=0, sticky="nsew")
+        self.pupil_gender_label.grid(row=0, column=1, sticky="nsew")
 
         self.pupil_name_label = ctk.CTkLabel(
             name_and_actions,
@@ -80,49 +103,85 @@ class ReportScene(ctk.CTkFrame):
             font=ctk.CTkFont(**SECONDARY_TITLE_FONT),
             anchor="w"
         )
-        self.pupil_name_label.grid(row=0, column=1, sticky="nsew", padx=(DEFAULT_PAD, 0))
+        self.pupil_name_label.grid(row=0, column=2, sticky="nsew", padx=(DEFAULT_PAD, 0))
 
         pupil_button_frame = ctk.CTkFrame(name_and_actions, fg_color="transparent")
-        pupil_button_frame.grid(row=0, column=2, sticky="nsew", pady=2)
+        pupil_button_frame.grid(row=0, column=3, sticky="nsew", pady=2)
         pupil_button_frame.rowconfigure(0, weight=1)
-        pupil_button_frame.columnconfigure([0, 1, 2, 3], weight=0, uniform="columns")
+        pupil_button_frame.columnconfigure([0, 1, 2, 3], weight=0)
 
-        show_pupils_button = SecondaryButton(
-            pupil_button_frame,
-            text="Pupils...",
-            font=ctk.CTkFont(**NORMAL_LABEL_FONT),
-            width=80
+        save_pupil_image = ctk.CTkImage(
+            light_image=Image.open(os.path.join(os.getcwd(), "images/light-save.png")),
+            dark_image=Image.open(os.path.join(os.getcwd(), "images/dark-save.png")),
+            size=(25, 25)
         )
-        show_pupils_button.grid(row=0, column=0, sticky="nsew", padx=(0, SMALL_PAD))
-
-        self.previous_pupil_button = SecondaryButton(
-            pupil_button_frame,
-            text="Prev",
-            font=ctk.CTkFont(**NORMAL_LABEL_FONT),
-            width=0,
-            command=self.prev_pupil_clicked
-        )
-        self.previous_pupil_button.grid(row=0, column=1, sticky="nsew", padx=(0, SMALL_PAD))
-        HoverTooltip(self.previous_pupil_button, text_variable=self.prev_pupil_sv)
 
         save_pupil_button = ctk.CTkButton(
             pupil_button_frame,
-            text="Save",
-            font=ctk.CTkFont(**NORMAL_LABEL_FONT),
-            width=0,
-            command=self.save_clicked
+            fg_color="transparent",
+            image=save_pupil_image,
+            command=self.save_clicked,
+            text="",
+            width=35,
+            height=35,
+            hover_color=BUTTON_HOVER_COLOR,
+            corner_radius=5
         )
-        save_pupil_button.grid(row=0, column=2, sticky="nsew", padx=(0, SMALL_PAD))
 
-        self.next_pupil_button = SecondaryButton(
-            pupil_button_frame,
-            text="Next",
-            font=ctk.CTkFont(**NORMAL_LABEL_FONT),
-            width=0,
-            command=self.next_pupil_clicked
+        save_pupil_button.grid(row=0, column=0, sticky="e", padx=(0, SMALL_PAD))
+        HoverTooltip(save_pupil_button, text="Save report")
+
+        prev_pupil_image = ctk.CTkImage(
+            light_image=Image.open(os.path.join(os.getcwd(), "images/light-left-arrow.png")),
+            dark_image=Image.open(os.path.join(os.getcwd(), "images/dark-left-arrow.png")),
+            size=(25, 25)
         )
-        self.next_pupil_button.grid(row=0, column=3, sticky="nsew")
+        self.previous_pupil_button = ctk.CTkButton(
+            pupil_button_frame,
+            fg_color="transparent",
+            image=prev_pupil_image,
+            command=self.prev_pupil_clicked,
+            text="",
+            width=35,
+            height=35,
+            hover_color=BUTTON_HOVER_COLOR,
+            corner_radius=5
+        )
+
+        self.previous_pupil_button.grid(row=0, column=1, sticky="e", padx=(0, SMALL_PAD))
+        HoverTooltip(self.previous_pupil_button, text_variable=self.prev_pupil_sv)
+
+        next_pupil_image = ctk.CTkImage(
+            light_image=Image.open(os.path.join(os.getcwd(), "images/light-right-arrow.png")),
+            dark_image=Image.open(os.path.join(os.getcwd(), "images/dark-right-arrow.png")),
+            size=(25, 25)
+        )
+        self.next_pupil_button = ctk.CTkButton(
+            pupil_button_frame,
+            fg_color="transparent",
+            image=next_pupil_image,
+            command=self.next_pupil_clicked,
+            text="",
+            width=35,
+            height=35,
+            hover_color=BUTTON_HOVER_COLOR,
+            corner_radius=5
+        )
+
+        self.next_pupil_button.grid(row=0, column=2, sticky="e", padx=(0, SMALL_PAD))
         HoverTooltip(self.next_pupil_button, text_variable=self.next_pupil_sv)
+
+        self.report_options_menu = LargeOptionMenu(
+            pupil_button_frame,
+            fg_color=ROOT_BG,
+            height=35,
+            values=["Select pupil", "Report settings", "Export", "Delete set"],
+            command=self.report_option_selected
+        )
+        self.report_options_menu.set("Options")
+
+        self.report_options_menu.grid(row=0, column=3, sticky="e", padx=(0, SMALL_PAD))
+        HoverTooltip(self.report_options_menu, text="Options")
 
         section_piece_frame = ctk.CTkFrame(self)
         section_piece_frame.grid(row=3, column=0, sticky="nsew", padx=DEFAULT_PAD, pady=(0, DEFAULT_PAD))
@@ -307,6 +366,23 @@ class ReportScene(ctk.CTkFrame):
             index=index
         )
 
+    def edit_current_pupil_info(self):
+        add_one_tl = AddOneToplevel(
+            self,
+            self.current_report.get_pupil_info()
+        )
+
+        new_pupil_info = add_one_tl.get_pupil_info()
+        if new_pupil_info is None or new_pupil_info == self.current_report.get_pupil_info():
+            return
+
+        self.current_report.pupil_forename = new_pupil_info["forename"].lower()
+        self.current_report.pupil_surname = new_pupil_info["surname"].lower()
+        self.current_report.gender = new_pupil_info["gender"].lower()
+
+        self.refresh_current_report(self.current_report)
+
+
     def check_for_save(self) -> bool:
         all_tags_filled = True
         for tag in self.report_text_frame.piece_textbox.tag_names():
@@ -357,7 +433,6 @@ class ReportScene(ctk.CTkFrame):
 
         self.report_text_frame.change_report(self.current_report)
         self.insert_variables_frame.clear_all_frames()
-
 
     def text_box_edited(self, new_variables: dict[str, list[str]]):
         for var_type, var_info_list in new_variables.items():
@@ -425,3 +500,42 @@ class ReportScene(ctk.CTkFrame):
                     collapsed_index = len(current_chain_keys) - 1
 
                 self.insert_variables_frame.chain_vars.reorganize_instance_dict()
+
+    def report_option_selected(self, value_selected: str):
+        self.report_options_menu.set("Options")
+
+        if value_selected == "Report settings":
+            settings_tl = ReportSetupToplevel(
+                self,
+                self.app_engine,
+                self.report_set
+            )
+
+            new_report_set = settings_tl.get_report()
+
+            if new_report_set is None:
+                return
+
+            self.setup_scene(new_report_set)
+
+            try:
+                self.refresh_current_report(self.current_report)
+            except ValueError:
+                starting_report = None
+                for report in self.all_reports:
+                    if not report.completed:
+                        starting_report = report
+                        break
+
+                self.refresh_current_report(starting_report)
+
+        elif value_selected == "Select pupil":
+            select_pupil_tl = SelectPupilToplevel(self, self.all_reports)
+            selected_pupil = select_pupil_tl.get_selected_pupil()
+
+            if selected_pupil is None:
+                return
+
+            self.refresh_current_report(selected_pupil)
+        else:
+            print(f"{value_selected} was selected, but there's not code for it yet LMAO")

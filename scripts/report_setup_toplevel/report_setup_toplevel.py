@@ -306,7 +306,7 @@ class ReportSetupToplevel(ctk.CTkToplevel):
                     self.app_engine.copy_of_individual_report_collection[created_individual_report.id] = \
                         created_individual_report.copy()
             else:
-                working_report = self.app_engine.copy_of_reports_set_collection[self.report_set.id]
+                working_report = self.app_engine.copy_of_reports_set_collection[self.report_set.id].copy()
 
                 working_report.report_title = self.report_name_entry.get().strip().lower()
                 working_report.class_name = self.class_entry.get().strip().lower()
@@ -360,6 +360,22 @@ class ReportSetupToplevel(ctk.CTkToplevel):
                         self.app_engine.individual_report_collection[report_id] = updated_individual_report
                         self.app_engine.copy_of_individual_report_collection[report_id] = \
                             updated_individual_report.copy()
+
+                deleted_reports = [i for i in self.app_engine.copy_of_individual_report_collection.values() if
+                                   i.report_set == self.report_set.id and
+                                   i.id not in self.pupils_in_report.all_cards.keys()]
+                for report_to_delete in deleted_reports:
+                    response = self.app_engine.delete_record(
+                        report_to_delete.id,
+                        collection="individual_reports"
+                    )
+
+                    if not response:
+                        return
+
+                    self.app_engine.copy_of_individual_report_collection.pop(report_to_delete.id)
+                    self.app_engine.individual_report_collection.pop(report_to_delete.id)
+
         self.destroy()
 
     def cancel_clicked(self):
