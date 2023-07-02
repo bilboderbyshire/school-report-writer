@@ -13,6 +13,7 @@ from ..report_setup_toplevel import ReportSetupToplevel
 
 if TYPE_CHECKING:
     from ..root import ReportWriter
+    from ..write_report import ReportScene
 
 
 class MainMenuScene(ctk.CTkFrame):
@@ -31,6 +32,7 @@ class MainMenuScene(ctk.CTkFrame):
 
         self.report_frame = ReportsScrollableFrame(self,
                                                    app_engine=self.app_engine,
+                                                   report_set_selected_command=self.edit_report,
                                                    add_command=self.add_report)
         self.report_frame.grid(row=2, column=0, columnspan=2, sticky="nsew", pady=(0, DEFAULT_PAD),
                                padx=(DEFAULT_PAD, 3))
@@ -94,7 +96,12 @@ class MainMenuScene(ctk.CTkFrame):
         if new_report is None:
             return
 
+        self.edit_report(new_report)
+
+    def edit_report(self, new_report: SingleReportSet):
         self.master: ReportWriter
+        next_scene: ReportScene
+
         next_scene = self.master.get_frame("write-report-scene")
         next_scene.previous_scene("main-menu")
         next_scene.setup_scene(new_report)
