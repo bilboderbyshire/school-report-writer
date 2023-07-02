@@ -337,6 +337,9 @@ class ReportScene(ctk.CTkFrame):
     def save_report(self):
         self.current_report.report_text = self.report_text_frame.piece_textbox.get("1.0", "end").strip()
 
+        if self.current_report == self.app_engine.individual_report_collection[self.current_report.id]:
+            return
+
         updated_report = self.app_engine.update_record(
             record_id=self.current_report.id,
             data=self.current_report.data_to_create(),
