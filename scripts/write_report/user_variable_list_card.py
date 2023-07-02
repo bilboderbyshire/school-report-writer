@@ -38,3 +38,9 @@ class UserVariableListCard(ListCard):
     def delete_variable(self, variable_to_delete):
         pass
 
+    def clear_frame(self):
+        for card in self.instance_dict.values():
+            card.destroy()
+
+        self.instance_dict = {}
+        self.variable_count_iv.set(0)

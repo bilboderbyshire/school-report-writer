@@ -1,6 +1,6 @@
 import customtkinter as ctk
 from ..settings import *
-from ..containers import IndividualPiece, UserVariable, PupilInfo
+from ..containers import IndividualPiece, UserVariable, PupilInfo, IndividualReport
 from typing import Callable
 
 
@@ -8,12 +8,11 @@ class ReportTextFrame(ctk.CTkFrame):
     def __init__(self,
                  master,
                  variables_collection: dict[str, UserVariable],
-                 pupil_info: PupilInfo,
                  text_box_edited_command: Callable):
         super().__init__(master, fg_color=DARK_FRAME_COLOR)
 
         self.variables_collection = variables_collection
-        self.pupil_info = pupil_info
+        self.pupil_info = None
         self.text_box_edited_command = text_box_edited_command
         self.edit_after_id = None
 
@@ -147,19 +146,17 @@ class ReportTextFrame(ctk.CTkFrame):
             self.piece_textbox.insert(tag_range[0], "{static:" + variable_name + "}", variable_type)
 
     def edit_static_variable(self, variable_name: str, new_text: str):
-        tag_ranges = self.piece_textbox.tag_ranges(variable_name)
+        current_tag_start, current_tag_end = self.piece_textbox.tag_nextrange(variable_name, "1.0")
 
-        current_tag_start = tag_ranges[0]
-        current_tag_end = tag_ranges[1]
-        for i in range(len(tag_ranges)//2):
+        while True:
             self.piece_textbox.delete(current_tag_start, current_tag_end)
 
             if new_text != "":
                 if current_tag_start == "1.0":
                     new_text = new_text.capitalize()
                 else:
-                    prev_char = self.piece_textbox.get(current_tag_start.string + "-1c")
-                    prev_2_char = self.piece_textbox.get(current_tag_start.string + "-2c")
+                    prev_char = self.piece_textbox.get(current_tag_start + "-1c")
+                    prev_2_char = self.piece_textbox.get(current_tag_start + "-2c")
 
                     if prev_char in ["!?.\n"] or prev_2_char in ["!?.\n"]:
                         new_text = new_text.capitalize()
@@ -205,3 +202,8 @@ class ReportTextFrame(ctk.CTkFrame):
             self.after_cancel(self.edit_after_id)
 
         self.edit_after_id = self.after(1000, self.text_box_edited)
+
+    def change_report(self, new_report: IndividualReport):
+        self.pupil_info = new_report.get_pupil_info()
+        self.piece_textbox.delete("1.0", "end")
+        self.piece_textbox.insert("1.0", new_report.report_text)

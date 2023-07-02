@@ -87,12 +87,17 @@ class MainMenuScene(ctk.CTkFrame):
             i.configure(cursor=cursor)
 
     def add_report(self):
-        ReportSetupToplevel(self, self.app_engine, None)
+        report_setup_tl = ReportSetupToplevel(self, self.app_engine, None)
+
+        new_report = report_setup_tl.get_report()
+
+        if new_report is None:
+            return
 
         self.master: ReportWriter
         next_scene = self.master.get_frame("write-report-scene")
         next_scene.previous_scene("main-menu")
-        next_scene.setup_scene(list(self.app_engine.copy_of_template_collection.values())[0])
+        next_scene.setup_scene(new_report)
         next_scene.fill_frames()
         self.master.show_frame("write-report-scene")
 
